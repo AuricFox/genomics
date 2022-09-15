@@ -5,13 +5,18 @@ import sys
 import codon_mapping as map
 
 # Wrights the data to a csv file
-def make_csv(filename, data):
+def make_csv(filename, data, flag):
     # print(filename, data)
     
     with open(filename, 'w', newline='') as file:
         cfile = csv.writer(file)
-        cfile.writerow(['Codon', 'Count'])  # Wrights header to csv
-        cfile.writerows(data)               # Wrights codon data to csv
+
+        if (flag == 'c'):
+            cfile.writerow(['Codon', 'Count'])          # Wrights codon header to csv
+        elif (flag == 'a'):
+            cfile.writerow(['Amino Acid', 'Count'])     # Wrights amino acid header to csv
+
+        cfile.writerows(data)                           # Wrights codon or amino acid data to csv
 
 # =======================================================================================
 # Retreives data from the fna file and parses it
@@ -47,16 +52,23 @@ if __name__ == "__main__":
     make_csv('SARS-CoV-2_whole_genome.csv', whole_genes.get_codon_count())
     '''
 
-    if ((len(sys.argv) > 3) or (len(sys.argv) < 3)):
-        print("ERROR: MUST HAVE 2 ARGUMENMTS!")
-    
-    else:
+    if (len(sys.argv) == 4 and sys.argv[3] == "codons"):        # Getting codon detail
         fna_file = sys.argv[1]                                  # Extracting fna file name from arguments
         csv_file = sys.argv[2]                                  # Extracting csv file name from arguments
         # print(fna_file, csv_file)
 
-        part_genes = get_data(fna_file)                         # Processing genome data from fna file
-        make_csv(csv_file, part_genes.get_codon_count())        # Writing genome data to csv file
+        genes = get_data(fna_file)                              # Processing genome data from fna file
+        make_csv(csv_file, genes.get_codon_count(), 'c')        # Writing genome data to csv file
+
+    elif(len(sys.argv) == 4 and sys.argv[3] == "amino"):        # Getting amino acid details
+        fna_file = sys.argv[1]
+        csv_file = sys.argv[2]
+
+        amino_acids = get_data(fna_file)
+        make_csv(csv_file, amino_acids.get_amino_count(), 'a')  # Writing amino acid data to csv file
+
+    else:
+        print("ERROR: INVALID ARGUMENMTS!")
 
 
     

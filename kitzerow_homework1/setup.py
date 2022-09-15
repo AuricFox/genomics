@@ -20,8 +20,8 @@ data = [
     ["TAA",	"Stp"], ["TAC",	"Tyr"], ["TAG",	"Stp"], ["TAT",	"Tyr"], ["TCA",	"Ser"], ["TCC",	"Ser"], ["TCG",	"Ser"], ["TCT",	"Ser"],
     ["TGA",	"Stp"], ["TGC",	"Cys"], ["TGG",	"Trp"], ["TGT",	"Cys"], ["TTA",	"Leu"], ["TTC",	"Phe"], ["TTG",	"Leu"], ["TTT",	"Phe"]
 ]
-
-amino = [  # List of amino acids
+# List of amino acids
+amino = [  
     "Leu", "Val", "Thr", "Ala", "Ser", "Gly", "Lys", "Asn", "Ile", "Asp",
     "Phe", "Glu", "Tyr", "Pro", "Gln", "Arg", "Cys", "Met", "His", "Trp", "Stp"
 ]
