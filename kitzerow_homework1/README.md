@@ -6,16 +6,22 @@ Samuel Kitzerow, kitze012
 
 python .\count_codons.py input_file output_file option
 
-For codon files:
+For codon files:  
 ```
 python .\count_codons.py SARS-CoV-2_separate_genes.fna SARS-CoV-2_separate_genes.csv codons
 python .\count_codons.py SARS-CoV-2_whole_genes.fna SARS-CoV-2_whole_genes.csv codons
 ```
 
-For amino acid file:
+For amino acid file:  
 ```
 python .\count_codons.py SARS-CoV-2_separate_genes.fna separate_amino_acids.csv amino
 python .\count_codons.py SARS-CoV-2_whole_genes.fna whole_amino_acids.csv amino
+```
+
+For test files:
+```
+python .\count_codons.py test.fna test.csv codons
+python .\count_codons.py test.fna test_amino.csv amino
 ```
 
 ### Other Files
