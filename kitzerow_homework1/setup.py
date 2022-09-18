@@ -2,6 +2,9 @@
 # Homework 1, Setting up matrices
 # NOTE: not for main program, just for setting up lookup tables
 
+import sys
+import csv
+
 # Matrix used to map codon inputs to index locations in the lists codon_count and codons
 matrix = [
     [[0,  1,  2,  3], [4,  5,  6,  7], [8,  9,  10, 11], [12, 13, 14, 15]],     # Matrix A
@@ -60,5 +63,35 @@ def moresetup():
     print(amatrix)
 
 # ========================================================================================================================================
+# Merging csv files with corresponding values into one file
+def merge_files(file1, file2, file3):
+    f1 = open(file1, 'r')       # Separate genes
+    f2 = open(file2, 'r')       # Whole genome
+
+    data = []
+
+    for (line1, line2) in zip(f1, f2):          # Iterates thru both files
+        line1 = (line1.strip()).split(',')      # Removing newlines and splitting string at commas
+        line2 = (line2.strip()).split(',')
+
+        line1.append(line2[1])                  # Appending the count from the second file to a list from the first file
+        data.append(line1)
+
+    with open(file3, 'w', newline='') as file:
+        cfile = csv.writer(file)
+        cfile.writerows(data)                           # Wrights codon or amino acid data to csv
+    
+
+# ========================================================================================================================================
 if __name__ == "__main__":
-    moresetup()
+
+    # merge_files('SARS-CoV-2_separate_genes.csv', 'SARS-CoV-2_whole_genome.csv', 'combined_codons.csv')
+    # merge_files('separate_amino_acids.csv', 'whole_amino_acids.csv', 'combined_amino_acids.csv')
+
+    if(len(sys.argv) == 2 and sys.argv[1] == "setup"):      # Setting up amino acid matrix
+        moresetup()
+
+    elif(len(sys.argv) == 5 and sys.argv[1] == "merge"):    # Merging two csv files into one
+        merge_files(sys.argv[2], sys.argv[3], sys.argv[4])
+
+    
