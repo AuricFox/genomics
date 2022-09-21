@@ -4,7 +4,11 @@ Samuel Kitzerow, kitze012
 
 ### Running Program
 
+```
 python .\count_codons.py input_file output_file option
+python .\count_codons.py input_file output_file codons
+python .\count_codons.py input_file output_file amino
+```
 
 Codon files:  
 ```
@@ -14,7 +18,6 @@ python .\count_codons.py SARS-CoV-2_whole_genome.fna ./csv_files/SARS-CoV-2_whol
 
 Amino acid files:  
 ```
-python .\count_codons.py filename path amino
 python .\count_codons.py SARS-CoV-2_separate_genes.fna ./csv_files/separate_amino_acids.csv amino
 python .\count_codons.py SARS-CoV-2_whole_genome.fna ./csv_files/whole_amino_acids.csv amino
 ```
