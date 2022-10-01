@@ -52,7 +52,7 @@ if __name__ == "__main__":
     make_csv('SARS-CoV-2_whole_genome.csv', whole_genes.get_codon_count())
     '''
 
-    if (len(sys.argv) == 4 and sys.argv[3] == "codons"):        # Getting codon detail
+    if (len(sys.argv) == 4 and sys.argv[3] == "-c"):        # Getting codon detail
         fna_file = sys.argv[1]                                  # Extracting fna file name from arguments
         csv_file = sys.argv[2]                                  # Extracting csv file name from arguments
         # print(fna_file, csv_file)
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         genes = get_data(fna_file)                              # Processing genome data from fna file
         make_csv(csv_file, genes.get_codon_count(), 'c')        # Writing genome data to csv file
 
-    elif(len(sys.argv) == 4 and sys.argv[3] == "amino"):        # Getting amino acid details
+    elif(len(sys.argv) == 4 and sys.argv[3] == "-a"):        # Getting amino acid details
         fna_file = sys.argv[1]
         csv_file = sys.argv[2]
 
