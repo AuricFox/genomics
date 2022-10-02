@@ -39,7 +39,7 @@
 #     [TAT, TCT, TGT, TTT]    =>  [60, 61, 62, 63]
 # ]
 
-class map_codons:
+class sequence:
     def __init__(self):
         self.codons = [ # List of all 64 possible DNA codon combinations in their corresponding index locations for codon_count
             "AAA", "ACA", "AGA", "ATA", "AAC", "ACC", "AGC", "ATC", "AAG", "ACG", "AGG", "ATG", "AAT", "ACT", "AGT", "ATT",
@@ -64,6 +64,10 @@ class map_codons:
             6, 2, 15, 8, 7, 2, 4, 8, 6, 2, 15, 17, 7, 2, 4, 8, 14, 13, 15, 0, 18, 13, 15, 0, 14, 13, 15, 0, 18, 13, 15, 0,
             11, 3, 5, 1, 9, 3, 5, 1, 11, 3, 5, 1, 9, 3, 5, 1, 20, 4, 20, 0, 12, 4, 16, 10, 20, 4, 19, 0, 12, 4, 16, 10
         ]
+
+        self.sequence = ""          # Character string of bases
+        self.header = ""            ## Character string for header info
+
         
     # ----------------------------------------------------------------------------------------------------------------------
     # Assigns the base character with an matrix/row/column value for reference in the matrix or returns -1 if invalid
@@ -98,10 +102,20 @@ class map_codons:
         index = self.matrix[matrix][column][row]            # Retreives mapped index in the matrix 
         # print("Index: ", index)
         self.codon_count[index] += 1                        # Incriments corresponding codon count
-            
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Adds codon or sequence strings to self.sequence
+    def add_header(self, head):
+        self.header = head
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Adds codon or sequence strings to self.sequence
+    def add_to_sequence(self, seq):
+        self.sequence += seq
+
     # ----------------------------------------------------------------------------------------------------------------------
     # Parses the genome sequence string into individual codon sub-strings and adds them to the count
-    def add_sequence(self, seq):
+    def add_to_count(self, seq):
         end = len(seq) - len(seq) % 3   # Ignore any trailing characters
 
         for i in range(0, end, 3):      # Iterate thru each 3 chars in the string
@@ -144,7 +158,7 @@ class map_codons:
 
 if __name__ == "__main__":
 
-    test = map_codons()
+    test = sequence()
     codons = [ # list of all 64 possible DNA codon combinations
         "AAA", "ACA", "AGA", "ATA", "AAC", "ACC", "AGC", "ATC", "AAG", "ACG", "AGG", "ATG", "AAT", "ACT", "AGT", "ATT",
         "CAA", "CCA", "CGA", "CTA", "CAC", "CCC", "CGC", "CTC", "CAG", "CCG", "CGG", "CTG", "CAT", "CCT", "CGT", "CTT",
