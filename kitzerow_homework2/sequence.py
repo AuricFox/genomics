@@ -155,7 +155,7 @@ class sequence:
         for i in range(64):
             print(self.codons[i], self.codon_count[i], sep=" : ")
 
-
+# ==========================================================================================================================
 if __name__ == "__main__":
 
     test = sequence()
