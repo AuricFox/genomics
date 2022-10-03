@@ -63,9 +63,9 @@ class alignmant:
             k = self.match_pen
 
 
-        left = self.s[row][col-1] - self.gap_pen                        # Score from right neighbor
+        left = self.s[row][col-1] + self.gap_pen                        # Score from right neighbor
         corner = self.s[row-1][col-1] + k                               # Score from corner neighbor
-        right = self.s[row-1][col] - self.gap_pen                       # Score from right neighbor
+        right = self.s[row-1][col] + self.gap_pen                       # Score from right neighbor
 
         score = max(left, corner, right)                                # Take the best score
 
