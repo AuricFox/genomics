@@ -30,21 +30,25 @@ class alignmant:
     # ----------------------------------------------------------------------------------------------------------------------
     # Initializes scoring matrix
     def build_matrix(self):
-        col = len(self.seq1)
-        row = len(self.seq2)
+        col = len(self.seq1) + 1
+        row = len(self.seq2) + 1
 
-        self.s = np.array([[0]*(col + 1) for i in range(row + 1)])      # Initialize scoring matrix
+        self.s = np.array([[0]*col for i in range(row)])                # Initialize scoring matrix
         self.n = np.array([[None]*col for i in range(row)])             # Initialize neighbor matrix
 
         k = 0
-        for i in range(col):                                            # Adding row gap penalties
+        for i in range(col):
             k = (self.gap_pen * i)
-            self.s[0, i] = k
+            self.s[0, i] = k                                            # Adding row gap penalties
+            self.n[0, i] = (0,i-1)                                        # Adding row placeholders for neighbor matrix
         
         k = 0
-        for i in range(row):                                            # Adding column gap penalties
+        for i in range(row):
             k = (self.gap_pen * i)
-            self.s[i, 0] = k
+            self.s[i, 0] = k                                            # Adding column gap penalties
+            self.n[i, 0] = (i-1,0)                                        # Adding column placeholders for neighbor matrix
+
+        self.n[0, 0] = None
     
     # ----------------------------------------------------------------------------------------------------------------------
     # Populates scoring matrix
@@ -70,11 +74,11 @@ class alignmant:
         score = max(left, corner, right)                                # Take the best score
 
         if(left == score):                                              # Best path is left neighbor
-            self.n[row-1][col-1] = (row, col-1)
+            self.n[row][col] = (row, col-1)
         elif(corner == score):                                          # Best path is corner neighbor
-            self.n[row-1][col-1] = (row-1, col-1)
+            self.n[row][col] = (row-1, col-1)
         else:                                                           # Best path is right neighbor
-            self.n[row-1][col-1] = (row-1, col)
+            self.n[row][col] = (row-1, col)
 
         self.s[row][col] = score                                        # Add score to matrix
 
