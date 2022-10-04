@@ -124,7 +124,7 @@ class alignment:
             col = pos[1]
             pos = self.n[row][col]
         
-        return (self.seq1_align, self.seq2_align, self.vis, self.score)
+        return (self.seq1_align, self.vis, self.seq2_align, self.score)
 
 # ==========================================================================================================================
 # Testing
@@ -137,7 +137,8 @@ if __name__ == "__main__":
     #print(a.n)
     print(a.s)
     print(a.n)
-    a.get_alignment()
-    print(a.seq1_align)
-    print(a.vis)
-    print(a.seq2_align)
+    result = a.get_alignment()
+    print(result[0])
+    print(result[1])
+    print(result[2])
+    print("Score: ", result[3])
