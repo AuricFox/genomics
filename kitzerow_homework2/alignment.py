@@ -49,19 +49,18 @@ class alignment:
             self.n[i, 0] = (i-1,0)                                      # Adding column placeholders for neighbor matrix
 
         self.n[0, 0] = None
-        self.align_sequence(1,1)
+
+        for n in range(1, row):                                         # Iterate thru each element once for alignment
+            for m in range(1, col):
+                # print("Row: ", n, " Col: ", m)
+                self.align_sequence(m, n)                               # Computing each score at row x column
     
     # ----------------------------------------------------------------------------------------------------------------------
     # Populates neighbor and scoring matrices with corresponding placement scores and neighbors
     def align_sequence(self, col, row):
-
-        if(len(seq1) <= (col-1) and len(seq2) > (row)):                 # End of row has been reached, move to next row
-            self.align_sequence(1, row+1)
-        if(len(seq1) <= (col-1) or len(seq2) <= (row-1)):               # End of matrix has been reached, exit loop
-            return
+        # print("M: ", col," N: ", row)
 
         k = 0
-        # print("M: ", col," N: ", row)
         if(self.seq1[col-1] == self.seq2[row-1]):                       # Check for matches
             k = 1
         else:                                                           # No match, add penalty
@@ -83,8 +82,6 @@ class alignment:
 
         self.s[row][col] = score                                        # Add score to matrix
 
-        self.align_sequence(col+1, row)                                 # Move to next element in row
-
     # ----------------------------------------------------------------------------------------------------------------------
     # Creates alignment strings for sequence 1, sequence 2, and alignment visualization. Also computes total alignment score.
     def get_alignment(self):
@@ -105,19 +102,19 @@ class alignment:
                 self.seq1_align = self.seq1[col-1] + self.seq1_align
                 self.seq2_align = self.seq2[row-1] + self.seq2_align
                 self.vis = "X" + self.vis
-                self.score += self.match_pen
+                self.score += self.match_pen                                                    # Add mismatch penalty to score
 
             elif(pos[0] == row-1 and pos[1] == col):                                            # Verticle alignment (sequence 1 gap)
                 self.seq1_align = "_" + self.seq1_align
                 self.seq2_align = self.seq2[row-1] + self.seq2_align
                 self.vis = " " + self.vis
-                self.score += self.gap_pen
+                self.score += self.gap_pen                                                      # Add gap penalty to score
 
             elif(row == pos[0] and pos[1] == col-1):                                            # Horizontal alignment (sequence 2 gap)
                 self.seq1_align = self.seq1[col-1] + self.seq1_align
                 self.seq2_align = "_" + self.seq2_align
                 self.vis = " " + self.vis
-                self.score += self.gap_pen
+                self.score += self.gap_pen                                                      # Add gap penalty to score
 
             # Incrementing values to next neighbor
             row = pos[0]
@@ -125,20 +122,35 @@ class alignment:
             pos = self.n[row][col]
         
         return (self.seq1_align, self.vis, self.seq2_align, self.score)
+    
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Prints score and neighbor matrices (I didn't want to keep typing the prints in main)
+    def print_matrices(self):
+        print(self.s)
+        print(self.n)
+    
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Prints aligned sequences with visiualization (I didn't want to keep typing the prints in main as well)
+    '''
+    Score: 23
+    __C_GATT_TCGGG...
+      |  ||| |xx||
+    AGCA_ATTCTTCGG...
+    '''
+    def print_alignment(self):
+        print("Score: ", self.score)
+        print(self.seq1_align)
+        print(self.vis)
+        print(self.seq2_align)
 
 # ==========================================================================================================================
 # Testing
 if __name__ == "__main__":
-    seq1 = "ACCGTA"
-    seq2 = "ACGTC"
+    seq1 = "ACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTA"
+    seq2 = "ACGTCACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTAACCGTA"
 
     a = alignment(seq1, seq2)
-    #print(a.s)
-    #print(a.n)
-    print(a.s)
-    print(a.n)
-    result = a.get_alignment()
-    print(result[0])
-    print(result[1])
-    print(result[2])
-    print("Score: ", result[3])
+    #a.print_matrices()
+    a.get_alignment()
+    a.print_alignment()
+    #a.print_matrices()
