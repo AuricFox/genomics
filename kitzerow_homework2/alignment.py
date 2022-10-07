@@ -125,18 +125,24 @@ class alignment:
     # # Creates alignment strings for sequence reference, sequence 1, and alignment visualization while ingoring start/end gaps
     def get_local_alignment(self):
 
-        if(self.ign == False):              # Matrix must be rebuilt to ignore start/end gaps
+        if(self.ign == False):                      # Matrix must be rebuilt to ignore start/end gaps
             self.ign = True
             self.build_matrix()
 
-        row = len(self.seq)
-        col = np.argmax(self.s[row])
-        pos = self.n[row][col]
+        row = len(self.seq)                         # Last Row
+        col = np.argmax(self.s[row])                # Get index with max value
+        pos = self.n[row][col]                      # Get contributing neighbor
 
-        #TODO: ADD ends to sequence strings
+        i = len(self.ref)
+        while(i > col):                             # Adding end characters to alignment strings
+            #print("Index: ", i)
+            self.ref_align = self.ref[i-1] + self.ref_align
+            self.seq_align = "_" + self.seq_align
+            self.vis = " " + self.vis
+            i -= 1
 
-        while(pos != None):
-            print("Alignment: ", pos, " Row: ", row, " Col: ", col)
+        while(pos != None and row != 0):
+            #print("Alignment: ", pos, " Row: ", row, " Col: ", col)
             self.alignment_string(row, col, pos)
 
             # Incrementing values to next neighbor
@@ -144,7 +150,14 @@ class alignment:
             col = pos[1]
             pos = self.n[row][col]
 
-        #TODO: ADD starts to sequence strings
+        i = col - 1
+        while(i >= 0):                             # Adding start characters to alignment strings
+            #print("Index: ", i)
+            self.ref_align = self.ref[i-1] + self.ref_align
+            self.seq_align = "_" + self.seq_align
+            self.vis = " " + self.vis
+            i -= 1
+
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Appends to alignment strings (self.ref_align, self.seq_align, and self.vis)
@@ -198,7 +211,7 @@ class alignment:
 # Testing
 if __name__ == "__main__":
     ref = "GTTACGTCCGTAACC"
-    seq = "ACGT"
+    seq = "ACGTT"
 
     a = alignment(ref, seq)
     #a.print_matrices()
@@ -206,8 +219,11 @@ if __name__ == "__main__":
     a.print_alignment()
     #a.print_matrices()
 
+    #seq = "GTTACGTCCGTAACC"
+    #ref = "ACGT"
+
     b = alignment(ref, seq, -2, -1, True)
     b.get_local_alignment()
     #b.get_alignment()
     b.print_alignment()
-    b.print_matrices()
+    #b.print_matrices()
