@@ -1,5 +1,19 @@
 import numpy as np
 
+'''
+REFERENCE SEQUENCE
+  | A | C | G | T  |A S
+-------------------|L E
+A |   |   |   |    |I Q
+-------------------|G U
+C |   |   |   |    |N E
+-------------------|M N
+G |   |   |   |    |E C
+-------------------|N E
+T |   |   |   |    |T
+--------------------
+'''
+
 class alignment:
     def __init__(self, ref, seq, gap_pen = -2, match_pen = -1, ign = False):
         self.ref = ref                          # Sequence being referenced
@@ -141,8 +155,8 @@ class alignment:
             self.vis = " " + self.vis
             i -= 1
 
-        while(pos != None and row != 0):
-            #print("Alignment: ", pos, " Row: ", row, " Col: ", col)
+        while(row != 0 and col != 0):               # Adding alignment characters
+            #print("Alignment: ", pos, " Row: ", row, " Col: ", col, " Score: ", self.score)
             self.alignment_string(row, col, pos)
 
             # Incrementing values to next neighbor
@@ -150,42 +164,52 @@ class alignment:
             col = pos[1]
             pos = self.n[row][col]
 
-        i = col - 1
-        while(i >= 0):                             # Adding start characters to alignment strings
-            #print("Index: ", i)
-            self.ref_align = self.ref[i-1] + self.ref_align
-            self.seq_align = "_" + self.seq_align
+        while(pos != None):                                         # Adding start characters to alignment strings
+            #print("Row: ", row, " Col: ", col, " Pos: ", pos)
+            if(col == 0):                                           # End of reference string reached
+                self.ref_align = "_" + self.ref_align
+                self.seq_align = self.seq[row-1] + self.seq_align
+            elif(row == 0):                                         # End of sequence being aligned
+                self.ref_align = self.ref[col-1] + self.ref_align
+                self.seq_align = "_" + self.seq_align
+
             self.vis = " " + self.vis
-            i -= 1
+            
+            # Incrementing values to next neighbor
+            row = pos[0]
+            col = pos[1]
+            pos = self.n[row][col]
+
 
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Appends to alignment strings (self.ref_align, self.seq_align, and self.vis)
     def alignment_string(self, row, col, pos):
 
-        if(pos[0] == row-1 and pos[1] == col-1 and self.ref[col-1] == self.seq[row-1]):     # Diagonal alignment (match)
+        if(pos[0] == row-1 and pos[1] == col-1):                            # Diagonal alignment
             self.ref_align = self.ref[col-1] + self.ref_align
             self.seq_align = self.seq[row-1] + self.seq_align
-            self.vis = "|" + self.vis
-            self.score += 1
-            
-        elif(pos[0] == row-1 and pos[1] == col-1 and self.ref[col-1] != self.seq[row-1]):   # Diagonal alignment (mismatch)
-            self.ref_align = self.ref[col-1] + self.ref_align
-            self.seq_align = self.seq[row-1] + self.seq_align
-            self.vis = "X" + self.vis
-            self.score += self.match_pen                                                    # Add mismatch penalty to score
 
-        elif(pos[0] == row-1 and pos[1] == col):                                            # Verticle alignment (sequence 1 gap)
+            if(self.ref[col-1] == self.seq[row-1]):                         # Character match
+                self.vis = "|" + self.vis
+                self.score += 1
+
+            else:                                                           # Character mismatch
+                self.vis = "X" + self.vis
+                self.score += self.match_pen 
+            
+
+        elif(pos[0] == row-1 and pos[1] == col):                            # Verticle alignment (sequence 1 gap)
             self.ref_align = "_" + self.ref_align
             self.seq_align = self.seq[row-1] + self.seq_align
             self.vis = " " + self.vis
-            self.score += self.gap_pen                                                      # Add gap penalty to score
+            self.score += self.gap_pen                                      # Add gap penalty to score
 
-        elif(row == pos[0] and pos[1] == col-1):                                            # Horizontal alignment (sequence 2 gap)
+        elif(row == pos[0] and pos[1] == col-1):                            # Horizontal alignment (sequence 2 gap)
             self.ref_align = self.ref[col-1] + self.ref_align
             self.seq_align = "_" + self.seq_align
             self.vis = " " + self.vis
-            self.score += self.gap_pen                                                      # Add gap penalty to score
+            self.score += self.gap_pen                                      # Add gap penalty to score
     
     # ----------------------------------------------------------------------------------------------------------------------
     # Prints score and neighbor matrices (I didn't want to keep typing the prints in main)
@@ -210,17 +234,14 @@ class alignment:
 # ==========================================================================================================================
 # Testing
 if __name__ == "__main__":
-    ref = "GTTACGTCCGTAACC"
-    seq = "ACGTT"
+    ref = "ATGTTTGTTTTTCTTGTTTTATTGCCACTAGTCTCTAGTCAGTGTGTTAATCTTACAACCAGA"
+    seq = "AACCCGCCACCATGTTCGTGTTCCTGGTGCTGCTGCCTCTGGTGTCCAGCCAGTGTGTGAACC"
 
-    a = alignment(ref, seq)
+    #a = alignment(ref, seq)
     #a.print_matrices()
-    a.get_alignment()
-    a.print_alignment()
+    #a.get_alignment()
+    #a.print_alignment()
     #a.print_matrices()
-
-    #seq = "GTTACGTCCGTAACC"
-    #ref = "ACGT"
 
     b = alignment(ref, seq, -2, -1, True)
     b.get_local_alignment()
