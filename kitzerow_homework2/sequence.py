@@ -1,107 +1,87 @@
 # Samuel Kitzerow, kitze012
-# Homework 1, Counting Codons
+# Sequence class, handles sequence data manipulation
 
 # Codon types: A C G T
 # Mapping codons to index values to an array/list used for counting
 # 4 designator types with 3 total designators in a string (4^3 = 64 possible codon combinations)
-# I manually coded in the codon combinations since the list was manageable otherwise I would 
-# have used a tree or graph to generate the list of codons
-
-# Matrix A:
-# [
-#     [AAA, ACA, AGA, ATA],   =>  [0,  1,  2,  3],
-#     [AAC, ACC, AGC, ATC],   =>  [4,  5,  6,  7],
-#     [AAG, ACG, AGG, ATG],   =>  [8,  9,  10, 11],
-#     [AAT, ACT, AGT, ATT]    =>  [12, 13, 14, 15]
-# ]
-
-# Matrix C:
-# [
-#     [CAA, CCA, CGA, CTA],   =>  [16, 17, 18, 19]
-#     [CAC, CCC, CGC, CTC],   =>  [20, 21, 22, 23]
-#     [CAG, CCG, CGG, CTG],   =>  [24, 25, 26, 27]
-#     [CAT, CCT, CGT, CTT]    =>  [28, 29, 30, 31]
-# ]
-
-# Matrix G:
-# [
-#     [GAA, GCA, GGA, GTA],   =>  [32, 33, 34, 35]
-#     [GAC, GCC, GGC, GTC],   =>  [36, 37, 38, 39]
-#     [GAG, GCG, GGG, GTG],   =>  [40, 41, 42, 43]
-#     [GAT, GCT, GGT, GTT]    =>  [44, 45, 46, 47]
-# ]
-
-# Matrix T:
-# [
-#     [TAA, TCA, TGA, TTA],   =>  [48, 49, 50, 51]
-#     [TAC, TCC, TGC, TTC],   =>  [52, 53, 54, 55]
-#     [TAG, TCG, TGG, TTG],   =>  [56, 57, 58, 59]
-#     [TAT, TCT, TGT, TTT]    =>  [60, 61, 62, 63]
-# ]
 
 class sequence:
-    def __init__(self):
-        self.codons = [ # List of all 64 possible DNA codon combinations in their corresponding index locations for codon_count
-            "AAA", "ACA", "AGA", "ATA", "AAC", "ACC", "AGC", "ATC", "AAG", "ACG", "AGG", "ATG", "AAT", "ACT", "AGT", "ATT",
-            "CAA", "CCA", "CGA", "CTA", "CAC", "CCC", "CGC", "CTC", "CAG", "CCG", "CGG", "CTG", "CAT", "CCT", "CGT", "CTT",
-            "GAA", "GCA", "GGA", "GTA", "GAC", "GCC", "GGC", "GTC", "GAG", "GCG", "GGG", "GTG", "GAT", "GCT", "GGT", "GTT",
-            "TAA", "TCA", "TGA", "TTA", "TAC", "TCC", "TGC", "TTC", "TAG", "TCG", "TGG", "TTG", "TAT", "TCT", "TGT", "TTT"
-        ]
-        self.amino = [  # List of amino acids
-            "Leu", "Val", "Thr", "Ala", "Ser", "Gly", "Lys", "Asn", "Ile", "Asp",
-            "Phe", "Glu", "Tyr", "Pro", "Gln", "Arg", "Cys", "Met", "His", "Trp", "Stp"
-        ]
-        self.codon_count = [0] * 64   # Tracks the number of codons entered
-        # Matrix used to map codon inputs to index locations in the lists codon_count and codons
-        self.matrix = [
-            [[0,  1,  2,  3], [4,  5,  6,  7], [8,  9,  10, 11], [12, 13, 14, 15]],     # Matrix A
-            [[16, 17, 18, 19], [20, 21, 22, 23], [24, 25, 26, 27], [28, 29, 30, 31]],   # Matrix C
-            [[32, 33, 34, 35], [36, 37, 38, 39], [40, 41, 42, 43], [44, 45, 46, 47]],   # Matrix G
-            [[48, 49, 50, 51], [52, 53, 54, 55], [56, 57, 58, 59], [60, 61, 62, 63]]    # Matrix T
-        ]
-        # Amino acid lookup table used to map codons to amino acids (self.codons => self.amino)
-        self.amatrix = [
-            6, 2, 15, 8, 7, 2, 4, 8, 6, 2, 15, 17, 7, 2, 4, 8, 14, 13, 15, 0, 18, 13, 15, 0, 14, 13, 15, 0, 18, 13, 15, 0,
-            11, 3, 5, 1, 9, 3, 5, 1, 11, 3, 5, 1, 9, 3, 5, 1, 20, 4, 20, 0, 12, 4, 16, 10, 20, 4, 19, 0, 12, 4, 16, 10
-        ]
+    def __init__(self, seq = "", header = ""):
+        # Codon dictionary, track codon count
+        self.codon = {
+            "AAA":	{"amino_acid": "Lys", "count": 0}, "AAC":	{"amino_acid": "Asn", "count": 0}, "AAG":	{"amino_acid": "Lys", "count": 0}, 
+            "AAT":	{"amino_acid": "Asn", "count": 0}, "ACA":	{"amino_acid": "Thr", "count": 0}, "ACC":	{"amino_acid": "Thr", "count": 0}, 
+            "ACG":	{"amino_acid": "Thr", "count": 0}, "ACT":	{"amino_acid": "Thr", "count": 0}, "AGA":	{"amino_acid": "Arg", "count": 0}, 
+            "AGC":	{"amino_acid": "Ser", "count": 0}, "AGG":	{"amino_acid": "Arg", "count": 0}, "AGT":	{"amino_acid": "Ser", "count": 0}, 
+            "ATA":	{"amino_acid": "Ile", "count": 0}, "ATC":	{"amino_acid": "Ile", "count": 0}, "ATG":	{"amino_acid": "Met", "count": 0}, 
+            "ATT":	{"amino_acid": "Ile", "count": 0}, "CAA":	{"amino_acid": "Gln", "count": 0}, "CAC":	{"amino_acid": "His", "count": 0}, 
+            "CAG":	{"amino_acid": "Gln", "count": 0}, "CAT":	{"amino_acid": "His", "count": 0}, "CCA":	{"amino_acid": "Pro", "count": 0}, 
+            "CCC":	{"amino_acid": "Pro", "count": 0}, "CCG":	{"amino_acid": "Pro", "count": 0}, "CCT":	{"amino_acid": "Pro", "count": 0},
+            "CGA":	{"amino_acid": "Arg", "count": 0}, "CGC":	{"amino_acid": "Arg", "count": 0}, "CGG":	{"amino_acid": "Arg", "count": 0}, 
+            "CGT":	{"amino_acid": "Arg", "count": 0}, "CTA":	{"amino_acid": "Leu", "count": 0}, "CTC":	{"amino_acid": "Leu", "count": 0}, 
+            "CTG":	{"amino_acid": "Leu", "count": 0}, "CTT":	{"amino_acid": "Leu", "count": 0}, "GAA":	{"amino_acid": "Glu", "count": 0}, 
+            "GAC":	{"amino_acid": "Asp", "count": 0}, "GAG":	{"amino_acid": "Glu", "count": 0}, "GAT":	{"amino_acid": "Asp", "count": 0}, 
+            "GCA":	{"amino_acid": "Ala", "count": 0}, "GCC":	{"amino_acid": "Ala", "count": 0}, "GCG":	{"amino_acid": "Ala", "count": 0},	
+            "GCT":	{"amino_acid": "Ala", "count": 0}, "GGA":	{"amino_acid": "Gly", "count": 0}, "GGC":	{"amino_acid": "Gly", "count": 0}, 
+            "GGG":	{"amino_acid": "Gly", "count": 0}, "GGT":	{"amino_acid": "Gly", "count": 0}, "GTA":	{"amino_acid": "Val", "count": 0}, 
+            "GTC":	{"amino_acid": "Val", "count": 0}, "GTG":	{"amino_acid": "Val", "count": 0}, "GTT":	{"amino_acid": "Val", "count": 0},
+            "TAA":	{"amino_acid": "Stp", "count": 0}, "TAC":	{"amino_acid": "Tyr", "count": 0}, "TAG":	{"amino_acid": "Stp", "count": 0}, 
+            "TAT":	{"amino_acid": "Tyr", "count": 0}, "TCA":	{"amino_acid": "Ser", "count": 0}, "TCC":	{"amino_acid": "Ser", "count": 0}, 
+            "TCG":	{"amino_acid": "Ser", "count": 0}, "TCT":	{"amino_acid": "Ser", "count": 0}, "TGA":	{"amino_acid": "Stp", "count": 0}, 
+            "TGC":	{"amino_acid": "Cys", "count": 0}, "TGG":	{"amino_acid": "Trp", "count": 0}, "TGT":	{"amino_acid": "Cys", "count": 0}, 
+            "TTA":	{"amino_acid": "Leu", "count": 0}, "TTC":	{"amino_acid": "Phe", "count": 0}, "TTG":	{"amino_acid": "Leu", "count": 0}, 
+            "TTT":	{"amino_acid": "Phe", "count": 0}
+        }
+        # Amino acid dictionary, tracks amino acid count
+        self.amino_acid = { 
+            "Leu": {"letter": "L", "count": 0}, "Val": {"letter": "V", "count": 0}, "Thr": {"letter": "T", "count": 0}, "Ala": {"letter": "A", "count": 0}, 
+            "Ser": {"letter": "S", "count": 0}, "Gly": {"letter": "G", "count": 0}, "Lys": {"letter": "K", "count": 0}, "Asn": {"letter": "N", "count": 0}, 
+            "Ile": {"letter": "I", "count": 0}, "Asp": {"letter": "D", "count": 0}, "Phe": {"letter": "F", "count": 0}, "Glu": {"letter": "E", "count": 0}, 
+            "Tyr": {"letter": "Y", "count": 0}, "Pro": {"letter": "P", "count": 0}, "Gln": {"letter": "Q", "count": 0}, "Arg": {"letter": "R", "count": 0}, 
+            "Cys": {"letter": "C", "count": 0}, "Met": {"letter": "M", "count": 0}, "His": {"letter": "H", "count": 0}, "Trp": {"letter": "W", "count": 0}, 
+            "Stp": {"letter": "O", "count": 0}
+        }
 
-        self.sequence = ""          # Character string of bases
-        self.header = ""            ## Character string for header info
+        self.sequence = seq         # Character string of bases
+        self.header = header        # Character string for header info
 
-        
     # ----------------------------------------------------------------------------------------------------------------------
-    # Assigns the base character with an matrix/row/column value for reference in the matrix or returns -1 if invalid
-    def char_to_index(self, base):
-        if base == 'A':
-            return 0
-        elif base == 'C':
-            return 1
-        elif base == 'G':
-            return 2
-        elif base == 'T':
-            return 3
-        else:
-            return -1
+    # Converts a Codon sequence to an amino acid sequence and returns it
+    def codon_to_amino(self):
+        amino_str = ""
+
+        start = self.sequence.find("ATG")                                                               # Find index of first start codon
+        if(start < 0):                                                                                  # No start codon found, start at beginning
+            start = 0
+
+        indices = [self.sequence.find("TAA"), self.sequence.find("TAG"), self.sequence.find("TGA")]     # Find indices of stop codons
+        indices = [n for n in indices if n >= 0 and n > start+3]                                        # Get non-negative indicies
+
+        if(indices == []):                                                                              # No stop codon found, use sequence length
+            stop = len(self.sequence)
+
+        stop = min(indices) + 3                                                                         # Find index of first end codon
+
+        print(self.sequence)
+        print("I: ", start, " J: ", stop)
+        for i in range(start, stop, 3):                                                                 # Convert selected codons to amino acid sequences
+            codon = self.sequence[i:(i+3)]
+            amino = self.codon[codon]["amino_acid"]
+            amino_str += self.amino_acid[amino]["letter"]
+
+        return amino_str
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Parses the codon string into individual characters, maps them to the matching codon, and incriments the count of the codon
     def add_codon(self, codon):
 
-        if (len(codon) != 3):                               # String can only have 3 bases
+        if (len(codon) != 3):                                               # String can only have 3 bases
             print("ERROR: NOT A CODON!")
             return
-        
-        matrix = self.char_to_index(codon[0])
-        row = self.char_to_index(codon[1])
-        column = self.char_to_index(codon[2])
 
-        if (matrix == -1 or row == -1 or column == -1):     # Incorrect char entered: A, C, G, T only
-            print("ERROR: INVALID INPUT!")
-            return
-
-        index = self.matrix[matrix][column][row]            # Retreives mapped index in the matrix 
         # print("Index: ", index)
-        self.codon_count[index] += 1                        # Incriments corresponding codon count
+        self.codon[codon]["count"] += 1                                     # Incriments the codon count
+        self.amino_acid[self.codon[codon]["amino_acid"]]["count"] += 1      # Add codon to amino acid
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Adds codon or sequence strings to self.sequence
@@ -123,40 +103,36 @@ class sequence:
             self.add_codon(codon)       # Add codon to count
 
     # ----------------------------------------------------------------------------------------------------------------------
-    # Sums the totals of all codons and returns a list of codon and count pairs
+    # Returns the totals of all codons as a list [codon, count]
     def get_codon_count(self):
         data = []
         
-        for i in range(64):
-            subdata = [self.codons[i], self.codon_count[i]]
-            data.append(subdata)
+        for i in self.codon.keys():
+            data.append([i, self.codon[i]["count"]])        # [codon, count]
     
         return data
 
     # ----------------------------------------------------------------------------------------------------------------------
-    # Sums total of all amino acids and returns a list of amino acid and count pairs
+    # Returns the totals of all amino acids as a list [codon, count]
     def get_amino_count(self):
-        amino_count = []
+        amino_acid = []
 
-        for i in range(len(self.amino)):            # Populating amino_count with zeros
-            amino_count.append([self.amino[i], 0])
+        for key in self.amino_acid.keys():
+            amino_acid.append([key, self.amino_acid[key]["count"]])
 
-        for x in range(len(self.codon_count)):      # Adding up the amino acids
-            count = self.codon_count[x]             # Number of codons counted
-            index = self.amatrix[x]                 # Index of where to add the count
-
-            amino_count[index][1] += count          # Updating amino acid count
-
-        return amino_count
+        return amino_acid
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Testing if elements are being populated properly
     def debugging(self):
-        for i in range(64):
-            print(self.codons[i], self.codon_count[i], sep=" : ")
+        for i in self.codon:
+            print(self.codon[i])
+
+        for i in self.amino_acid:
+            print(self.amino_acid[i])
 
 # ==========================================================================================================================
-if __name__ == "__main__":
+def main():
 
     test = sequence()
     codons = [ # list of all 64 possible DNA codon combinations
@@ -168,8 +144,13 @@ if __name__ == "__main__":
 
     for x in codons:
         test.add_codon(x)
+        #test.add_to_sequence(x)
     
-    # test.add_sequence("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    test.debugging()
-    # print(test.get_amino_count())
+    t = sequence()
+    t.add_to_sequence("AATGAAAAAAAAAAAATAAA")
+    # print(t.get_amino_count())
+    print(t.codon_to_amino())
+
+if __name__ == "__main__":
+    main()
     

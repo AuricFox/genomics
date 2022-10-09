@@ -2,22 +2,17 @@
 # Homework 1, Parsing fna file and making a csv file
 import csv
 import sys
-import sequence as map
+import sequence as seq
+import alignment as alg
 
-'''
-23
->SARS-Cov-2_reference_genome_spike_protein
-__C_GATT_TCGGG...
-  |  ||| |xx||
-AGCA_ATTCTTCGG...
->Pfizer_mRNA_vaccine
-'''
+
 # =======================================================================================
 # Wrights the sequence alignment data to a text file
-def sequence_to_tfile(filename, data):
+def make_txt(filename, data):
 
     with open(filename, 'w', newline='') as file:
-        file.writelines(data)
+        for x in data:
+            file.write(x + '\n')
 
 # =======================================================================================
 # Wrights the codon and amino acid data to a csv file
@@ -27,19 +22,21 @@ def make_csv(filename, data, flag):
     with open(filename, 'w', newline='') as file:
         cfile = csv.writer(file)
 
-        if (flag == 'c'):
+        if (flag == 'codon'):
             cfile.writerow(['Codon', 'Count'])          # Wrights codon header to csv
-        elif (flag == 'a'):
+        elif (flag == 'amino_acid'):
             cfile.writerow(['Amino Acid', 'Count'])     # Wrights amino acid header to csv
+        else:
+            print("ERROR: INVALID TYPE, codon/amino_acid ONLY!")
+            return
 
         cfile.writerows(data)                           # Wrights codon or amino acid data to csv
 
 # =======================================================================================
 # Retreives data from the fna file and parses it
-def get_data(filename, flag):
+def get_data(filename, header=False):
     file = open(filename, 'r')
-    genes = map.sequence()
-    header = ""
+    seq_data = seq.sequence()
     
     for line in file:                                   # Read each line in file
         line = line.strip()                             # Strip newline characters
@@ -47,71 +44,124 @@ def get_data(filename, flag):
         if(line == ""):                                 # Empty line at the top of the file
             # print("Not text")
             continue
-        elif(line[0] == ">" and flag == "-l"):          # Header information
-            header = line
-        elif(line[0] == ">" and flag != "-l"):          # Header information
+        elif(line[0] == ">" and header == True):        # Enter header information
+            seq_data.add_header(line)
+        elif(line[0] == ">" and header == False):       # No header information
             continue
-        elif(flag == "-a" or flag == "-c"):
-            genes.add_to_count(line)                    # Add sequence to genes
         else:                                           # Genetic sequence containing desired codons
-            # print("Codons")
-            genes.add_to_sequence(line)                 # Add sequence to genes
+            seq_data.add_to_sequence(line)              # Add sequence to genes
     
-    #print(genes.get_codon_count())
     file.close()
-    return genes                        # Return genes object
+    return seq_data
 
 # =======================================================================================
 
-if __name__ == "__main__":
-
-    if (len(sys.argv) == 4 and sys.argv[1] == "-c"):            # Getting codon detail
-        fna_file = sys.argv[1]                                  # Extracting fna file name from arguments
-        csv_file = sys.argv[2]                                  # Extracting csv file name from arguments
+def main():
+    # ----------------------------------------------------------------------------------------------------------
+    # Processes codon data from fna file and writes codons with their respective counts to a csv file
+    # python .\main.py -c input_file output_file
+    if (len(sys.argv) == 4 and sys.argv[1] == "-c"):
+        fna_file = sys.argv[2]                                  # Extracting fna file name from arguments
+        csv_file = sys.argv[3]                                  # Extracting csv file name from arguments
 
         genes = get_data(fna_file)                              # Processing genome data from fna file
-        make_csv(csv_file, genes.get_codon_count(), 'c')        # Writing genome data to csv file
+        make_csv(csv_file, genes.get_codon_count(), 'codon')    # Writing genome data to csv file
     # ----------------------------------------------------------------------------------------------------------
-
-    elif(len(sys.argv) == 4 and sys.argv[1] == "-a"):           # Getting amino acid details
-        fna_file = sys.argv[1]
-        csv_file = sys.argv[2]
+    # Processes codon data from fna file and writes amino acids with their respective counts to a csv file
+    # python .\main.py -a input_file output_file
+    elif(len(sys.argv) == 4 and sys.argv[1] == "-a"):                       # Getting amino acid details
+        fna_file = sys.argv[2]
+        csv_file = sys.argv[3]
 
         amino_acids = get_data(fna_file)
-        make_csv(csv_file, amino_acids.get_amino_count(), 'a')  # Writing amino acid data to csv file
+        make_csv(csv_file, amino_acids.get_amino_count(), 'amino_acid')     # Writing amino acid data to csv file
     # ----------------------------------------------------------------------------------------------------------
+    # Processes two sequences for alignment and prints the results to a text file (w/ default start and end penalties)
+    # python .\main.py -l reference_fna sequence_fna output_file
+    elif(len(sys.argv) == 5 and sys.argv[1] == "-l"):
+        refernce_fna = sys.argv[2]
+        sequence_fna = sys.argv[3]
+        txt_file = sys.argv[4]
 
-    elif(len(sys.argv) == 5 and sys.argv[1] == "-l"):           # Get sequence alignment
-        # python program [flag] fna1 fna2 output
-        fna_file = sys.argv[1]
-        csv_file = sys.argv[2]
+        ref_seq = get_data(refernce_fna, True)                      # Setting reference sequence
+        align_seq = get_data(sequence_fna, True)                    # Setting sequence 1
+        a = alg.alignment(ref_seq.sequence, align_seq.sequence)     # Setting alignment of two sequences
+        a_seq = a.get_alignment()                                   # Getting alignment (ref_seq, vis, align_seq, score)
 
-        amino_acids = get_data(fna_file)
-        make_csv(csv_file, amino_acids.get_amino_count(), 'a')  # Writing amino acid data to csv file
+        data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
+        make_txt(txt_file, data)
+    
     # ----------------------------------------------------------------------------------------------------------
+    # Processes two amino acid sequences for alignment and prints the results to a text file (w/ default start and end penalties)
+    # python .\main.py -la reference_fna sequence_fna output_file
+    elif(len(sys.argv) == 5 and sys.argv[1] == "-la"):
+        refernce_fna = sys.argv[2]
+        sequence_fna = sys.argv[3]
+        txt_file = sys.argv[4]
 
-    elif(len(sys.argv) == 8 and sys.argv[1] == "-l"):           # Get sequence alignment
-        # python program [flag] fna1 fna2 [flage] [gap penalty] [mismatch penalty] output
+        ref_seq = get_data(refernce_fna, True)                                      # Setting reference sequence
+        align_seq = get_data(sequence_fna, True)                                    # Setting sequence 1
+        a = alg.alignment(ref_seq.codon_to_amino(), align_seq.codon_to_amino())     # Setting alignment of two sequences
+        a_seq = a.get_alignment()                                                   # Getting alignment (ref_seq, vis, align_seq, score)
 
-        fna_file = sys.argv[1]
-        csv_file = sys.argv[2]
+        data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
+        make_txt(txt_file, data)
 
-        amino_acids = get_data(fna_file)
-        make_csv(csv_file, amino_acids.get_amino_count(), 'a')  # Writing amino acid data to csv file
+    # ----------------------------------------------------------------------------------------------------------
+    # Processes two sequences for alignment with penalties and prints the results to a text file
+    # python program -lo fna1 fna2 [start/end penalties] [gap penalty] [mismatch penalty] output
+    elif(len(sys.argv) == 8 and sys.argv[1] == "-lo"):
+        refernce_fna = sys.argv[2]
+        sequence_fna = sys.argv[3]
+        gap_pen = int(sys.argv[5])
+        match_pen = int(sys.argv[6])
+        txt_file = sys.argv[7]
+
+        if(sys.argv[4] == "t"): ign = True
+        elif(sys.argv[4] == "f"): ign = False
+        else:
+            print("ERROR: INVALID INPUT, t/f ONLY!")
+            return
+
+        ref_seq = get_data(refernce_fna, True)                                              # Setting reference sequence
+        align_seq = get_data(sequence_fna, True)                                            # Setting sequence 1
+        a = alg.alignment(ref_seq.sequence, align_seq.sequence, gap_pen, match_pen, ign)    # Setting alignment of two sequences w/penalties
+        a_seq = a.get_alignment()                                                           # Getting alignment (ref_seq, vis, align_seq, score)
+
+        data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
+        make_txt(txt_file, data)
+    
     # ----------------------------------------------------------------------------------------------------------
     # Run test prints but don't make csv or text files
-    elif(len(sys.argv) == 5 and sys.argv[1] == "-t"):           # Get sequence alignment
-        # python program [flag] fna1 fna2 output
-        fna_file = sys.argv[1]
-        csv_file = sys.argv[2]
+    # python program -t fna1 fna2 [start/end penalties] [gap penalty] [mismatch penalty]
+    elif(len(sys.argv) == 7 and sys.argv[1] == "-t"):
+        refernce_fna = sys.argv[2]
+        sequence_fna = sys.argv[3]
+        gap_pen = int(sys.argv[5])
+        match_pen = int(sys.argv[6])
 
-        amino_acids = get_data(fna_file)
-        
-    # ----------------------------------------------------------------------------------------------------------
+        if(sys.argv[4] == "t"): ign = True
+        elif(sys.argv[4] == "f"): ign = False
+        else:
+            print("ERROR: INVALID INPUT, t/f ONLY!")
+            return
+
+        ref_seq = get_data(refernce_fna, True)                                              # Setting reference sequence
+        align_seq = get_data(sequence_fna, True)                                            # Setting sequence 1
+        a = alg.alignment(ref_seq.sequence, align_seq.sequence, gap_pen, match_pen, ign)    # Setting alignment of two sequences w/penalties
+        a_seq = a.get_alignment()                                                           # Getting alignment (ref_seq, vis, align_seq, score)
+
+        data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
+
+        for x in data:
+            print(x)
+
+        # ----------------------------------------------------------------------------------------------------------
 
     else:
         print("ERROR: INVALID ARGUMENMTS!")
 
-
-    
+# ================================================================================================================================================
+if __name__ == "__main__":
+    main()
     

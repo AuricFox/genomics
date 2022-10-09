@@ -28,6 +28,40 @@ amino = [
     "Leu", "Val", "Thr", "Ala", "Ser", "Gly", "Lys", "Asn", "Ile", "Asp",
     "Phe", "Glu", "Tyr", "Pro", "Gln", "Arg", "Cys", "Met", "His", "Trp", "Stp"
 ]
+# Codon dictionary 
+codon_dict = {
+    "AAA":	{"amino_acid": "Lys", "count": 0}, "AAC":	{"amino_acid": "Asn", "count": 0}, "AAG":	{"amino_acid": "Lys", "count": 0}, 
+    "AAT":	{"amino_acid": "Asn", "count": 0}, "ACA":	{"amino_acid": "Thr", "count": 0}, "ACC":	{"amino_acid": "Thr", "count": 0}, 
+    "ACG":	{"amino_acid": "Thr", "count": 0}, "ACT":	{"amino_acid": "Thr", "count": 0}, "AGA":	{"amino_acid": "Arg", "count": 0}, 
+    "AGC":	{"amino_acid": "Ser", "count": 0}, "AGG":	{"amino_acid": "Arg", "count": 0}, "AGT":	{"amino_acid": "Ser", "count": 0}, 
+    "ATA":	{"amino_acid": "Ile", "count": 0}, "ATC":	{"amino_acid": "Ile", "count": 0}, "ATG":	{"amino_acid": "Met", "count": 0}, 
+    "ATT":	{"amino_acid": "Ile", "count": 0}, "CAA":	{"amino_acid": "Gln", "count": 0}, "CAC":	{"amino_acid": "His", "count": 0}, 
+    "CAG":	{"amino_acid": "Gln", "count": 0}, "CAT":	{"amino_acid": "His", "count": 0}, "CCA":	{"amino_acid": "Pro", "count": 0}, 
+    "CCC":	{"amino_acid": "Pro", "count": 0}, "CCG":	{"amino_acid": "Pro", "count": 0}, "CCT":	{"amino_acid": "Pro", "count": 0},
+    "CGA":	{"amino_acid": "Arg", "count": 0}, "CGC":	{"amino_acid": "Arg", "count": 0}, "CGG":	{"amino_acid": "Arg", "count": 0}, 
+    "CGT":	{"amino_acid": "Arg", "count": 0}, "CTA":	{"amino_acid": "Leu", "count": 0}, "CTC":	{"amino_acid": "Leu", "count": 0}, 
+    "CTG":	{"amino_acid": "Leu", "count": 0}, "CTT":	{"amino_acid": "Leu", "count": 0}, "GAA":	{"amino_acid": "Glu", "count": 0}, 
+    "GAC":	{"amino_acid": "Asp", "count": 0}, "GAG":	{"amino_acid": "Glu", "count": 0}, "GAT":	{"amino_acid": "Asp", "count": 0}, 
+    "GCA":	{"amino_acid": "Ala", "count": 0}, "GCC":	{"amino_acid": "Ala", "count": 0}, "GCG":	{"amino_acid": "Ala", "count": 0},	
+    "GCT":	{"amino_acid": "Ala", "count": 0}, "GGA":	{"amino_acid": "Gly", "count": 0}, "GGC":	{"amino_acid": "Gly", "count": 0}, 
+    "GGG":	{"amino_acid": "Gly", "count": 0}, "GGT":	{"amino_acid": "Gly", "count": 0}, "GTA":	{"amino_acid": "Val", "count": 0}, 
+    "GTC":	{"amino_acid": "Val", "count": 0}, "GTG":	{"amino_acid": "Val", "count": 0}, "GTT":	{"amino_acid": "Val", "count": 0},
+    "TAA":	{"amino_acid": "Stp", "count": 0}, "TAC":	{"amino_acid": "Tyr", "count": 0}, "TAG":	{"amino_acid": "Stp", "count": 0}, 
+    "TAT":	{"amino_acid": "Tyr", "count": 0}, "TCA":	{"amino_acid": "Ser", "count": 0}, "TCC":	{"amino_acid": "Ser", "count": 0}, 
+    "TCG":	{"amino_acid": "Ser", "count": 0}, "TCT":	{"amino_acid": "Ser", "count": 0}, "TGA":	{"amino_acid": "Stp", "count": 0}, 
+    "TGC":	{"amino_acid": "Cys", "count": 0}, "TGG":	{"amino_acid": "Trp", "count": 0}, "TGT":	{"amino_acid": "Cys", "count": 0}, 
+    "TTA":	{"amino_acid": "Leu", "count": 0}, "TTC":	{"amino_acid": "Phe", "count": 0}, "TTG":	{"amino_acid": "Leu", "count": 0}, 
+    "TTT":	{"amino_acid": "Phe", "count": 0}
+}
+# Amino dictionary
+amino_dict = { 
+    "Leu": {"letter": "L", "count": 0}, "Val": {"letter": "V", "count": 0}, "Thr": {"letter": "T", "count": 0}, "Ala": {"letter": "A", "count": 0}, 
+    "Ser": {"letter": "S", "count": 0}, "Gly": {"letter": "G", "count": 0}, "Lys": {"letter": "K", "count": 0}, "Asn": {"letter": "N", "count": 0}, 
+    "Ile": {"letter": "I", "count": 0}, "Asp": {"letter": "D", "count": 0}, "Phe": {"letter": "F", "count": 0}, "Glu": {"letter": "E", "count": 0}, 
+    "Tyr": {"letter": "Y", "count": 0}, "Pro": {"letter": "P", "count": 0}, "Gln": {"letter": "Q", "count": 0}, "Arg": {"letter": "R", "count": 0}, 
+    "Cys": {"letter": "C", "count": 0}, "Met": {"letter": "M", "count": 0}, "His": {"letter": "H", "count": 0}, "Trp": {"letter": "W", "count": 0}, 
+    "Stp": {"letter": "O", "count": 0}
+}
 
 # Matches the base character with an index in the matrix or returns -1
 def char_to_index(base):

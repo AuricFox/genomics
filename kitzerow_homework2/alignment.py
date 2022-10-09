@@ -1,17 +1,19 @@
 import numpy as np
 
 '''
-REFERENCE SEQUENCE
-  | A | C | G | T  |A S
--------------------|L E
-A |   |   |   |    |I Q
--------------------|G U
-C |   |   |   |    |N E
--------------------|M N
-G |   |   |   |    |E C
--------------------|N E
-T |   |   |   |    |T
---------------------
+   REFERENCE SEQUENCE
+  |   | A | C | G | T |
+----------------------|
+  |   |   |   |   |   |A S
+----------------------|L E
+A |   |   |   |   |   |I Q
+----------------------|G U
+C |   |   |   |   |   |N E
+----------------------|M N
+G |   |   |   |   |   |E C
+----------------------|N E
+T |   |   |   |   |   |T
+-----------------------
 '''
 
 class alignment:
@@ -75,18 +77,15 @@ class alignment:
     # ----------------------------------------------------------------------------------------------------------------------
     # Populates neighbor and scoring matrices with corresponding placement scores and neighbors
     def align_sequence(self, col, row):
-        # print("M: ", col," N: ", row)
+        #print("Col: ", col," Row: ", row)
 
-        k = 0
-        if(self.ref[col-1] == self.seq[row-1]):                         # Check for matches
-            k = 1
-        else:                                                           # No match, add penalty
-            k = self.match_pen
-
-
-        left = self.s[row][col-1] + self.gap_pen                        # Score from right neighbor
-        corner = self.s[row-1][col-1] + k                               # Score from corner neighbor
+        left = self.s[row][col-1] + self.gap_pen                        # Score from right neighbor                             
         right = self.s[row-1][col] + self.gap_pen                       # Score from right neighbor
+
+        if(self.ref[col-1] == self.seq[row-1]):                         # Check for matches
+            corner = self.s[row-1][col-1] + 1                           # Score from corner neighbor
+        else:                                                           # No match, add penalty
+            corner = self.s[row-1][col-1] + self.match_pen              # Score from corner neighbor
 
         score = max(left, corner, right)                                # Take the best score
 
@@ -109,8 +108,12 @@ class alignment:
         self.vis = ""
         self.score = 0
 
-        if(self.ign): self.get_local_alignment()            # Get alignment that ignores start/end gaps
-        else: self.get_global_alignment()                   # Get alignment the tracks start/end gaps
+        if(self.ign): 
+            self.get_local_alignment()               # Get alignment that ignores start/end gaps
+        else: 
+            self.get_global_alignment()              # Get alignment the tracks start/end gaps
+
+        return (self.ref_align, self.vis, self.seq_align, self.score)
     
     # ----------------------------------------------------------------------------------------------------------------------
     # Creates alignment strings for sequence reference, sequence 1, and alignment visualization. Also computes total alignment score.
@@ -132,8 +135,6 @@ class alignment:
             row = pos[0]
             col = pos[1]
             pos = self.n[row][col]
-        
-        return (self.ref_align, self.vis, self.seq_align, self.score)
 
     # ----------------------------------------------------------------------------------------------------------------------
     # # Creates alignment strings for sequence reference, sequence 1, and alignment visualization while ingoring start/end gaps
@@ -179,8 +180,6 @@ class alignment:
             row = pos[0]
             col = pos[1]
             pos = self.n[row][col]
-
-
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Appends to alignment strings (self.ref_align, self.seq_align, and self.vis)
@@ -233,7 +232,7 @@ class alignment:
 
 # ==========================================================================================================================
 # Testing
-if __name__ == "__main__":
+def main():
     ref = "ATGTTTGTTTTTCTTGTTTTATTGCCACTAGTCTCTAGTCAGTGTGTTAATCTTACAACCAGA"
     seq = "AACCCGCCACCATGTTCGTGTTCCTGGTGCTGCTGCCTCTGGTGTCCAGCCAGTGTGTGAACC"
 
@@ -248,3 +247,6 @@ if __name__ == "__main__":
     #b.get_alignment()
     b.print_alignment()
     #b.print_matrices()
+
+if __name__ == "__main__":
+    main()
