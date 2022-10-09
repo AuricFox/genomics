@@ -62,8 +62,7 @@ class sequence:
 
         stop = min(indices) + 3                                                                         # Find index of first end codon
 
-        print(self.sequence)
-        print("I: ", start, " J: ", stop)
+        #print("I: ", start, " J: ", stop)
         for i in range(start, stop, 3):                                                                 # Convert selected codons to amino acid sequences
             codon = self.sequence[i:(i+3)]
             amino = self.codon[codon]["amino_acid"]

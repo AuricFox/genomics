@@ -1,0 +1,6 @@
+9
+>SARS-Cov-2_reference_genome_spike_protein
+MFVFLVLLPLV_
+||||||||||| 
+MFVFLVLLPLVS
+>Moderna_mRNA_vaccine

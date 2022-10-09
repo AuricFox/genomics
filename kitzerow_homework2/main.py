@@ -5,6 +5,17 @@ import sys
 import sequence as seq
 import alignment as alg
 
+# =======================================================================================
+# Wrights the amino acid sequence data to a aa file
+def make_aa(filename, data):
+
+    file = filename.split("/")[-1]                  # ./fna_files/file.fna -> file.fna
+    file = file.split(".")[0]                       # file.fna -> file
+    file = "./output_files/" + file + ".aa"         # file -> ./output_files/file.aa
+
+    with open(file, 'w', newline='') as f:
+        for x in data:
+            f.write(x + '\n')
 
 # =======================================================================================
 # Wrights the sequence alignment data to a text file
@@ -88,6 +99,7 @@ def main():
         a = alg.alignment(ref_seq.sequence, align_seq.sequence)     # Setting alignment of two sequences
         a_seq = a.get_alignment()                                   # Getting alignment (ref_seq, vis, align_seq, score)
 
+        print("Match: ",a.match_count, " Mismatch: ",a.mismatch_count, " Gaps: ", a.gap_count, " E/S Gaps: ", a.es_gap_count)
         data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
         make_txt(txt_file, data)
     
@@ -101,9 +113,14 @@ def main():
 
         ref_seq = get_data(refernce_fna, True)                                      # Setting reference sequence
         align_seq = get_data(sequence_fna, True)                                    # Setting sequence 1
+
+        make_aa(refernce_fna, [ref_seq.header, ref_seq.codon_to_amino()])           # Creating aa file for reference sequence
+        make_aa(sequence_fna, [align_seq.header, align_seq.codon_to_amino()])       # Creating aa file for sequence 1
+
         a = alg.alignment(ref_seq.codon_to_amino(), align_seq.codon_to_amino())     # Setting alignment of two sequences
         a_seq = a.get_alignment()                                                   # Getting alignment (ref_seq, vis, align_seq, score)
 
+        print("Match: ",a.match_count, " Mismatch: ",a.mismatch_count, " Gaps: ", a.gap_count, " E/S Gaps: ", a.es_gap_count)
         data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
         make_txt(txt_file, data)
 
@@ -128,6 +145,7 @@ def main():
         a = alg.alignment(ref_seq.sequence, align_seq.sequence, gap_pen, match_pen, ign)    # Setting alignment of two sequences w/penalties
         a_seq = a.get_alignment()                                                           # Getting alignment (ref_seq, vis, align_seq, score)
 
+        print("Match: ",a.match_count, " Mismatch: ",a.mismatch_count, " Gaps: ", a.gap_count, " E/S Gaps: ", a.es_gap_count)
         data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
         make_txt(txt_file, data)
     
@@ -151,6 +169,7 @@ def main():
         a = alg.alignment(ref_seq.sequence, align_seq.sequence, gap_pen, match_pen, ign)    # Setting alignment of two sequences w/penalties
         a_seq = a.get_alignment()                                                           # Getting alignment (ref_seq, vis, align_seq, score)
 
+        print("Match: ",a.match_count, " Mismatch: ",a.mismatch_count, " Gaps: ", a.gap_count, " E/S Gaps: ", a.es_gap_count)
         data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
 
         for x in data:
