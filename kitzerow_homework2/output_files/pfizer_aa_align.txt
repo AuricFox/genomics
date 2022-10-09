@@ -1,0 +1,6 @@
+-1
+>SARS-Cov-2_reference_genome_spike_protein
+MFVFLVLLPL_____V_
+||||||||||     | 
+MFVFLVLLPLVSSQCVN
+>Pfizer_mRNA_vaccine

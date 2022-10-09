@@ -27,16 +27,16 @@ python .\main.py -l ./fna_files/sars_spike_protein.fna ./fna_files/pfizer_mrna.f
 
 Alingment of amino acid sequences with default penalties:
 ```
-python .\main.py -la reference_fna sequence_fna output_file
-python .\main.py -la ./fna_files/sars_spike_protein.fna ./fna_files/moderna_mrna.fna ./output_files/moderna_aa_align.txt
-python .\main.py -la ./fna_files/sars_spike_protein.fna ./fna_files/pfizer_mrna.fna ./output_files/pfizer_aa_align.txt
+python .\main.py -la fna1 fna2 [start/end penalties] [gap penalty] [mismatch penalty] output
+python .\main.py -la ./fna_files/sars_spike_protein.fna ./fna_files/moderna_mrna.fna f -2 -1 ./output_files/moderna_aa_align.txt
+python .\main.py -la ./fna_files/sars_spike_protein.fna ./fna_files/pfizer_mrna.fna f -2 -1 ./output_files/pfizer_aa_align.txt
 ```
 
 Aligning sequences with defualt penalties at start and end bases:
 ```
 python .\main.py -lo fna1 fna2 [start/end penalties] [gap penalty] [mismatch penalty] output
-python .\main.py -lo ./fna_files/sars_spike_protein.fna ./fna_files/moderna_mrna.fna t -2 -1 ./output_files/moderna_align.txt
-python .\main.py -lo ./fna_files/sars_spike_protein.fna ./fna_files/pfizer_mrna.fna f -2 -1 ./output_files/pfizer_align.txt
+python .\main.py -lo ./fna_files/sars_spike_protein.fna ./fna_files/moderna_mrna.fna t -2 -1 ./output_files/moderna_es_align.txt
+python .\main.py -lo ./fna_files/sars_spike_protein.fna ./fna_files/pfizer_mrna.fna t -2 -1 ./output_files/pfizer_es_align.txt
 ```
 
 Test alignments without writing to files:

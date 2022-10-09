@@ -104,21 +104,29 @@ def main():
         make_txt(txt_file, data)
     
     # ----------------------------------------------------------------------------------------------------------
-    # Processes two amino acid sequences for alignment and prints the results to a text file (w/ default start and end penalties)
-    # python .\main.py -la reference_fna sequence_fna output_file
-    elif(len(sys.argv) == 5 and sys.argv[1] == "-la"):
+    # Processes two amino acid sequences for alignment and prints the results to a text file and aa file
+    # python program -la fna1 fna2 [start/end penalties] [gap penalty] [mismatch penalty] output
+    elif(len(sys.argv) == 8 and sys.argv[1] == "-la"):
         refernce_fna = sys.argv[2]
         sequence_fna = sys.argv[3]
-        txt_file = sys.argv[4]
+        gap_pen = int(sys.argv[5])
+        match_pen = int(sys.argv[6])
+        txt_file = sys.argv[7]
 
-        ref_seq = get_data(refernce_fna, True)                                      # Setting reference sequence
-        align_seq = get_data(sequence_fna, True)                                    # Setting sequence 1
+        if(sys.argv[4] == "t"): ign = True                                      # Ignore start and end gaps
+        elif(sys.argv[4] == "f"): ign = False                                   # Track start and end gaps
+        else:
+            print("ERROR: INVALID INPUT, t/f ONLY!")
+            return
 
-        make_aa(refernce_fna, [ref_seq.header, ref_seq.codon_to_amino()])           # Creating aa file for reference sequence
-        make_aa(sequence_fna, [align_seq.header, align_seq.codon_to_amino()])       # Creating aa file for sequence 1
+        ref_seq = get_data(refernce_fna, True)                                  # Setting reference sequence
+        align_seq = get_data(sequence_fna, True)                                # Setting sequence 1
 
-        a = alg.alignment(ref_seq.codon_to_amino(), align_seq.codon_to_amino())     # Setting alignment of two sequences
-        a_seq = a.get_alignment()                                                   # Getting alignment (ref_seq, vis, align_seq, score)
+        make_aa(refernce_fna, [ref_seq.header, ref_seq.codon_to_amino()])       # Creating aa file for reference sequence
+        make_aa(sequence_fna, [align_seq.header, align_seq.codon_to_amino()])   # Creating aa file for sequence 1
+
+        a = alg.alignment(ref_seq.codon_to_amino(), align_seq.codon_to_amino(), gap_pen, match_pen, ign)    # Setting alignment of two sequences w/penalties
+        a_seq = a.get_alignment()                                                                           # Getting alignment (ref_seq, vis, align_seq, score)
 
         print("Match: ",a.match_count, " Mismatch: ",a.mismatch_count, " Gaps: ", a.gap_count, " E/S Gaps: ", a.es_gap_count)
         data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
@@ -134,8 +142,8 @@ def main():
         match_pen = int(sys.argv[6])
         txt_file = sys.argv[7]
 
-        if(sys.argv[4] == "t"): ign = True
-        elif(sys.argv[4] == "f"): ign = False
+        if(sys.argv[4] == "t"): ign = True                          # Ignore start and end gaps
+        elif(sys.argv[4] == "f"): ign = False                       # Track start and end gaps
         else:
             print("ERROR: INVALID INPUT, t/f ONLY!")
             return
@@ -158,8 +166,8 @@ def main():
         gap_pen = int(sys.argv[5])
         match_pen = int(sys.argv[6])
 
-        if(sys.argv[4] == "t"): ign = True
-        elif(sys.argv[4] == "f"): ign = False
+        if(sys.argv[4] == "t"): ign = True                          # Ignore start and end gaps
+        elif(sys.argv[4] == "f"): ign = False                       # Track start and end gaps
         else:
             print("ERROR: INVALID INPUT, t/f ONLY!")
             return
