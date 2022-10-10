@@ -54,18 +54,15 @@ class sequence:
         if(start < 0):                                                                                  # No start codon found, start at beginning
             start = 0
 
-        indices = [self.sequence.find("TAA"), self.sequence.find("TAG"), self.sequence.find("TGA")]     # Find indices of stop codons
-        indices = [n for n in indices if n >= 0 and n > start+3]                                        # Get non-negative indicies
-
-        if(indices == []):                                                                              # No stop codon found, use sequence length
-            stop = len(self.sequence)
-
-        stop = min(indices) + 3                                                                         # Find index of first end codon
-
         #print("I: ", start, " J: ", stop)
-        for i in range(start, stop, 3):                                                                 # Convert selected codons to amino acid sequences
+        for i in range(start, len(self.sequence), 3):                                                                 # Convert selected codons to amino acid sequences
             codon = self.sequence[i:(i+3)]
             amino = self.codon[codon]["amino_acid"]
+
+            if(amino == "Stp"):                                                                         # Stop codon reached (TAA, TAG, TGA)
+                amino_str += self.amino_acid[amino]["letter"]
+                break
+
             amino_str += self.amino_acid[amino]["letter"]
 
         return amino_str
