@@ -99,7 +99,7 @@ def main():
         a = alg.alignment(ref_seq.sequence, align_seq.sequence)     # Setting alignment of two sequences
         a_seq = a.get_alignment()                                   # Getting alignment (ref_seq, vis, align_seq, score)
 
-        print("Match: ",a.match_count, " Mismatch: ",a.mismatch_count, " Gaps: ", a.gap_count, " E/S Gaps: ", a.es_gap_count)
+        print("Match: ",a.counts[0], " Mismatch: ",a.counts[1], " Gaps: ", a.counts[2], " E/S Gaps: ", a.counts[3])
         data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
         make_txt(txt_file, data)
     
@@ -128,7 +128,7 @@ def main():
         a = alg.alignment(ref_seq.codon_to_amino(), align_seq.codon_to_amino(), gap_pen, match_pen, ign)    # Setting alignment of two sequences w/penalties
         a_seq = a.get_alignment()                                                                           # Getting alignment (ref_seq, vis, align_seq, score)
 
-        print("Match: ",a.match_count, " Mismatch: ",a.mismatch_count, " Gaps: ", a.gap_count, " E/S Gaps: ", a.es_gap_count)
+        print("Match: ",a.counts[0], " Mismatch: ",a.counts[1], " Gaps: ", a.counts[2], " E/S Gaps: ", a.counts[3])
         data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
         make_txt(txt_file, data)
 
@@ -153,7 +153,7 @@ def main():
         a = alg.alignment(ref_seq.sequence, align_seq.sequence, gap_pen, match_pen, ign)    # Setting alignment of two sequences w/penalties
         a_seq = a.get_alignment()                                                           # Getting alignment (ref_seq, vis, align_seq, score)
 
-        print("Match: ",a.match_count, " Mismatch: ",a.mismatch_count, " Gaps: ", a.gap_count, " E/S Gaps: ", a.es_gap_count)
+        print("Match: ",a.counts[0], " Mismatch: ",a.counts[1], " Gaps: ", a.counts[2], " E/S Gaps: ", a.counts[3])
         data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
         make_txt(txt_file, data)
     
@@ -177,7 +177,7 @@ def main():
         a = alg.alignment(ref_seq.sequence, align_seq.sequence, gap_pen, match_pen, ign)    # Setting alignment of two sequences w/penalties
         a_seq = a.get_alignment()                                                           # Getting alignment (ref_seq, vis, align_seq, score)
 
-        print("Match: ",a.match_count, " Mismatch: ",a.mismatch_count, " Gaps: ", a.gap_count, " E/S Gaps: ", a.es_gap_count)
+        print("Match: ",a.counts[0], " Mismatch: ",a.counts[1], " Gaps: ", a.counts[2], " E/S Gaps: ", a.counts[3])
         data = [str(a_seq[3]), ref_seq.header, a_seq[0], a_seq[1], a_seq[2], align_seq.header]
 
         for x in data:

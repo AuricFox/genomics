@@ -29,10 +29,7 @@ class alignment:
         self.seq_align = ""                     # Alignment of sequence 1 with gaps added
         self.vis = ""                           # Visualization of alignment (for text file)
 
-        self.match_count = 0                    # Tracks number of matches
-        self.mismatch_count = 0                 # Tracks the number of mismatches in the alignment
-        self.gap_count = 0                      # Tracks the number of gaps in the alignment 
-        self.es_gap_count = 0                   # Tracks the number of gaps ignored at the start/end of a sequence
+        self.counts = [0,0,0,0]                 # Counts: matches, mismatches, gaps, ens/start gaps
 
         self.s = None                           # Scoring matrix
         self.n = None                           # Neighbor matrix (tracks direction)
@@ -159,7 +156,7 @@ class alignment:
             self.ref_align = self.ref[i-1] + self.ref_align
             self.seq_align = "_" + self.seq_align
             self.vis = " " + self.vis
-            self.es_gap_count += 1
+            self.counts[3] += 1                                     # Incrementing start/end gap count
             i -= 1
 
         while(row != 0 and col != 0):                               # Adding alignment characters
@@ -181,7 +178,7 @@ class alignment:
                 self.seq_align = "_" + self.seq_align
 
             self.vis = " " + self.vis
-            self.es_gap_count += 1
+            self.counts[3] += 1                                     # Incrementing start/end gap count
             
             # Incrementing values to next neighbor
             row = pos[0]
@@ -199,12 +196,12 @@ class alignment:
             if(self.ref[col-1] == self.seq[row-1]):                         # Character match
                 self.vis = "|" + self.vis
                 self.score += 1
-                self.match_count += 1
+                self.counts[0] += 1                                         # Incrementing match count
 
             else:                                                           # Character mismatch
                 self.vis = "X" + self.vis
                 self.score += self.match_pen
-                self.mismatch_count += 1
+                self.counts[1] += 1                                         # Incrementing mismatch count
             
 
         elif(pos[0] == row-1 and pos[1] == col):                            # Verticle alignment (sequence 1 gap)
@@ -212,14 +209,14 @@ class alignment:
             self.seq_align = self.seq[row-1] + self.seq_align
             self.vis = " " + self.vis
             self.score += self.gap_pen                                      # Add gap penalty to score
-            self.gap_count += 1
+            self.counts[2] += 1                                             # Incrementing gap count
 
         elif(row == pos[0] and pos[1] == col-1):                            # Horizontal alignment (sequence 2 gap)
             self.ref_align = self.ref[col-1] + self.ref_align
             self.seq_align = "_" + self.seq_align
             self.vis = " " + self.vis
             self.score += self.gap_pen                                      # Add gap penalty to score
-            self.gap_count += 1
+            self.counts[2] += 1                                             # Incrementing gap count
     
     # ----------------------------------------------------------------------------------------------------------------------
     # Prints score and neighbor matrices (I didn't want to keep typing the prints in main)
