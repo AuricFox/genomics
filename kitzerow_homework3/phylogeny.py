@@ -15,6 +15,7 @@ Output:
 '''
 import sys
 import numpy as np
+np.set_printoptions(threshold=sys.maxsize, precision=10)
 
 class Phylogeny:
     def __init__(self, seq = [], header = []):
@@ -24,7 +25,9 @@ class Phylogeny:
         self.edges = None               # Edges of phylogenic tree
         self.tree = None                # Nodes of phylogenic tree
 
-    # =======================================================================================
+        self.build_Dmatrix()            # Build distance matrix
+
+    # ----------------------------------------------------------------------------------------------------------
     # Calculates % dissimilarity between two sequences
     def distances(self, seq1, seq2):
         match = 0
@@ -45,11 +48,24 @@ class Phylogeny:
 
         return (mismatch/total)                         # Return % dissimilarity
 
-    # =======================================================================================
+
+    # ----------------------------------------------------------------------------------------------------------
+    # Builds distance matrix of the input sequences
+    def build_Dmatrix(self):
+        size = len(self.seq)                                            # Size of n x n distance matrix
+        self.dmatrix = np.array([[0.0]*size for i in range(size)])      # Initialize distance matrix
+
+        for i in range(size):                                           # Sequence 1
+            for j in range(size):                                       # Sequence 2 (Compare)
+                dis = self.distances(self.seq[i],self.seq[j])           # Getting % dissimilarity between sequences
+                #print(i , ", ", j, ", ", dis)
+                self.dmatrix[i][j] = dis                                # Setting % dissimilarity in distance matrix
+
+    # ----------------------------------------------------------------------------------------------------------
     # Prints out values for debugging
     def debug(self):
-        print(self.seq, self.header)
-
+        #print(self.seq, self.header)
+        print(self.dmatrix)
 
 
 # =======================================================================================
@@ -65,8 +81,8 @@ def get_data(filename):
         if(line == ""):                                 # Empty line
             # print("Not text")
             continue
-        elif(line[0] == ">"):        # Header information
-            header_data.append(line)
+        elif(line[0] == ">"):                           # Header information
+            header_data.append(line[1:])
         else:                                           # Genetic sequence
             seq_data.append(line)
     
@@ -74,7 +90,17 @@ def get_data(filename):
     return (seq_data, header_data)
 
 # =======================================================================================
+# Write distance matrix to text file
+def write_dmatrix(data, filename="./output/genetic-distances.txt"):
 
+    with open(filename, 'w', newline='') as file:
+        file.write('\t'.join(data.header) + '\n')               # Write column names from header
+
+        for x in range(len(data.header)):                       # Iterate thru rows in the distance matrix
+            s = '\t'.join([str(i) for i in data.dmatrix[x]])    # Join the row data together
+            file.write(data.header[x] + '\t' + s + '\n')        # Write the header + data for each corresponding row
+
+# =======================================================================================
 def main():
     # ----------------------------------------------------------------------------------------------------------
     # Processes sequence data from fna file
@@ -82,15 +108,18 @@ def main():
     if(len(sys.argv) == 2):
         fna_file = sys.argv[1]                          # Extracting fna file name from arguments
         genes = get_data(fna_file)                      # Processing genome data from fna file
-        pytree = Phylogeny(genes[0], genes[1])          # Initializing neighbor joining
+        data = Phylogeny(genes[0], genes[1])            # Initializing neighbor joining
 
     # ----------------------------------------------------------------------------------------------------------
-    # Processes sequence data from default fna file
+    # Processes sequence data from example fna file
     # python .\phylogeny.py
     elif(len(sys.argv) == 1):
-        fna_file = "hw3.fna"
+        fna_file = "./example/example.fna"
         genes = get_data(fna_file)
-        pytree = Phylogeny(genes[0], genes[1])
+        data = Phylogeny(genes[0], genes[1])
+
+        #data.debug()
+        write_dmatrix(data)
 
     # ----------------------------------------------------------------------------------------------------------
     else:
