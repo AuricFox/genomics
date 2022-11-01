@@ -1,9 +1,10 @@
 # Samuel Kitzerow, kitze012
 # Homework 3, Phylogeny Inference
 
-# Generate the distances between sequences using neighbor joining and build a phylogenic tree
-
 '''
+Generate the distances between sequences using neighbor joining and build a phylogenic tree.
+Gap in both sequences are treated as a similarity.
+
 Input: fna data
 
 Output:
@@ -12,15 +13,40 @@ Output:
 3) tree.txt: NEWICK format with all edge distances and with only tips named. For example, (A:0.1,B:0.2,(C:0.3,D:0.4):0.5)
 
 '''
-import csv
 import sys
 import numpy as np
 
 class Phylogeny:
     def __init__(self, seq = [], header = []):
-        self.seq = seq
-        self.header = header
+        self.seq = seq                  # List of taxa sequences
+        self.header = header            # Correspoding markers for sequences
+        self.dmatrix = None             # Distance matrix
+        self.edges = None               # Edges of phylogenic tree
+        self.tree = None                # Nodes of phylogenic tree
 
+    # =======================================================================================
+    # Calculates % dissimilarity between two sequences
+    def distances(self, seq1, seq2):
+        match = 0
+        mismatch = 0
+
+        if(len(seq1) == 0 or len(seq2) == 0):           # Sequences cannot be null
+            print("ERROR: NULL STRING!")
+            return
+        if(len(seq1) != len(seq2)):
+            print("ERROR: lengths are not equal!")      # Lengths of comparing sequences are not equal
+        
+        total = len(seq1)                               # Total number of bases
+        for (i,j) in zip(seq1,seq2):
+            if(i == j):
+                match += 1
+            else:
+                mismatch += 1
+
+        return (mismatch/total)                         # Return % dissimilarity
+
+    # =======================================================================================
+    # Prints out values for debugging
     def debug(self):
         print(self.seq, self.header)
 
@@ -51,17 +77,22 @@ def get_data(filename):
 
 def main():
     # ----------------------------------------------------------------------------------------------------------
-    # Processes codon data from fna file and writes codons with their respective counts to a csv file
-    # python .\main.py -c input_file output_file
+    # Processes sequence data from fna file
+    # python .\phylogeny.py input_file
     if(len(sys.argv) == 2):
-        fna_file = sys.argv[1]                              # Extracting fna file name from arguments
-        genes = get_data(fna_file)                    # Processing genome data from fna file
+        fna_file = sys.argv[1]                          # Extracting fna file name from arguments
+        genes = get_data(fna_file)                      # Processing genome data from fna file
+        pytree = Phylogeny(genes[0], genes[1])          # Initializing neighbor joining
 
     # ----------------------------------------------------------------------------------------------------------
-    elif(len(sys.argv) == 2 and sys.argv[1] == "test"):
+    # Processes sequence data from default fna file
+    # python .\phylogeny.py
+    elif(len(sys.argv) == 1):
         fna_file = "hw3.fna"
         genes = get_data(fna_file)
+        pytree = Phylogeny(genes[0], genes[1])
 
+    # ----------------------------------------------------------------------------------------------------------
     else:
         print("ERROR: INVALID ARGUMENMTS!")
 
