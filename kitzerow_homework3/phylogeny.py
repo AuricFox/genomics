@@ -15,7 +15,7 @@ Output:
 '''
 import sys
 import numpy as np
-np.set_printoptions(threshold=sys.maxsize, precision=10)
+np.set_printoptions(threshold=sys.maxsize, precision=10, linewidth=np.inf)
 
 class Phylogeny:
     def __init__(self, seq = [], header = []):
@@ -29,7 +29,7 @@ class Phylogeny:
 
     # ----------------------------------------------------------------------------------------------------------
     # Calculates % dissimilarity between two sequences
-    def distances(self, seq1, seq2):
+    def gen_distance(self, seq1, seq2):
         match = 0
         mismatch = 0
 
@@ -51,15 +51,95 @@ class Phylogeny:
 
     # ----------------------------------------------------------------------------------------------------------
     # Builds distance matrix of the input sequences
+    # Input must be a nxn matrix
+    # Since the matrix is a reflection along the diagonal, only half of it is iterated thru
+    # and the values are reflected to their corresponding coordinates [i,j] = [j,i]
     def build_Dmatrix(self):
         size = len(self.seq)                                            # Size of n x n distance matrix
         self.dmatrix = np.array([[0.0]*size for i in range(size)])      # Initialize distance matrix
 
         for i in range(size):                                           # Sequence 1
-            for j in range(size):                                       # Sequence 2 (Compare)
-                dis = self.distances(self.seq[i],self.seq[j])           # Getting % dissimilarity between sequences
+            for j in range(i, size):                                    # Sequence 2 (Compare)
+                if(i == j): continue
+                dis = self.gen_distance(self.seq[i],self.seq[j])        # Getting % dissimilarity between sequences
                 #print(i , ", ", j, ", ", dis)
-                self.dmatrix[i][j] = dis                                # Setting % dissimilarity in distance matrix
+                self.dmatrix[i][j] = self.dmatrix[j][i] = dis           # Setting % dissimilarity in distance matrix
+
+    # ----------------------------------------------------------------------------------------------------------
+    # Calculates the Q matrix used for determining which neighbors to join
+    # Input must be a nxn matrix
+    # Since the matrix is a reflection along the diagonal, only half of it is iterated thru
+    # and the values are reflected to their corresponding coordinates [i,j] = [j,i]
+    def q_matrix(self, m):
+        if(m.shape[0] != m.shape[1]):                                           # Invalid matrix demensions
+            print("ERROR: NOT A N X N MATRIX\n", "Matrix: ", m.shape[0], " X ", m.shape[1])
+            return
+        
+        size = m.shape[1]
+        qmatrix = np.array([[0.0]*size for i in range(size)])               # Initialize Q matrix
+
+        for i in range(0, size):                                            # Iterate thru rows
+            for j in range(i+1, size):                                      # Iterate thru cols
+                if(i == j): continue                                        # Skip diagonal elements
+
+                row_sum = 0.0
+                for x in range(size):                                       # Sum the values in the row
+                    row_sum += m[x][j]
+
+                col_sum = 0.0
+                for y in range(size):                                       # Sum the values in the column
+                    col_sum += m[i][y]
+
+                qmatrix[j][i] = qmatrix[i][j] = (m[i][j])*(size - 2) - row_sum - col_sum    # Calculating Q values
+
+        return qmatrix
+
+    # ----------------------------------------------------------------------------------------------------------
+    # Updates distince matrix with new neighbor node
+    # Forms a new row/column from a and b into u and recalcultes distances based on u
+    # Returns new distance matrix and header info
+    def updte_matrix(self, m, h, a, b):
+
+        return
+    # ----------------------------------------------------------------------------------------------------------
+    # Joins neighboring sequences
+    # m[row][column]
+    def join_neighbor(self):
+        m = self.dmatrix
+        h = self.header
+
+        # while(m.shape[0] > 1):                                                  # Iterate thru taxa until there is only one node left
+        qm = self.q_matrix(m)                                                   # Build Q matrix
+        min = np.amin(qm)                                                       # Min value
+        loc = np.where(qm == min)                                               # Find mins
+        a, b = loc[0][0], loc[0][1]                                             # Index location of first min value
+        print(m, "\n\n", qm)
+
+        d_ab = m[a][b]
+        sum_a = sum(m[a][q] for q in range(m.shape[0]))                         # Summing distances in a
+        sum_b = sum(m[b][q] for q in range(m.shape[0]))                         # Summing distances in b
+        diff = sum_a - sum_b                                                    # Computing difference between a and b
+        s = 2 * (m.shape[0] - 2)
+        print("\nA: ", a, ", ", sum_a, " B: ", b, ", ", sum_b, " Diff: ", diff, " S: ", s)
+
+        d_au = (0.5)*(d_ab) + (diff / s)                                        # Calculating distance from a to u
+        d_bu = d_ab - d_au                                                      # Calculating distance from b to u
+        print("Min: ", qm[a][b], " d_ab: ", d_ab, " d_au: ", d_au, " d_bu: ", d_bu)
+
+        u = []
+        for i in range(m.shape[0]):
+            if(i == a): continue
+            d_u = (0.5)*(m[a][i] + m[i][b] - m[a][b])                           # Calaculating distances of each taxa to u
+            u.append(d_u)
+
+        m = np.delete(m, [a], axis=0)                                           # Deleting row a
+        m = np.delete(m, [a], axis=1)                                           # Deleting column a
+        print("Trimming: \n", m, "\n")
+
+        m[a, 0:m.shape[0]] = u                                                  # Adding u distances to row (previously b)
+        m[0:m.shape[0], a] = u                                                  # Adding u distances to column (previously b)
+        print("Adding new distances: ", u, "\n", m)
+
 
     # ----------------------------------------------------------------------------------------------------------
     # Prints out values for debugging
@@ -67,8 +147,7 @@ class Phylogeny:
         #print(self.seq, self.header)
         print(self.dmatrix)
 
-
-# =======================================================================================
+# ==============================================================================================================
 # Retreives data from the fna file and returns a tuple containing a list of sequences and headers
 def get_data(filename):
     file = open(filename, 'r')
@@ -89,7 +168,7 @@ def get_data(filename):
     file.close()
     return (seq_data, header_data)
 
-# =======================================================================================
+# ==============================================================================================================
 # Write distance matrix to text file
 def write_dmatrix(data, filename="./output/genetic-distances.txt"):
 
@@ -100,7 +179,15 @@ def write_dmatrix(data, filename="./output/genetic-distances.txt"):
             s = '\t'.join([str(i) for i in data.dmatrix[x]])    # Join the row data together
             file.write(data.header[x] + '\t' + s + '\n')        # Write the header + data for each corresponding row
 
-# =======================================================================================
+# ==============================================================================================================
+# Checking q-values 
+def check():
+    c = (7-2)*(0.5789473684210527)
+    row = 0.5789473684210527+0.47368421052631576+0.5263157894736842+0.5789473684210527+0.631578947368421+0.6842105263157895
+    col = 0.5789473684210527+0.10526315789473684+0.5263157894736842+0.5263157894736842+0.3684210526315789+0.42105263157894735
+    print("Value: ", c - row - col)
+
+# ==============================================================================================================
 def main():
     # ----------------------------------------------------------------------------------------------------------
     # Processes sequence data from fna file
@@ -119,8 +206,10 @@ def main():
         data = Phylogeny(genes[0], genes[1])
 
         #data.debug()
-        write_dmatrix(data)
-
+        #write_dmatrix(data)
+        #print(data.q_matrix(data.dmatrix))
+        data.join_neighbor()
+        
     # ----------------------------------------------------------------------------------------------------------
     else:
         print("ERROR: INVALID ARGUMENMTS!")

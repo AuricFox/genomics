@@ -1,0 +1,7 @@
+Taxon1	Group 2	blue
+Taxon2	Group 1	red
+Taxon3	Group 1	red
+Taxon4	Group 3	green
+Taxon5	Group 3	green
+Taxon6	Group 3	darkgray
+Taxon7	Group 3	darkgray
