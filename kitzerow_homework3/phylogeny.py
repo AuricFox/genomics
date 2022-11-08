@@ -22,7 +22,7 @@ class Phylogeny:
         self.seq = seq                  # List of taxa sequences
         self.header = header            # Correspoding markers for sequences
         self.dmatrix = None             # Distance matrix
-        self.edges = None               # Edges of phylogenic tree
+        self.edges = []                 # Edges of phylogenic tree
         self.tree = None                # Nodes of phylogenic tree
 
         self.build_Dmatrix()            # Build distance matrix
@@ -95,36 +95,26 @@ class Phylogeny:
         return qmatrix
 
     # ----------------------------------------------------------------------------------------------------------
-    # Updates distince matrix with new neighbor node
-    # Forms a new row/column from a and b into u and recalcultes distances based on u
-    # Returns new distance matrix and header info
-    def updte_matrix(self, m, h, a, b):
-
-        return
-    # ----------------------------------------------------------------------------------------------------------
     # Joins neighboring sequences
-    # m[row][column]
-    def join_neighbor(self):
-        m = self.dmatrix
-        h = self.header
-
-        # while(m.shape[0] > 1):                                                  # Iterate thru taxa until there is only one node left
+    # Returns a tuple containing (new dmatrix, new list of header info, edge A, edge B)
+    def join_neighbor(self, m, h, node):
+               
         qm = self.q_matrix(m)                                                   # Build Q matrix
         min = np.amin(qm)                                                       # Min value
         loc = np.where(qm == min)                                               # Find mins
         a, b = loc[0][0], loc[0][1]                                             # Index location of first min value
-        print(m, "\n\n", qm)
+        #print(m, "\n\n", qm)
 
         d_ab = m[a][b]
         sum_a = sum(m[a][q] for q in range(m.shape[0]))                         # Summing distances in a
         sum_b = sum(m[b][q] for q in range(m.shape[0]))                         # Summing distances in b
         diff = sum_a - sum_b                                                    # Computing difference between a and b
         s = 2 * (m.shape[0] - 2)
-        print("\nA: ", a, ", ", sum_a, " B: ", b, ", ", sum_b, " Diff: ", diff, " S: ", s)
+        #print("\nA: ", a, ", ", sum_a, " B: ", b, ", ", sum_b, " Diff: ", diff, " S: ", s)
 
         d_au = (0.5)*(d_ab) + (diff / s)                                        # Calculating distance from a to u
         d_bu = d_ab - d_au                                                      # Calculating distance from b to u
-        print("Min: ", qm[a][b], " d_ab: ", d_ab, " d_au: ", d_au, " d_bu: ", d_bu)
+        #print("Min: ", qm[a][b], " d_ab: ", d_ab, " d_au: ", d_au, " d_bu: ", d_bu)
 
         u = []
         for i in range(m.shape[0]):
@@ -134,12 +124,38 @@ class Phylogeny:
 
         m = np.delete(m, [a], axis=0)                                           # Deleting row a
         m = np.delete(m, [a], axis=1)                                           # Deleting column a
-        print("Trimming: \n", m, "\n")
+        #print("Trimming: \n", m, "\n")
 
         m[a, 0:m.shape[0]] = u                                                  # Adding u distances to row (previously b)
         m[0:m.shape[0], a] = u                                                  # Adding u distances to column (previously b)
-        print("Adding new distances: ", u, "\n", m)
+        #print("Adding new distances: ", u, "\n", m)
 
+        edgeA = (node, h[a], d_au)                                            # Branch from a to u
+        edgeB = (node, h[b], d_bu)                                            # Branch from b to u
+        h[b] = node                                                             # Add new node to list
+        h.pop(a)                                                                # Remove extra label
+
+        return (m, h, edgeA, edgeB)                                            # Return new dmatrix
+
+    # ----------------------------------------------------------------------------------------------------------
+    # Joins all the neighboring taxa together
+    # Builds list of branche edges
+    def neighbor_joining(self):
+        m = self.dmatrix
+        h = [i+1 for i in range(len(self.header))]          # Convert taxa lables to numeric values
+        node = len(self.header) + 1                         # Joining node label
+
+        while(m.shape[0] > 3):                              # Iterate thru taxa until there are only two nodes left
+            data = self.join_neighbor(m, h, node)           # Join a neighboring taxa
+            self.edges.append([data[2], data[3]])           # Adding edges
+
+            m = data[0]                                     # Updating matrix
+            h = data[1]                                     # Updating header
+            node += 1                                       # Updating new node label
+
+            print(m, '\n\n')
+
+        return
 
     # ----------------------------------------------------------------------------------------------------------
     # Prints out values for debugging
@@ -208,7 +224,8 @@ def main():
         #data.debug()
         #write_dmatrix(data)
         #print(data.q_matrix(data.dmatrix))
-        data.join_neighbor()
+        #stuff = data.join_neighbor(data.dmatrix, data.header, len(data.header) + 1)
+        data.neighbor_joining()
         
     # ----------------------------------------------------------------------------------------------------------
     else:
