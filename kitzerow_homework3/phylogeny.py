@@ -153,7 +153,7 @@ class Phylogeny:
             h = data[1]                                     # Updating header
             node += 1                                       # Updating new node label
 
-            print(m, '\n\n')
+            print(m, '\n', data[2:4], '\n\n')
 
         return
 
