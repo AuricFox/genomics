@@ -223,7 +223,7 @@ def write_dmatrix(data, filename="./output/genetic-distances.txt"):
 # ==============================================================================================================
 # Write tree matrix to a text file
 def write_edges(data, filename="./output/edges.txt"):
-
+    tr = tree.Ptree(data)
     return
 # ==============================================================================================================
 # Checking q-values
@@ -257,6 +257,7 @@ def main():
         #stuff = data.join_neighbor(data.dmatrix, data.header, len(data.header) + 1)
         data.neighbor_joining()
         data.debug()
+        write_edges(data.edges)
 
     # ----------------------------------------------------------------------------------------------------------
     else:
