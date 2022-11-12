@@ -14,6 +14,7 @@ Output:
 
 '''
 import sys
+import tree
 import numpy as np
 np.set_printoptions(threshold=sys.maxsize, precision=10, linewidth=np.inf)
 
@@ -38,7 +39,7 @@ class Phylogeny:
             return
         if(len(seq1) != len(seq2)):
             print("ERROR: lengths are not equal!")      # Lengths of comparing sequences are not equal
-        
+
         total = len(seq1)                               # Total number of bases
         for (i,j) in zip(seq1,seq2):
             if(i == j):
@@ -74,7 +75,7 @@ class Phylogeny:
         if(m.shape[0] != m.shape[1]):                                           # Invalid matrix demensions
             print("ERROR: NOT A N X N MATRIX\n", "Matrix: ", m.shape[0], " X ", m.shape[1])
             return
-        
+
         size = m.shape[1]
         qmatrix = np.array([[0.0]*size for i in range(size)])               # Initialize Q matrix
 
@@ -120,7 +121,7 @@ class Phylogeny:
         if(m.shape[0] != m.shape[1]):
             print("ERROR: MATRIX MUST BE N X N!")
             return
-               
+
         qm = self.q_matrix(m)                               # Build Q matrix
         min = np.amin(qm)                                   # Min value
         loc = np.where(qm == min)                           # Find mins
@@ -172,15 +173,20 @@ class Phylogeny:
         d_wd = m[0][1] - d_vw                               # Distance from d to w
         d_we = m[0][2] - d_vw                               # Distance from e to w
 
-        self.edges[node] = {h[0]:d_vw, h[1]:d_wd, h[2]:d_we}
+        self.edges[node] = {h[0]:d_vw, h[1]:d_wd, h[2]:d_we}# Add last three nodes
+        self.edges['root'] = node                           # Track root node
         #print("d_vw: ", d_vw, " d_wd: ", d_wd, " d_we: ", d_we)
-        #print("Edge V: ", edgeV, " Edge D: ", edgeD, " Edge E: ", edgeE)
 
     # ----------------------------------------------------------------------------------------------------------
     # Prints out values for debugging
     def debug(self):
-        print(self.header, "\n\n", self.dmatrix, "\n\n")
+        #print(self.header, '\n\n', self.dmatrix, '\n\n')
         print(self.edges)
+
+        node = self.edges['root']
+
+        for k in self.edges[node]:
+            print(k, self.edges[node][k])
 
 # ==============================================================================================================
 # Retreives data from the fna file and returns a tuple containing a list of sequences and headers
@@ -188,10 +194,10 @@ def get_data(filename):
     file = open(filename, 'r')
     seq_data = []
     header_data = []
-    
+
     for line in file:                                   # Read each line in file
         line = line.strip()                             # Strip newline characters
-        
+
         if(line == ""):                                 # Empty line
             # print("Not text")
             continue
@@ -199,7 +205,7 @@ def get_data(filename):
             header_data.append(line[1:])
         else:                                           # Genetic sequence
             seq_data.append(line)
-    
+
     file.close()
     return (seq_data, header_data)
 
@@ -220,7 +226,7 @@ def write_edges(data, filename="./output/edges.txt"):
 
     return
 # ==============================================================================================================
-# Checking q-values 
+# Checking q-values
 def check():
     c = (7-2)*(0.5789473684210527)
     row = 0.5789473684210527+0.47368421052631576+0.5263157894736842+0.5789473684210527+0.631578947368421+0.6842105263157895
@@ -251,7 +257,7 @@ def main():
         #stuff = data.join_neighbor(data.dmatrix, data.header, len(data.header) + 1)
         data.neighbor_joining()
         data.debug()
-        
+
     # ----------------------------------------------------------------------------------------------------------
     else:
         print("ERROR: INVALID ARGUMENMTS!")
@@ -259,4 +265,3 @@ def main():
 # ================================================================================================================================================
 if __name__ == "__main__":
     main()
-    
