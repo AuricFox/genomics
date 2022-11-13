@@ -15,6 +15,16 @@ Test Program:
 python3 phylogeny.py
 ```
 
+R Program:  
+```
+Rscript hw3-plot-edges.r edges.txt hw3-tip-labels.txt tree.pdf
+Rscript hw3-plot-newick.r tree.tre hw3-tip-labels.txt tree-newick.pdf
+
+Rscript hw3-plot-edges.r ./output/edges.txt hw3-tip-labels.txt ./output/tree.pdf
+Rscript hw3-plot-newick.r ./output/tree.tre hw3-tip-labels.txt ./output/tree-newick.pdf
+```
+
+
 ### Special Note
 
 The program was tested on VOLE3D. The module skbio was throwing unresolved errors

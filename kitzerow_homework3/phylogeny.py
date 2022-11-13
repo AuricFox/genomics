@@ -217,16 +217,10 @@ def write_dmatrix(data, filename="./output/genetic-distances.txt"):
 
 # ==============================================================================================================
 # Write tree matrix to a text file
-def write_edges_trees(data, filename="./output/edges.txt"):
-    tr = tree.Ptree(data)
-
-# ==============================================================================================================
-# Checking q-values
-def check():
-    c = (7-2)*(0.5789473684210527)
-    row = 0.5789473684210527+0.47368421052631576+0.5263157894736842+0.5789473684210527+0.631578947368421+0.6842105263157895
-    col = 0.5789473684210527+0.10526315789473684+0.5263157894736842+0.5263157894736842+0.3684210526315789+0.42105263157894735
-    print("Value: ", c - row - col)
+def write_data(data, filename="./output/edges.txt"):
+    tr = tree.Ptree(data)       # Initializing tree
+    tr.write_edges()            # Writing edges to file
+    tr.write_tree()             # Writing newick tree to file
 
 # ==============================================================================================================
 def main():
@@ -238,6 +232,10 @@ def main():
         genes = get_data(fna_file)                      # Processing genome data from fna file
         data = Phylogeny(genes[0], genes[1])            # Initializing neighbor joining
 
+        write_dmatrix(data)
+        data.neighbor_joining()
+        write_data(data.edges)
+
     # ----------------------------------------------------------------------------------------------------------
     # Processes sequence data from example fna file
     # python .\phylogeny.py
@@ -246,13 +244,10 @@ def main():
         genes = get_data(fna_file)
         data = Phylogeny(genes[0], genes[1])
 
-        #data.debug()
         #write_dmatrix(data)
         #print(data.q_matrix(data.dmatrix))
-        #stuff = data.join_neighbor(data.dmatrix, data.header, len(data.header) + 1)
         data.neighbor_joining()
-        data.debug()
-        write_edges_trees(data.edges)
+        write_data(data.edges)
 
     # ----------------------------------------------------------------------------------------------------------
     else:

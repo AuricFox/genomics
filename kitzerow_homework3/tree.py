@@ -3,12 +3,12 @@
 # Creates the edge and tree data structures
 
 from skbio import TreeNode as tn
+import os
 
 class Ptree:
     def __init__(self, data):
         self.data = data        # Dictionary containing joined nodes and distances
         self.tree = None        # Tree data structure
-
         self.tree_data()
 
     # ======================================================================
@@ -62,9 +62,33 @@ class Ptree:
     # ======================================================================
     # Writes tree data to output file
     def write_tree(self, filename="./output/tree.tre"):
-        return
+        self.tree.write(filename)
 
     # ======================================================================
     # Writes edge data to output file
     def write_edges(self, filename="./output/edges.txt"):
-        return
+        with open(filename, 'w', newline='') as file:
+
+            for x in self.tree.preorder():
+                if(x.length == None): continue                  # Skip root node
+                input =  x.parent.name+'\t'+x.name+'\t'+str(x.length)+'\n'
+                file.write(input)
+
+
+    # ======================================================================
+    # Runs R script to creates pdf of a tree
+    def create_tree(self, filename="./output/tree.pdf"):
+        input = "Rscript hw3-plot-edges.r ./output/edges.txt hw3-tip-labels.txt " + filename
+        os.system(input)
+
+    # ======================================================================
+    # Runs R script to creates pdf of a newick tree
+    def creat_newick(self, filename="./output/tree-newick.pdf"):
+        input = "Rscript hw3-plot-newick.r ./output/tree.tre hw3-tip-labels.txt " + filename
+        os.system(input)
+
+    # ======================================================================
+    # Runs R script to creates pdf of a newick tree
+    def debug(self):
+        print(self.data)
+        print(self.tree)
