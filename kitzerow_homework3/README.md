@@ -7,6 +7,7 @@ Samuel Kitzerow, kitze012
 Main Program:  
 ```
 python3 phylogeny.py input_file
+python3 phylogeny.py hw3.fna
 ```
 
 Test Program:  
