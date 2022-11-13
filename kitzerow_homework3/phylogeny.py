@@ -183,11 +183,6 @@ class Phylogeny:
         #print(self.header, '\n\n', self.dmatrix, '\n\n')
         print(self.edges)
 
-        node = self.edges['root']
-
-        for k in self.edges[node]:
-            print(k, self.edges[node][k])
-
 # ==============================================================================================================
 # Retreives data from the fna file and returns a tuple containing a list of sequences and headers
 def get_data(filename):
@@ -222,9 +217,9 @@ def write_dmatrix(data, filename="./output/genetic-distances.txt"):
 
 # ==============================================================================================================
 # Write tree matrix to a text file
-def write_edges(data, filename="./output/edges.txt"):
+def write_edges_trees(data, filename="./output/edges.txt"):
     tr = tree.Ptree(data)
-    return
+
 # ==============================================================================================================
 # Checking q-values
 def check():
@@ -257,7 +252,7 @@ def main():
         #stuff = data.join_neighbor(data.dmatrix, data.header, len(data.header) + 1)
         data.neighbor_joining()
         data.debug()
-        write_edges(data.edges)
+        write_edges_trees(data.edges)
 
     # ----------------------------------------------------------------------------------------------------------
     else:
