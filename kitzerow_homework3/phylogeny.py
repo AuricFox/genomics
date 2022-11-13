@@ -83,15 +83,16 @@ class Phylogeny:
             for j in range(i+1, size):                                      # Iterate thru cols
                 if(i == j): continue                                        # Skip diagonal elements
 
-                row_sum = 0.0
-                for x in range(size):                                       # Sum the values in the row
-                    row_sum += m[x][j]
+                a_sum = 0.0
+                for x in range(size):                                       # Sum the values in a
+                    a_sum += m[x][j]
 
-                col_sum = 0.0
-                for y in range(size):                                       # Sum the values in the column
-                    col_sum += m[i][y]
+                b_sum = 0.0
+                for y in range(size):                                       # Sum the values in b
+                    b_sum += m[i][y]
 
-                qmatrix[j][i] = qmatrix[i][j] = (m[i][j])*(size - 2) - row_sum - col_sum    # Calculating Q values
+                qmatrix[j][i] = (m[i][j])*(size - 2) - a_sum - b_sum        # Calculating Q values
+                qmatrix[i][j] = (m[i][j])*(size - 2) - a_sum - b_sum        # Calculating Q values
 
         return qmatrix
 
@@ -109,9 +110,13 @@ class Phylogeny:
         sum_b = sum(m[b][q] for q in range(m.shape[0]))         # Summing distances in b
         diff = sum_a - sum_b                                    # Computing difference between a and b
         s = 2 * (m.shape[0] - 2)
-        #print("\nA: ", a, ", ", sum_a, " B: ", b, ", ", sum_b, " Diff: ", diff, " S: ", s)
+        distance = (0.5)*(m[a][b]) + (diff / s)                 # Calculating distance from a to u
+        #print("A: ", a, ", ", sum_a, " B: ", b, ", ", sum_b, )
+        #print("Diff: ", diff, " S: ", s)
+        #print("Distance: ", distance, '\n')
 
-        return (0.5)*(m[a][b]) + (diff / s)                     # Calculating distance from a to u
+
+        return distance
 
     # ----------------------------------------------------------------------------------------------------------
     # Joins neighboring sequences
@@ -125,12 +130,16 @@ class Phylogeny:
         qm = self.q_matrix(m)                               # Build Q matrix
         min = np.amin(qm)                                   # Min value
         loc = np.where(qm == min)                           # Find mins
+
+        #print('\n', loc)
+        #print(m,'\n\n',qm,'\n')
+
         a, b = loc[0][0], loc[0][1]                         # Index location of first min value
         #print(m, "\n\n", qm)
-
+        #print(h[a], ', ', h[b])
         d_au = self.get_distance(m, a, b)                   # Calculating distance from a to u
         d_bu = m[a][b] - d_au                               # Calculating distance from b to u
-        #print("Min: ", qm[a][b], " d_ab: ", m[a][b], " d_au: ", d_au, " d_bu: ", d_bu)
+        #print("Min: ", qm[a][b], " d_ab: ", m[a][b], " d_au: ", d_au, " d_bu: ", d_bu, '\n')
 
         u = []
         for i in range(m.shape[0]):
@@ -142,8 +151,8 @@ class Phylogeny:
         m = np.delete(m, [a], axis=1)                       # Deleting column a
         #print("Trimming: \n", m, "\n")
 
-        m[a, 0:m.shape[0]] = u                              # Adding u distances to row (previously b)
-        m[0:m.shape[0], a] = u                              # Adding u distances to column (previously b)
+        m[b-1, 0:m.shape[0]] = u                            # Adding u distances to row (b moved 1)
+        m[0:m.shape[0], b-1] = u                            # Adding u distances to column (b moved 1)
         #print("Adding new distances: ", u, "\n", m)
 
         self.edges[node] = {h[a]: d_au, h[b]: d_bu}         # Branch from a to u
@@ -156,8 +165,8 @@ class Phylogeny:
     # Joins all the neighboring taxa together
     # Builds list of branche edges
     def neighbor_joining(self):
-        m = self.dmatrix
-        h = self.header.copy()          # Convert taxa lables to numeric values
+        m = self.dmatrix.copy()
+        h = self.header.copy()                              # taxa lables
         node = len(self.header) + 1                         # Joining node label
 
         while(m.shape[0] > 3):                              # Iterate thru taxa until there are only two nodes left
@@ -240,12 +249,13 @@ def main():
     # Processes sequence data from example fna file
     # python .\phylogeny.py
     elif(len(sys.argv) == 1):
-        fna_file = "./example/example.fna"
+        fna_file = "./example2/example2.fna"
         genes = get_data(fna_file)
         data = Phylogeny(genes[0], genes[1])
 
         #write_dmatrix(data)
         #print(data.q_matrix(data.dmatrix))
+        write_dmatrix(data)
         data.neighbor_joining()
         write_data(data.edges, data.header)
 

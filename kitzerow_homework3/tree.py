@@ -74,7 +74,7 @@ class Ptree:
     def write_edges(self, filename="./output/edges.txt"):
         with open(filename, 'w', newline='') as file:
 
-            for x in self.tree.traverse():
+            for x in self.tree.preorder():
                 if(x.length == None): continue                  # Skip root node
 
                 name = x.name
