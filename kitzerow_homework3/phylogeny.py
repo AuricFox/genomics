@@ -157,7 +157,7 @@ class Phylogeny:
     # Builds list of branche edges
     def neighbor_joining(self):
         m = self.dmatrix
-        h = [i+1 for i in range(len(self.header))]          # Convert taxa lables to numeric values
+        h = self.header.copy()          # Convert taxa lables to numeric values
         node = len(self.header) + 1                         # Joining node label
 
         while(m.shape[0] > 3):                              # Iterate thru taxa until there are only two nodes left
@@ -217,10 +217,10 @@ def write_dmatrix(data, filename="./output/genetic-distances.txt"):
 
 # ==============================================================================================================
 # Write tree matrix to a text file
-def write_data(data, filename="./output/edges.txt"):
-    tr = tree.Ptree(data)       # Initializing tree
-    tr.write_edges()            # Writing edges to file
-    tr.write_tree()             # Writing newick tree to file
+def write_data(data, header, filename="./output/edges.txt"):
+    tr = tree.Ptree(data, header)   # Initializing tree
+    tr.write_edges()                # Writing edges to file
+    tr.write_tree()                 # Writing newick tree to file
 
 # ==============================================================================================================
 def main():
@@ -234,7 +234,7 @@ def main():
 
         write_dmatrix(data)
         data.neighbor_joining()
-        write_data(data.edges)
+        write_data(data.edges, data.header)
 
     # ----------------------------------------------------------------------------------------------------------
     # Processes sequence data from example fna file
@@ -247,7 +247,7 @@ def main():
         #write_dmatrix(data)
         #print(data.q_matrix(data.dmatrix))
         data.neighbor_joining()
-        write_data(data.edges)
+        write_data(data.edges, data.header)
 
     # ----------------------------------------------------------------------------------------------------------
     else:

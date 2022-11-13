@@ -6,9 +6,14 @@ from skbio import TreeNode as tn
 import os
 
 class Ptree:
-    def __init__(self, data):
+    def __init__(self, data, header):
         self.data = data        # Dictionary containing joined nodes and distances
         self.tree = None        # Tree data structure
+        self.header = {}
+
+        for i in range(len(header) + 1):    # Create dictionary for edge labels
+            self.header[header[i-1]] = str(i)
+
         self.tree_data()
 
     # ======================================================================
@@ -69,9 +74,14 @@ class Ptree:
     def write_edges(self, filename="./output/edges.txt"):
         with open(filename, 'w', newline='') as file:
 
-            for x in self.tree.preorder():
+            for x in self.tree.traverse():
                 if(x.length == None): continue                  # Skip root node
-                input =  x.parent.name+'\t'+x.name+'\t'+str(x.length)+'\n'
+
+                name = x.name
+                if(name in self.header):
+                    name = self.header[x.name]            # Convert to index
+
+                input =  x.parent.name+'\t'+name+'\t'+str(x.length)+'\n'
                 file.write(input)
 
 
