@@ -2,12 +2,14 @@
 # Homework 4, Finding variable genomic regions
 
 import sys
-import tree
+#import tree
 import phylogeny as py
+import variance as va
 import numpy as np
 
 # ==============================================================================================================
-# Retreives data from the fna file and returns a tuple containing a list of sequences and headers
+# Retreives header/sequence pair data from the fna file
+# Retruns seq_data: list of sequences, header_data: List of corresponding header info
 def get_data(filename):
     file = open(filename, 'r')
     seq_data = []
@@ -39,19 +41,12 @@ def write_dmatrix(data, filename="./output/genetic-distances.txt"):
             file.write(data.header[x] + '\t' + s + '\n')        # Write the header + data for each corresponding row
 
 # ==============================================================================================================
-# Write tree matrix to a text file
-def write_data(data, header, filename="./output/edges.txt"):
-    tr = tree.Ptree(data, header)   # Initializing tree
-    tr.write_edges()                # Writing edges to file
-    tr.write_tree()                 # Writing newick tree to file
-
-# ==============================================================================================================
 # Main function that calls Pylogeny and write functions
 def tree_stuff(header, data):
     data = py.Phylogeny(data, header)            # Initializing neighbor joining
     write_dmatrix(data)
     data.neighbor_joining()
-    write_data(data.edges, data.header)
+    #tree.write_data(data.edges, data.header)
 
 # ==============================================================================================================
 def main():
@@ -61,6 +56,9 @@ def main():
     if(len(sys.argv) == 2):
         fna_file = sys.argv[1]                          # Extracting fna file name from arguments
         genes = get_data(fna_file)                      # Processing genome data from fna file
+
+        s = va.Variance(genes[0], genes[1])
+        s.debug()
                 
 
     # ----------------------------------------------------------------------------------------------------------
@@ -69,7 +67,9 @@ def main():
     elif(len(sys.argv) == 1):
         fna_file = "./input/Homework4-seqs-with-primers.fna"
         genes = get_data(fna_file)
-        
+
+        s = va.Variance(genes[0], genes[1])
+        s.debug()
 
     # ----------------------------------------------------------------------------------------------------------
     else:

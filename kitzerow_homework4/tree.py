@@ -102,3 +102,10 @@ class Ptree:
     def debug(self):
         print(self.data)
         print(self.tree)
+
+# ==============================================================================================================
+# Write tree matrix to a text file
+def write_data(data, header, filename="./output/edges.txt"):
+    tr = Ptree(data, header)        # Initializing tree
+    tr.write_edges()                # Writing edges to file
+    tr.write_tree()                 # Writing newick tree to file

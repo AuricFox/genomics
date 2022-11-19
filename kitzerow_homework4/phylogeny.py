@@ -14,7 +14,6 @@ Output:
 
 '''
 import sys
-import tree
 import numpy as np
 np.set_printoptions(threshold=sys.maxsize, precision=10, linewidth=np.inf)
 
