@@ -2,8 +2,6 @@
 # Homework 4, Finding variable genomic regions
 
 import sys
-#import tree
-import phylogeny as py
 import variance as va
 import numpy as np
 

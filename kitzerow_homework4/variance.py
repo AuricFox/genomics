@@ -63,7 +63,7 @@ class Variance:
 
     # ==============================================================================================================
     # Plots smooth Data after raw data has been converted
-    def plot_smooth_data(self, show=True, ret=False):
+    def plot_smooth_data(self, show=True, return_fig=False):
         figure = plt.figure()
         y = self.moving_avg()                               # Y axis, get moving averages
         x = [i+1 for i in range(len(y))]                    # X axis, nucleotide base positions
@@ -75,7 +75,7 @@ class Variance:
         plt.title('Raw Data w/Smoothing')
   
         if show: plt.show()                                 # Toggle show option
-        if ret: return figure                               # Toggle return option (Plot figure)
+        if return_fig: return figure                        # Toggle return option (Plot figure)
     
     # ==============================================================================================================
     # Covert the variability to moving averages in order to smooth the data
@@ -105,24 +105,50 @@ class Variance:
 
     # ==============================================================================================================
     # Plots smoothed Data with Intersections
-    # The value 0.704 was choosen for gathering clear v regoins without mistaking a small peaks as v regions
-    def plot_v_regions(self, show=True, ret=False, limit=0.704):
+    # show: boolean value that toggels the display of the figure
+    # return_fig: boolean value that toggels whether the figure is returned
+    # spacing: integer that specifies the min number of bases needed for a v region
+    # numV: integer that specifies the number of desired v regions
+    def plot_v_regions(self, show=True, return_fig=False, spacing=30, numV=6):
         figure = plt.figure()
         y_1 = np.array(self.moving_avg())                               # Variability y
-        y_2 = np.array([limit]*len(y_1))                                # Intersecting y 
         x = np.array([i+1 for i in range(len(y_1))])                    # X axis, nucleotide base positions
 
-        plt.plot(x, y_1)
-        plt.plot(x, y_2)
-        self.intersect = np.argwhere(np.diff(np.sign(y_1 - y_2))).flatten()                     # Get intersection points
-        self.intersect = np.insert(self.intersect, [0,len(self.intersect)], [0,len(self.var)])  # Add start(0) and end(1,514) points
+        line = 0.0                                                      # Intersection line used for identifying v regions
+        intersect = []                                                  # Intersection points
+
+        while(line <= 1.0):
+            y_2 = np.array([line]*len(y_1))                                             # Intersecting y
+            intersect = np.argwhere(np.diff(np.sign(y_1 - y_2))).flatten()              # Get intersection points
+            intersect = np.insert(intersect, [0,len(intersect)], [0,len(self.var)])     # Add start(0) and end(1,514) points
+
+            if(len(intersect) >= numV*2):                                               # Check for the number of v regions
+                check = True
+
+                for i in range(0, numV*2, 2):                                           # Iterate thru intersecting points
+                    #print("I: ", intersect[i+1], " J: ", intersect[i], " Total: ", intersect[i+1] - intersect[i])
+                    if(intersect[i+1] - intersect[i] < spacing): check = False          # Check spacing between points (fails if too low)
+                
+                if(check == True): break                                                # Intersecting points looks good
+
+            line += 0.001                                               # Move the intersecting line
+
+        self.intersect = intersect
+        plt.plot(x, y_1, color='black')
+        #plt.plot(x, y_2)
+
+        for i in range(0, len(intersect), 2):
+            x1 = intersect[i]
+            x2 = intersect[i+1]
+            #print('X1: ', x1, ' X2: ', x2)
+            plt.plot([x1,x2],[line,line], color='red')
 
         plt.xlabel('Position in the 16S rRNA gene')                     # X axis name
         plt.ylabel('Pct Conserved')                                     # Y axis name
         plt.title('Smoothed Data w/Intersection line')
   
         if show: plt.show()                                             # Toggle show option
-        if ret: return figure                                           # Toggle return option (Plot figure)
+        if return_fig: return figure                                           # Toggle return option (Plot figure)
 
     # ==============================================================================================================
     # Prints class attributes
