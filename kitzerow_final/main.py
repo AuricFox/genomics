@@ -63,8 +63,8 @@ def main():
         data = get_data(fna_file)
 
         g = db.De_bruijn(data[0], data[1])
-        canvas = g.plot_graph()
-        ty.render(canvas, "g.pdf")
+        g.matplot_graph(False,True)
+        #ty.render(canvas, "g.pdf")
 
 if __name__ == "__main__":
     main()

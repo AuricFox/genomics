@@ -6,6 +6,8 @@ https://eaton-lab.org/slides/genomics/answers/nb-10.2-de-Bruijn.html
 '''
 
 import toyplot as ty
+import matplotlib.pyplot as plt
+import networkx as nx
 
 class De_bruijn:
     def __init__(self, seq = [], header = []):
@@ -72,10 +74,11 @@ class De_bruijn:
     # ----------------------------------------------------------------------------------------------------------
     # Creates graph of connected nodes with corresponding kmers
     def plot_graph(self, width=500, height=500):
-    
+        edges = self.edges
+
         graph = ty.graph(
-            [i[0] for i in self.edges],
-            [i[1] for i in self.edges],
+            [i[0] for i in edges],
+            [i[1] for i in edges],
             width=width,
             height=height,
             tmarker=">", 
@@ -85,4 +88,25 @@ class De_bruijn:
             estyle={"stroke": "black", "stroke-width": 2},
             layout=ty.layout.FruchtermanReingold(edges=ty.layout.CurvedEdges()))
         return graph
+
+    # ----------------------------------------------------------------------------------------------------------
+    # Creates graph of connected nodes with corresponding kmers using matplotlib
+    def matplot_graph(self, show_fig=True, save_fig=False):
+        fig = nx.DiGraph()                  # Initialize weighted graph
+        fig.add_edges_from(self.edges)
+        pos = nx.shell_layout(fig)          # Set layout to shell (circular)
+
+        options = {
+            "node_color": "#A0CBE2",
+            "edge_color": "#7d0901",
+            "with_labels": True,            # Show kmer labels
+            "font_size": 12,
+            "font_color": "#0a0a0a"
+        }
+
+        nx.draw(fig, pos, **options)        # Drawing directed graph
+        
+        plt.axis("off")                     # Do not show any axis
+        if(show_fig): plt.show()            # Toggel show
+        if(save_fig): plt.savefig('./output/deBruijn.png', dpi=500)     # Saving file and setting size
     
