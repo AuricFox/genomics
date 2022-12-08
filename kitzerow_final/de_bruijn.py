@@ -5,39 +5,46 @@ https://www.nature.com/articles/nbt.2023
 https://eaton-lab.org/slides/genomics/answers/nb-10.2-de-Bruijn.html
 '''
 
-import toyplot as ty
 import matplotlib.pyplot as plt
-import networkx as nx
+import networkx as nx               # Plotting directed graph
+from tqdm import tqdm               # Progress Bar
+import math
 
 class De_bruijn:
-    def __init__(self, seq = [], header = []):
+    def __init__(self, seq = [], header = [], num=2, k=3, cycle=True):
         self.header = header
         self.seq = seq
 
         self.kmers = {}
         self.edges = set()
-        self.de_bruijn_graph()
+        self.de_bruijn_graph(num=num, k=k, cycle=cycle)
 
     # ----------------------------------------------------------------------------------------------------------
     # Sets values for attributes self.kmer and self.edges
-    def de_bruijn_graph(self, k=3, cycle=True):
-
-        self.kmers = self.get_kmers(k, cycle)
+    def de_bruijn_graph(self, num=2, k=3, cycle=True):
+        
+        self.kmers = self.get_kmers(num, k, cycle)
         self.edges = self.get_edges(self.kmers)
 
     # ----------------------------------------------------------------------------------------------------------
     # Build a list of all kmers in the provided sequences
     # k: kmer size
     # cycle: sequence is cyclic or not
-    def get_kmers(self, k=3, cycle=True):
+    def get_kmers(self, num=2, k=3, cycle=True):
         kmers = {}
 
-        for s in self.seq:                          # Iterate thru all sequences
+        if(num > len(self.seq) or num < 1):             # Cannot exceed bounds of the list self.seq
+            print("ERROR: Invalid input for num!")
+            return kmers
+
+        seq = self.seq[:num-1]                          # Get kmers of these reads
+
+        for s in tqdm(seq, desc=str(k)+'-mers'):   # Iterate thru sequences with progress bar
             #print("Sequence: ", s)
 
             for i in range(0, len(s)):              # Iterate thru a sequence to find kmers
                 kmer = s[i:i + k]
-        
+
                 length = len(kmer)
                 if cycle:                           # Get kmer for cyclic sequences
                     if len(kmer) != k:
@@ -46,8 +53,8 @@ class De_bruijn:
                 else:                               # Skip for non-cyclic sequences
                     if len(kmer) != k:
                         continue
-        
-                if kmer in kmers:              # Add to kmer count (kmer is already found)
+
+                if kmer in kmers:                   # Add to kmer count (kmer is already found)
                     kmers[kmer] += 1
                 else:                               # Add kmer to dictionary (kmer is new)
                     kmers[kmer] = 1
@@ -59,10 +66,10 @@ class De_bruijn:
     def get_edges(self, kmers):
         edges = set()
 
-        for k1 in kmers:
+        for k1 in tqdm(kmers, desc='Edges'):
             for k2 in kmers:
                 if k1 != k2:                                # Iterate thru all non-equal kmers (k1 != k2)
-                    
+
                     if k1[1:] == k2[:-1]:                   # k-1 mers are the same (ex. k1=ACGT, k2=CGTA, CGT == CGT)
                         edges.add((k1[:-1], k2[:-1]))       # Add edge
 
@@ -72,41 +79,76 @@ class De_bruijn:
         return edges
 
     # ----------------------------------------------------------------------------------------------------------
-    # Creates graph of connected nodes with corresponding kmers
-    def plot_graph(self, width=500, height=500):
-        edges = self.edges
+    # Create edges.txt file for creation of spike_protein_directed_graph.txt
+    def create_edges_file(self, file='output/temp/edges.txt'):
+        print("Creating Edge File: ", file)
 
-        graph = ty.graph(
-            [i[0] for i in edges],
-            [i[1] for i in edges],
-            width=width,
-            height=height,
-            tmarker=">", 
-            vsize=25,
-            vstyle={"stroke": "black", "stroke-width": 2, "fill": "none"},
-            vlstyle={"font-size": "11px"},
-            estyle={"stroke": "black", "stroke-width": 2},
-            layout=ty.layout.FruchtermanReingold(edges=ty.layout.CurvedEdges()))
-        return graph
+        with open(file, 'w') as f:
+            for edge in tqdm(self.edges, desc='Edge File'):
+                x1, x2 = edge
+                f.write(x1 + '->' + x2 + '\n')
+        f.close()
+
+    # ----------------------------------------------------------------------------------------------------------
+    # Writes edge data to a text file
+    def create_directed_graph(self, file='output/temp/spike_protein_directed_graph.txt'):
+        print("Creating Directed Graph File: ", file)
+
+        with open(file, "w") as f:
+            added_nodes = set()                                     # Set of (nodes, destination) pairs that have already been iterated through
+
+            for edge in tqdm(self.edges, desc='Directed Graph'):
+                node,dest = edge
+                if edge not in added_nodes:                         # Check if (node, destination) pair has already been writted
+                    f.write(node + ' -> ' + dest)
+
+                    for edge2 in self.edges:                        # Iterate through all edges to see if there are any other edges coming out of node
+                        node2, dest2 = edge2
+                        # If the nodes are the same AND (node, destination) pair is not the same as above AND this node has not already been created
+                        if node == node2 and edge != edge2 and edge2 not in added_nodes:
+                            f.write(',' + dest2)                    # Write the additional destination for exising node
+                            added_nodes.add(edge2)                  # add (node, destination) pair to already added set
+
+                    f.write('\n')
+        f.close()
 
     # ----------------------------------------------------------------------------------------------------------
     # Creates graph of connected nodes with corresponding kmers using matplotlib
-    def matplot_graph(self, show_fig=True, save_fig=False):
-        fig = nx.DiGraph()                  # Initialize weighted graph
-        fig.add_edges_from(self.edges)
-        pos = nx.shell_layout(fig)          # Set layout to shell (circular)
+    def matplot_graph(self, show_fig=True, save_fig=False, file='./output/deBruijn.png'):
+        print("Creating Garph Image: ", file)
+        with tqdm(total=4, desc='Image Graph') as bar:              # Progress bar
 
-        options = {
-            "node_color": "#A0CBE2",
-            "edge_color": "#7d0901",
-            "with_labels": True,            # Show kmer labels
-            "font_size": 12,
-            "font_color": "#0a0a0a"
-        }
+            fig = nx.DiGraph()                  # Initialize weighted graph
+            fig.add_edges_from(self.edges)      # Add edges to weighted graph
+            bar.update(1)
+            k = 0.3/math.sqrt(fig.order())
+            pos = nx.spring_layout(fig, k=k)          # Set layout to shell (circular)
+            bar.update(1)
 
-        nx.draw(fig, pos, **options)        # Drawing directed graph
-        
-        plt.axis("off")                     # Do not show any axis
-        if(show_fig): plt.show()            # Toggel show
-        if(save_fig): plt.savefig('./output/deBruijn.png', dpi=500)     # Saving file and setting size
-    
+            options = {
+                "node_color": "#A0CBE2",
+                "node_size": 20,
+                "edge_color": "#7d0901",
+                "with_labels": True,            # Show kmer labels
+                "font_size": 5,
+                "font_color": "#0a0a0a"
+            }
+
+            nx.draw(fig, pos, **options)        # Drawing directed graph
+            bar.update(1)
+            plt.axis("off")                     # Do not show any axis
+            if(show_fig): plt.show()            # Toggel show
+            if(save_fig): plt.savefig(file, dpi=500)     # Saving file and setting size
+            bar.update(1)
+
+    # ----------------------------------------------------------------------------------------------------------
+    # Master function for creating documents
+    # edge_graph: creates graph image
+    # edge_file: creates edge file used for directed graph
+    # dir_graph: creates directed edge file
+    # i: label for k-mer used (used for kmer loop)
+    def make_docs(self, edge_graph=False, edge_file=False, dir_graph=False, i='1'):
+
+        if(edge_graph): self.matplot_graph(False,True, './output/deBruijn_' + i + '.png')
+        if(edge_file): self.create_edges_file('output/temp/edges_' + i + '.txt')
+        if(dir_graph): self.create_directed_graph('output/temp/spike_protein_directed_graph_' + i + '.txt')

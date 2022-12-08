@@ -1,9 +1,8 @@
-# Main program for reading in data from an input file, running it thru a de Bruijn graph, and writing it to a output file
+# Final project
 
 import sys
 import numpy as np
 import de_bruijn as db
-import toyplot.pdf as ty
 
 # ==============================================================================================================
 # Retreives header/sequence pair data from the fna file
@@ -31,12 +30,12 @@ def get_data(filename):
                 head, seq = head.strip(), seq.strip()       # Strip header and sequece data of newline chars
                 header_data.append(head[1:])                # Add to header list
                 seq_data.append(seq)                        # Add to sequence list
-    
+
     else:
         print("ERROR: Invalid File Type!")
         print("Only fna or fastq types, entered file type is ", mime)
         return
-    
+
     return (seq_data, header_data)
 
 # ==============================================================================================================
@@ -48,23 +47,46 @@ def make_txt(data, filename='./output/output.txt'):
             file.write(str(x) + '\n')
 
 # ==============================================================================================================
-def main():
+def loop_kmer(data, start, end):
+    db_data = db.De_bruijn(data[0], data[1])                                       # Create de Bruijn graph
 
+    for i in range(start, end+1):
+        db_data.de_bruijn_graph(k=i)
+        db_data.make_docs(True, True, True, str(i))
+    
+
+# ==============================================================================================================
+def main():
+    
     # ----------------------------------------------------------------------------------------------------------
     # User enters prefered file
-    if(len(sys.argv) == 2):                                                             
+    if(len(sys.argv) == 2):
         fna_file = sys.argv[1]                                                          # Extracting fastq file name from arguments
         data = get_data(fna_file)                                                       # Processing genome data from fna file
+        db_graph = db.De_bruijn(data[0], data[1])                                       # Create de Bruijn graph
+        db_graph.matplot_graph(False,True)
     
     # ----------------------------------------------------------------------------------------------------------
     # Use default file
     elif(len(sys.argv) == 1):
         fna_file = "./input/sars_spike_protein_reads.fastq"
-        data = get_data(fna_file)
+        data = get_data(fna_file)                                                       # Processing genome data from fna file
+        k = 10
 
-        g = db.De_bruijn(data[0], data[1])
-        g.matplot_graph(False,True)
-        #ty.render(canvas, "g.pdf")
+        db_graph = db.De_bruijn(data[0], data[1], k=k)                                       # Create de Bruijn graph
+        db_graph.make_docs(True,True,True, str(k))
+
+    # ----------------------------------------------------------------------------------------------------------
+    # Use default file and run kmer loop
+    # python .\main start stop
+    elif(len(sys.argv) == 3):
+        start = sys.argv[1]                                                             # Start at this k-mer
+        end = sys.argv[2]                                                               # End at this k-mer
+
+        fna_file = "./input/sars_spike_protein_reads.fastq"
+        data = get_data(fna_file)                                                       # Processing genome data from fna file
+        loop_kmer(data, int(start), int(end))                                                           # Loop thru k-mers from start to end
+
 
 if __name__ == "__main__":
     main()
