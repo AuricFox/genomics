@@ -11,33 +11,33 @@ from tqdm import tqdm               # Progress Bar
 import math
 
 class De_bruijn:
-    def __init__(self, seq = [], header = [], num=2, k=3, cycle=True):
+    def __init__(self, seq = [], header = []):
         self.header = header
         self.seq = seq
 
         self.kmers = {}
         self.edges = set()
-        self.de_bruijn_graph(num=num, k=k, cycle=cycle)
 
     # ----------------------------------------------------------------------------------------------------------
-    # Sets values for attributes self.kmer and self.edges
-    def de_bruijn_graph(self, num=2, k=3, cycle=True):
-        
-        self.kmers = self.get_kmers(num, k, cycle)
+    def de_bruijn_graph(self, start=0, end=1, k=3, cycle=True):
+
+        if(start < 0 or start > end or start == end):   # Cannot exceed bounds of the list self.seq
+            print("ERROR: Invalid input!")
+            return
+
+        if(end > len(self.seq)):                        # End exceeds sequence list, change it to list length
+            end = len(self.seq)
+
+        seq = self.seq[start:end]                       # Get kmers from this list of sequences
+        self.kmers = self.get_kmers(seq, k, cycle)
         self.edges = self.get_edges(self.kmers)
 
     # ----------------------------------------------------------------------------------------------------------
     # Build a list of all kmers in the provided sequences
     # k: kmer size
     # cycle: sequence is cyclic or not
-    def get_kmers(self, num=2, k=3, cycle=True):
+    def get_kmers(self, seq, k=3, cycle=False):
         kmers = {}
-
-        if(num > len(self.seq) or num < 1):             # Cannot exceed bounds of the list self.seq
-            print("ERROR: Invalid input for num!")
-            return kmers
-
-        seq = self.seq[:num-1]                          # Get kmers of these reads
 
         for s in tqdm(seq, desc=str(k)+'-mers'):   # Iterate thru sequences with progress bar
             #print("Sequence: ", s)
@@ -114,14 +114,14 @@ class De_bruijn:
 
     # ----------------------------------------------------------------------------------------------------------
     # Creates graph of connected nodes with corresponding kmers using matplotlib
-    def matplot_graph(self, show_fig=True, save_fig=False, file='./output/deBruijn.png'):
+    def matplot_graph(self, show_lab=False, show_fig=True, save_fig=False, file='./output/graph/deBruijn.png'):
         print("Creating Garph Image: ", file)
         with tqdm(total=4, desc='Image Graph') as bar:              # Progress bar
-
+            plt.clf()
             fig = nx.DiGraph()                  # Initialize weighted graph
             fig.add_edges_from(self.edges)      # Add edges to weighted graph
             bar.update(1)
-            k = 0.3/math.sqrt(fig.order())
+            k = 0.9/math.sqrt(fig.order())
             pos = nx.spring_layout(fig, k=k)          # Set layout to shell (circular)
             bar.update(1)
 
@@ -129,7 +129,7 @@ class De_bruijn:
                 "node_color": "#A0CBE2",
                 "node_size": 20,
                 "edge_color": "#7d0901",
-                "with_labels": True,            # Show kmer labels
+                "with_labels": show_lab,            # Show kmer labels
                 "font_size": 5,
                 "font_color": "#0a0a0a"
             }
@@ -149,6 +149,10 @@ class De_bruijn:
     # i: label for k-mer used (used for kmer loop)
     def make_docs(self, edge_graph=False, edge_file=False, dir_graph=False, i='1'):
 
-        if(edge_graph): self.matplot_graph(False,True, './output/deBruijn_' + i + '.png')
+        if(edge_graph): self.matplot_graph(False, False,True, './output/graph/deBruijn_' + i + '.png')
         if(edge_file): self.create_edges_file('output/temp/edges_' + i + '.txt')
-        if(dir_graph): self.create_directed_graph('output/temp/spike_protein_directed_graph_' + i + '.txt')
+
+        if(dir_graph): 
+            file = 'output/temp/spike_protein_directed_graph_' + i + '.txt'
+            self.create_directed_graph(file)
+            return file

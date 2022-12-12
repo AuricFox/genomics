@@ -2,6 +2,7 @@
 
 import random
 import copy
+import sys
 
 def EulerianPath(strings, format=True):
     #Similar formatting for turning txt file to DeBruijn graph in python dict form
@@ -88,6 +89,7 @@ def EulerianPath(strings, format=True):
     return final_sequence
 
 def main():
+    kmer = sys.argv[1]
     f = open('output/spike_protein_directed_graph.txt', 'r')
 
     text = []
@@ -96,7 +98,13 @@ def main():
 
     f.close()
 
-    print('->'.join(EulerianPath(text)))
+    ep = EulerianPath(text)
+    print('->'.join(ep))
+
+    filename = 'output/eulerian/eulerianPath_' + kmer + '.txt'
+    with open(filename, 'w') as f:
+        f.write(''.join(ep))
+
 
 if __name__ == '__main__':
     main()

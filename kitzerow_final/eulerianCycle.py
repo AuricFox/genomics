@@ -2,6 +2,7 @@
 
 import copy
 import random
+import sys
 
 def EulerianCycle(strings, format=True):
   ##Ignore this formatting block, it's only for a desired input
@@ -76,15 +77,21 @@ def EulerianCycle(strings, format=True):
 
 
 def main():
-    f = open('output/spike_protein_directed_graph.txt', 'r')
+    kmer = sys.argv[1]
+    f = open('output/temp/spike_protein_directed_graph_10.txt', 'r')
 
     text = []
     for line in f:
         text.append(line.replace('\n', ''))
-
     f.close()
 
-    print('->'.join(EulerianCycle(text)))
+    ec = EulerianCycle(text)
+    print('->'.join(ec))
+
+    filename = 'output/eulerian/eulerianCycle_' + kmer + '.txt'
+    with open(filename, 'w') as f:
+        f.write(''.join(ec))
+    f.close()
 
 if __name__ == '__main__':
     main()

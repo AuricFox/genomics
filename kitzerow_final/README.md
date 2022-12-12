@@ -14,10 +14,16 @@ python .\main.py
 python .\main.py start end
 ```
 
-User entered file:
+User entered parameters:
 ```
-python .\main.py filename
+python .\main.py -l			# Input list indices [start:end]
+python .\main.py -k			# Input kmer range
+python .\main.py -kl		# Input both
 ```
+
+### Run Alignment
+
+
 
 ### Run Trimming
 
