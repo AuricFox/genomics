@@ -197,7 +197,7 @@ def main():
         data = get_data(fna_file)                                       # Processing genome data from fna file
         k = 14
         lstart = 0
-        lend = 4
+        lend = 4 #len(data[0])
         
         loop_kmer(data, k, k, lstart, lend)
 

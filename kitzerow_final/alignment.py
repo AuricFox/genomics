@@ -247,13 +247,16 @@ class alignment:
     def plot_compare(self, kmer, show_fig=False, save_fig=True):
 
         plt.clf()                                                           # Clear figure
-        plt.title('Comparing Assembled Contig(s) With Spike Protein')
-        plt.xlabel('Assembled Sars Spike Protein ')
-        plt.ylabel('Our Assembled Contig(s)')
-
+        count = 0
         for c in range(len(self.vis)):                                      # Plot only matches
             if(self.vis[c] == '|'):
                 plt.plot(c, c, '.', color='#570503')
+                count += 1
+
+        percent = (count/len(self.seq)) * 100
+        plt.title('Comparing Assembled Contig(s) With Spike Protein ({:.2f}% Match)'.format(percent))
+        plt.xlabel('Assembled SARS Spike Protein ')
+        plt.ylabel('Our Assembled Contig(s)')
 
         if(show_fig): plt.show()
         if(save_fig): 

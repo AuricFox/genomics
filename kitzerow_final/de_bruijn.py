@@ -122,7 +122,7 @@ class De_bruijn:
             fig.add_edges_from(self.edges)      # Add edges to weighted graph
             bar.update(1)
             k = 0.9/math.sqrt(fig.order())
-            pos = nx.spring_layout(fig, k=k)          # Set layout to shell (circular)
+            pos = nx.shell_layout(fig, scale=2)          # Set layout to shell (circular)
             bar.update(1)
 
             options = {
@@ -138,7 +138,7 @@ class De_bruijn:
             bar.update(1)
             plt.axis("off")                     # Do not show any axis
             if(show_fig): plt.show()            # Toggel show
-            if(save_fig): plt.savefig(file, dpi=500)     # Saving file and setting size
+            if(save_fig): plt.savefig(file, transparent=False ,dpi=500)     # Saving file and setting size
             bar.update(1)
 
     # ----------------------------------------------------------------------------------------------------------
