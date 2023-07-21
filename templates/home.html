@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="title" content="">
+        <meta name="keywords" content="">
+        <title>Home</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="{{ url_for('static', filename='js/base.js') }}" defer></script>
+    </head>
+    <body>
+        <div id="seq-actions">
+            <div class="seq-action" id="seq-analysis">Sequence Analysis</div>
+            <div class="seq-action" id="seq-alignment">Sequence Alignment</div>
+            <div class="seq-action" id="seq-variance">Sequence Variance</div>
+            <div class="seq-action" id="seq-assembly">Sequence Assembly</div>
+            <div class="seq-action" id="seq-phylogeny">Phylogeny</div>
+        </div>
+        <div id="description">
+            <div class="description" id="desc-analysis">
+                Analize the number of codons (3-mers), amino acids, or specified k-mers within a genetic sequence. This tool 
+                takes in a fna or fastq file containing genetic sequences and analizes the data within the file.
+            </div>
+            <div class="description" id="desc-alignment">
+                Perform an allignment of two sequences to see how they compare. This tool takes in two fna or fastq files 
+                containing genetic sequences and aligns them using the Needleman-Wunsch algorithm.
+            </div>
+            <div class="description" id="decs-variance">
+                Identify variable regions in amplicon sequences, pieces of DNA/RNA that is the source of amplification or 
+                replication events. This tool takes in a fna or fastq file containing genetic sequences and plots the variance regions.
+            </div>
+            <div class="description" id="desc-assembly">
+                Assemble sequence fragments into a complete genome. This tool takes in a fna or fastq file containing genetic 
+                fragments (reads) and assembles them using a de Bruijn graph and eulerian cycle algorithm.
+            </div>
+            <div class="description" id="decs-phylogeny">
+                Construct a phylogeny tree from a series of genetic sequences. This tool takes in a fna or fastq file 
+                containing genetic sequences and implements the Nei-Saitou neighbor-joining algorithm for phylogeny construction.
+            </div>
+        </div>
+        <div id="user-portal">
+
+        </div>        
+    </body>
+</html>
