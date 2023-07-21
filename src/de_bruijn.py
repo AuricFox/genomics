@@ -30,13 +30,6 @@ import time
 import utils
 import alignment as al
 
-# ==============================================================================================================
-# De Bruijn Graph 
-# Source: https://eaton-lab.org/slides/genomics/answers/nb-10.2-de-Bruijn.html
-# Eulerian Cycle/Path
-# Source: https://towardsdatascience.com/russian-bridges-eulerian-circuits-and-genome-assembly-9fd1d84832e9
-# ==============================================================================================================
-
 class De_bruijn:
     def __init__(self, seq = [], header = []):
         self.header = header
@@ -206,9 +199,9 @@ class De_bruijn:
             self.create_directed_graph(file)
             return file
 
-# ----------------------------------------------------------------------------------------------------------
+# ==============================================================================================================
 # Eulerian Cycle
-
+# ==============================================================================================================
 def EulerianCycle(strings, format=True):
   ##Ignore this formatting block, it's only for a desired input
     if format:
@@ -284,9 +277,7 @@ def EulerianCycle(strings, format=True):
 
 # ==============================================================================================================
 # Eulerian Path
-# Source: https://towardsdatascience.com/russian-bridges-eulerian-circuits-and-genome-assembly-9fd1d84832e9
 # ==============================================================================================================
-
 def EulerianPath(strings, format=True):
     #Similar formatting for turning txt file to DeBruijn graph in python dict form
     if format:

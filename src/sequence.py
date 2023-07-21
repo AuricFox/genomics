@@ -1,4 +1,3 @@
-# Samuel Kitzerow, kitze012
 # Sequence class, handles sequence data manipulation
 
 # Codon types: A C G T
@@ -50,16 +49,16 @@ class sequence:
     def codon_to_amino(self):
         amino_str = ""
 
-        start = self.sequence.find("ATG")                                                               # Find index of first start codon
-        if(start < 0):                                                                                  # No start codon found, start at beginning
+        start = self.sequence.find("ATG")                       # Find index of first start codon
+        if(start < 0):                                          # No start codon found, start at beginning
             start = 0
 
         #print("I: ", start, " J: ", stop)
-        for i in range(start, len(self.sequence), 3):                                                                 # Convert selected codons to amino acid sequences
+        for i in range(start, len(self.sequence), 3):           # Convert selected codons to amino acid sequences
             codon = self.sequence[i:(i+3)]
             amino = self.codon[codon]["amino_acid"]
 
-            if(amino == "Stp"):                                                                         # Stop codon reached (TAA, TAG, TGA)
+            if(amino == "Stp"):                                 # Stop codon reached (TAA, TAG, TGA)
                 amino_str += self.amino_acid[amino]["letter"]
                 break
 

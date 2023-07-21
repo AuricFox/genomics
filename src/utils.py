@@ -1,7 +1,3 @@
-# Samuel Kitzerow, kitze012
-# Homework 1, Setting up matrices
-# NOTE: not for main program, just for setting up lookup tables
-
 import sys
 import csv
 import os
