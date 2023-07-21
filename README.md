@@ -14,9 +14,8 @@ The program `codon_mapping.py` creates an object that takes in the codon data an
 This python script assembles genetic sequences from read fragments. The de Bruijn graph breaks up the reads into
 individual codons and edges to form a graph. Then a eulerian cycle is found.
 
-Process Frow:
-De Bruijn Garph -> Eulerian Cycle/Path -> Alignment  
-     (1)        ->         (2)         ->    (3)
+Process Frow:  
+De Bruijn Garph (1) -> Eulerian Cycle/Path (2) -> Alignment (3)
 
 (1) reads.FASTQ -> Graph.pdf, edges.txt, directed_graph.txt
         Converts reads into kmers and edges. This data is then used to constuct a directed graph file and figure.
@@ -27,8 +26,7 @@ De Bruijn Garph -> Eulerian Cycle/Path -> Alignment
 (3) eulerianPath.txt, eulerianCycle.txt -> align.txt, comparison.pdf
         Compares the Eulerian cycle/path file with the assembled spike protein and creates text file with the comparisons and a plot.
 
-File(s):
-./input/sars_spike_protein_reads.fastq
+File(s): `./input/sars_spike_protein_reads.fastq`
 
 ## Phylogeny
 
