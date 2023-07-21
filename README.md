@@ -15,7 +15,7 @@ This python script assembles genetic sequences from read fragments. The de Bruij
 individual codons and edges to form a graph. Then a eulerian cycle is found.
 
 Process Frow:
-De Bruijn Garph -> Eulerian Cycle/Path -> Alignment
+De Bruijn Garph -> Eulerian Cycle/Path -> Alignment  
      (1)        ->         (2)         ->    (3)
 
 (1) reads.FASTQ -> Graph.pdf, edges.txt, directed_graph.txt
