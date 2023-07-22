@@ -21,7 +21,6 @@ File(s):
 
 import matplotlib.pyplot as plt
 import networkx as nx               # Plotting directed graph
-from tqdm import tqdm               # Progress Bar
 import math
 import copy
 import random
@@ -59,7 +58,7 @@ class De_bruijn:
     def get_kmers(self, seq, k=3, cycle=False):
         kmers = {}
 
-        for s in tqdm(seq, desc=str(k)+'-mers'):   # Iterate thru sequences with progress bar
+        for s in seq:   # Iterate thru sequences with progress bar
             #print("Sequence: ", s)
 
             for i in range(0, len(s)):              # Iterate thru a sequence to find kmers
@@ -86,7 +85,7 @@ class De_bruijn:
     def get_edges(self, kmers):
         edges = set()
 
-        for k1 in tqdm(kmers, desc='Edges'):
+        for k1 in kmers:
             for k2 in kmers:
                 if k1 != k2:                                # Iterate thru all non-equal kmers (k1 != k2)
 
@@ -104,7 +103,7 @@ class De_bruijn:
         print("Creating Edge File: ", file)
 
         with open(file, 'w') as f:
-            for edge in tqdm(self.edges, desc='Edge File'):
+            for edge in self.edges:
                 x1, x2 = edge
                 f.write(x1 + '->' + x2 + '\n')
         f.close()
@@ -117,7 +116,7 @@ class De_bruijn:
         with open(file, "w") as f:
             added_nodes = set()                                     # Set of (nodes, destination) pairs that have already been iterated through
 
-            for edge in tqdm(self.edges, desc='Directed Graph [File]'):
+            for edge in self.edges:
                 node,dest = edge
                 if edge not in added_nodes:                         # Check if (node, destination) pair has already been writted
                     f.write(node + ' -> ' + dest)
@@ -138,7 +137,7 @@ class De_bruijn:
         dir_graph = {}
         added_nodes = set()                                     # Set of (nodes, destination) pairs that have already been iterated through
 
-        for edge in tqdm(self.edges, desc='Directed Graph [No File]'):
+        for edge in self.edges:
             node,dest = edge
             if edge not in added_nodes:                         # Check if (node, destination) pair has already been writted
                 dir_graph[node] = [dest]                        # Adding node and destination node to dictionary
@@ -157,31 +156,27 @@ class De_bruijn:
     # Creates graph of connected nodes with corresponding kmers using matplotlib
     def matplot_graph(self, show_lab=False, show_fig=True, save_fig=False, file='./output/graph/deBruijn.png'):
         print("Creating Garph Image: ", file)
-        with tqdm(total=4, desc='Image Graph') as bar:                      # Progress bar
-            plt.clf()
-            fig = nx.DiGraph()                                              # Initialize weighted graph
-            fig.add_edges_from(self.edges)                                  # Add edges to weighted graph
-            bar.update(1)
-            k = 0.5/math.sqrt(fig.order())                                  # Used for spacing in spring layout
-            #pos = nx.spring_layout(fig, k=k)
-            pos = nx.shell_layout(fig, scale=2)                             # Set layout to shell (circular)
-            bar.update(1)
+        
+        plt.clf()
+        fig = nx.DiGraph()                                              # Initialize weighted graph
+        fig.add_edges_from(self.edges)                                  # Add edges to weighted graph
+        k = 0.5/math.sqrt(fig.order())                                  # Used for spacing in spring layout
+        #pos = nx.spring_layout(fig, k=k)
+        pos = nx.shell_layout(fig, scale=2)                             # Set layout to shell (circular)
 
-            options = {
-                "node_color": "#A0CBE2",
-                "node_size": 20,
-                "edge_color": "#7d0901",
-                "with_labels": show_lab,                                    # Show kmer labels
-                "font_size": 5,
-                "font_color": "#0a0a0a"
-            }
+        options = {
+            "node_color": "#A0CBE2",
+            "node_size": 20,
+            "edge_color": "#7d0901",
+            "with_labels": show_lab,                                    # Show kmer labels
+            "font_size": 5,
+            "font_color": "#0a0a0a"
+        }
 
-            nx.draw(fig, pos, **options)                                    # Drawing directed graph
-            bar.update(1)
-            plt.axis("off")                                                 # Do not show any axis
-            if(show_fig): plt.show()                                        # Toggel show
-            if(save_fig): plt.savefig(file, transparent=False ,dpi=500)     # Saving file and setting size
-            bar.update(1)
+        nx.draw(fig, pos, **options)                                    # Drawing directed graph
+        plt.axis("off")                                                 # Do not show any axis
+        if(show_fig): plt.show()                                        # Toggel show
+        if(save_fig): plt.savefig(file, transparent=False ,dpi=500)     # Saving file and setting size
 
     # ----------------------------------------------------------------------------------------------------------
     # Master function for creating documents

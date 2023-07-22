@@ -35,3 +35,40 @@ body {
     flex-direction: column;
     min-height: 100vh;
 }
+
+/* ========== Sequence Action(s) ========== */
+
+#seq-actions{
+    width: 80%;
+    margin: 2rem auto;
+    display: flex;
+    flex-direction: row;
+    color: white;
+    font-weight: bold;
+    font-size: larger;
+    justify-content: space-around;
+}
+
+.seq-action:hover{
+    color: red;
+    cursor: pointer;
+}
+
+/* ========== Sequence Decsriptions ========== */
+
+#description{
+    width: 80%;
+    margin: 0 auto;
+    color: white;
+    text-align: center;
+    font-size: larger;
+}
+
+/* ========== forms ========== */
+
+.forms{
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    margin: 2rem auto;
+}

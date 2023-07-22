@@ -16,7 +16,7 @@ app = Flask(__name__, static_folder='static')
 @app.route("/home")
 def home():
     return render_template('home.html')
-
+'''
 # Custom page not found
 @app.errorhandler(404)
 def page_not_found(error):
@@ -26,7 +26,7 @@ def page_not_found(error):
 @app.errorhandler(500)
 def server_error(error):
     return render_template('404.html'), 404
-
+'''
 # ====================================================================
 # Bioinformatics Processing Functions
 # ====================================================================

@@ -11,36 +11,59 @@
     </head>
     <body>
         <div id="seq-actions">
-            <div class="seq-action" id="seq-analysis">Sequence Analysis</div>
-            <div class="seq-action" id="seq-alignment">Sequence Alignment</div>
-            <div class="seq-action" id="seq-variance">Sequence Variance</div>
-            <div class="seq-action" id="seq-assembly">Sequence Assembly</div>
-            <div class="seq-action" id="seq-phylogeny">Phylogeny</div>
+            <div class="seq-action" id="analysis">Sequence Analysis</div>
+            <div class="seq-action" id="alignment">Sequence Alignment</div>
+            <div class="seq-action" id="variance">Sequence Variance</div>
+            <div class="seq-action" id="assembly">Sequence Assembly</div>
+            <div class="seq-action" id="phylogeny">Phylogeny</div>
         </div>
         <div id="description">
-            <div class="description" id="desc-analysis">
+            <div class="description" id="analysis-desc">
                 Analize the number of codons (3-mers), amino acids, or specified k-mers within a genetic sequence. This tool 
                 takes in a fna or fastq file containing genetic sequences and analizes the data within the file.
             </div>
-            <div class="description" id="desc-alignment">
+            <div class="description" id="alignment-desc">
                 Perform an allignment of two sequences to see how they compare. This tool takes in two fna or fastq files 
                 containing genetic sequences and aligns them using the Needleman-Wunsch algorithm.
             </div>
-            <div class="description" id="decs-variance">
+            <div class="description" id="variance-desc">
                 Identify variable regions in amplicon sequences, pieces of DNA/RNA that is the source of amplification or 
                 replication events. This tool takes in a fna or fastq file containing genetic sequences and plots the variance regions.
             </div>
-            <div class="description" id="desc-assembly">
+            <div class="description" id="assembly-desc">
                 Assemble sequence fragments into a complete genome. This tool takes in a fna or fastq file containing genetic 
                 fragments (reads) and assembles them using a de Bruijn graph and eulerian cycle algorithm.
             </div>
-            <div class="description" id="decs-phylogeny">
+            <div class="description" id="phylogeny-desc">
                 Construct a phylogeny tree from a series of genetic sequences. This tool takes in a fna or fastq file 
                 containing genetic sequences and implements the Nei-Saitou neighbor-joining algorithm for phylogeny construction.
             </div>
         </div>
         <div id="user-portal">
+            <form action="/sequence_analysis" method="POST" class="forms" id="analysis-form" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <input type="submit" value="Submit">
+            </form>
 
+            <form action="/sequence_alignemnt" method="POST" class="forms" id="alignment-form" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <input type="submit" value="Submit">
+            </form>
+
+            <form class="forms" id="variance-form" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <input type="submit" value="Submit">
+            </form>
+
+            <form action="/sequence_assembly" method="POST" class="forms" id="assembly-form" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <input type="submit" value="Submit">
+            </form>
+
+            <form action="/phylogeny" method="POST" class="forms" id="phylogeny-form" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <input type="submit" value="Submit">
+            </form>
         </div>        
     </body>
 </html>

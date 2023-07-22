@@ -1,18 +1,22 @@
-# Genomics
-Repo dedicated to a computer science class on genomics.
+# Bioinformatics
+
+Bioinformatics is an interdisciplinary field that combines biology, computer science, and mathematics to analyze and interpret biological data, particularly from large-scale genomic and molecular studies. It involves the use of computational tools and techniques to understand biological processes, genetic variations, and the relationships between genes, proteins, and other biomolecules.
 
 ## Sequence (Codon Counter)
 
-The program `codon_mapping.py` creates an object that takes in the codon data and counts the codons and amino acids.
+Analizes the number of codons (3-mers), amino acids, or specified k-mers within a genetic sequence. Takes in a fna or fastq file containing genetic sequences and analizes the data within the file. Users can specify which type they want counted and/or the k number for k-mers (3-mer, 4-mer, etc.).
 
 ## Sequence Alignment
 
+Performs an allignment of two sequences to see how they compare. Takes in two fna or fastq files containing genetic sequences and aligns them using the Needleman-Wunsch algorithm. Users can specify whether they want global alignment (count end gaps) or loacl alignment (ignore end gaps).
+
 ## Sequence Variance
+
+Identifies variable regions in amplicon sequences, pieces of DNA/RNA that is the source of amplification or replication events. Takes in a fna or fastq file containing genetic sequences and plots the variance regions.
 
 ## Sequence Assembly
 
-This python script assembles genetic sequences from read fragments. The de Bruijn graph breaks up the reads into
-individual codons and edges to form a graph. Then a eulerian cycle is found.
+Assembles sequence fragments into a complete genome. Takes in a fna or fastq file containing genetic fragments (reads) and assembles them using a de Bruijn graph and eulerian cycle algorithm. Users can specify the k-mer size and number of reads to assemble at a time.
 
 Process Frow:  
 De Bruijn Garph (1) -> Eulerian Cycle/Path (2) -> Alignment (3)
