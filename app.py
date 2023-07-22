@@ -32,7 +32,7 @@ def server_error(error):
 # ====================================================================
 
 # Accessing counting_codons Page
-@app.route("/counting_codons", methods=["POST", "GET"])
+@app.route("/sequence_analysis", methods=["POST", "GET"])
 def counting_codons():
     if(request.method == "GET"):                                    # Render baseline html
         return render_template('counting_codons.html', show_id='form')
@@ -45,10 +45,10 @@ def counting_codons():
         
         file_path = os.path.join(path, file.filename)               # Creating saved file path
         file.save(file_path)                                        # Saving input file
-        data = bio.getCodons(file.filename)                         # Get codon and amino acid data
+        #data = bio.getCodons(file.filename)                         # Get codon and amino acid data
         os.remove(file_path)                                        # File is no longer needed
         
-        return render_template('codon_results.html', data=data)
+        return render_template('home.html')
 
 # Accessing codon_results Page
 @app.route("/codon_results")

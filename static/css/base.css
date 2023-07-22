@@ -27,7 +27,8 @@
 /* ========== Body ========== */
 
 body {
-    background-color: #212121;
+    background-image: url('../images/dna.jpg');
+    background-position: center center;
     font-family: 'Times New Roman', Times, serif;
     width: 100%;
     position: relative;
@@ -36,17 +37,28 @@ body {
     min-height: 100vh;
 }
 
+/* ========== Info ========== */
+
+#info {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    margin: 2rem auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    padding: 2rem;
+}
+
 /* ========== Sequence Action(s) ========== */
 
 #seq-actions{
-    width: 80%;
-    margin: 2rem auto;
     display: flex;
     flex-direction: row;
     color: white;
     font-weight: bold;
     font-size: larger;
     justify-content: space-around;
+    padding-bottom: 2rem;
 }
 
 .seq-action:hover{
@@ -57,8 +69,6 @@ body {
 /* ========== Sequence Decsriptions ========== */
 
 #description{
-    width: 80%;
-    margin: 0 auto;
     color: white;
     text-align: center;
     font-size: larger;
@@ -69,6 +79,57 @@ body {
 .forms{
     display: flex;
     flex-direction: column;
-    width: 80%;
+    background-color: rgba(0,0,0, 0.4);
+    border-radius: 8px;
+    width: fit-content;
     margin: 2rem auto;
+    padding: 2rem;
+    color: white;
+    font-size: large;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* Style the checkboxes and labels */
+.form-group input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+/* Style the file input and label */
+.form-group input[type="file"] {
+    color: #f0f0f0;
+}
+
+.form-group label {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Highlight the label when hovering over the file input */
+.form-group input[type="file"]+label:hover {
+    background-color: #f0f0f0;
+}
+
+/* Style the submit button */
+.form-group input[type="submit"] {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form-group input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
 }
