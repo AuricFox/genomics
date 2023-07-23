@@ -5,7 +5,7 @@ import os
 # ========================================================================================================================================
 # Retreives header/sequence pair data from the fna file
 # Retruns seq_data: list of sequences, header_data: List of corresponding header info
-def get_data(filename):
+def get_data(filename:str):
 
     seq_data = []
     header_data = []
@@ -86,7 +86,7 @@ def rmove():
 
 # ========================================================================================================================================
 # Writes data to a text file
-def make_txt(data, filename='./output/temp/output.txt'):
+def make_txt(data, filename:str='./output/temp/output.txt'):
 
     with open(filename, 'w', newline='') as file:
         for x in data:
@@ -94,7 +94,7 @@ def make_txt(data, filename='./output/temp/output.txt'):
 
 # ========================================================================================================================================
 # Writes data to a text file
-def make_csv(data, filename='./output/runtime.csv'):
+def make_csv(data, filename:str='./output/runtime.csv'):
 
     with open(filename, 'w', newline='') as file:
         cfile = csv.writer(file)

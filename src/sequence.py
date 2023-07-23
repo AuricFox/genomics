@@ -1,3 +1,4 @@
+from typing import List
 # ==========================================================================================================================
 # Lookup Table for codon to amino acids
 # ==========================================================================================================================
@@ -16,7 +17,10 @@ c_to_a = {
 # Codon class, tracks the codons within a sequence
 # ==========================================================================================================================
 class Codon:
-    def __init__(self, seq:str, header:str):
+    # Input:
+    #   * seq(List[str]): genetic sequences being evaluated for counting
+    #   * header(str): information detailing the genetic sequence
+    def __init__(self, seq: List[str], header:str):
         # Codon dictionary, track codon count
         self.codon = {
             "AAA": 0, "AAC": 0, "AAG": 0, "AAT": 0, "ACA": 0, "ACC": 0, "ACG": 0, "ACT": 0, "AGA": 0, "AGC": 0, "AGG": 0, "AGT": 0, 
@@ -33,6 +37,8 @@ class Codon:
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Incriments the count of the codon
+    # Input:
+    #   * codon(str): codon being addded to the total count
     def add_codon(self, codon:str):
 
         if (len(codon) != 3):               # String can only have 3 bases
@@ -44,11 +50,23 @@ class Codon:
     # ----------------------------------------------------------------------------------------------------------------------
     # Parses the genome sequence string into individual codon sub-strings and adds them to the count
     def count_codons(self):
-        end = len(self.seq) - len(self.seq) % 3   # Ignore any trailing characters
+        for sequence in self.seq:                       # Loop thru all the sequences
+            end = len(sequence) - len(sequence) % 3     # Ignore any trailing characters
 
-        for i in range(0, end, 3):      # Iterate thru each 3 chars in the string
-            codon = self.seq[i:(i+3)]
-            self.add_codon(codon)       # Add codon to count
+            for i in range(0, end, 3):                  # Iterate thru each 3 chars in the string
+                codon = sequence[i:(i+3)]
+                self.add_codon(codon)                   # Add codon to count
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Parses the genome sequence string into individual codon sub-strings and adds them to the count
+    # Input:
+    #   * seq(str): genetic sequence being parse into individual codons for counting
+    def count_codons_str(self, seq:str):
+        end = len(seq) - len(seq) % 3       # Ignore any trailing characters
+
+        for i in range(0, end, 3):          # Iterate thru each 3 chars in the string
+            codon = seq[i:(i+3)]
+            self.add_codon(codon)           # Add codon to count
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Returns the totals of all codons as a list [codon, count]
@@ -70,7 +88,10 @@ class Codon:
 # Amino_Acid class, handles sequence data manipulation
 # ==========================================================================================================================
 class Amino_Acid:
-    def __init__(self, seq:str, header:str):
+    # Input:
+    #   * seq(List[str]): genetic sequences being evaluated for counting
+    #   * header(str): information detailing the genetic sequence
+    def __init__(self, seq: List[str], header:str):
 
         # Amino acid dictionary, tracks amino acid count
         self.amino_acid = { 
@@ -88,6 +109,8 @@ class Amino_Acid:
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Incriments the count of the amino acid
+    # Input:
+    #   * amino_acid(str): amino acid being added to the total count
     def add_amino_acid(self, amino_acid:str):
 
         if (len(amino_acid) != 3):                  # String can only have 3 bases
@@ -99,14 +122,28 @@ class Amino_Acid:
     # ----------------------------------------------------------------------------------------------------------------------
     # Parses the genome sequence string into individual codon sub-strings, converts them to acids, and adds them to the count
     def count_amino_acids(self):
-        end = len(self.seq) - len(self.seq) % 3     # Ignore any trailing characters
+        for sequence in self.seq:                       # Iterate thru all sequences
+            end = len(sequence) - len(sequence) % 3     # Ignore any trailing characters
+
+            for i in range(0, end, 3):                  # Iterate thru each 3 chars in the string
+                codon = sequence[i:(i+3)]
+                self.add_amino_acid(c_to_a[codon])      # Add amino acid to count
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Parses the genome sequence string into individual codon sub-strings, converts them to acids, and adds them to the count
+    # Input:
+    #   * seq(str): genetic sequence being parse into individual codons and converted to amino acids for counting
+    def count_amino_acids_str(self, seq:str):
+        end = len(seq) - len(seq) % 3               # Ignore any trailing characters
 
         for i in range(0, end, 3):                  # Iterate thru each 3 chars in the string
-            codon = self.seq[i:(i+3)]
+            codon = seq[i:(i+3)]
             self.add_amino_acid(c_to_a[codon])      # Add amino acid to count
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Converts a Codon sequence to an amino acid sequence and returns it
+    # Input:
+    #   * stops(bool): used to for gene expression, use start and stop codons
     def codon_to_amino(self, stops:bool=False):
         amino_str = ""
 
@@ -147,16 +184,22 @@ class Amino_Acid:
 # Kmerclass, handles k-mer data manipulation
 # ==========================================================================================================================
 class Kmer:
-    def __init__(self, seq:str, header:str, k:int):
-        self.seq = seq          # Input sequence
-        self.header = header    # Sequence header information
-        self.k = k              # Size of the k-mer (string length)
+    # Input:
+    #   * seq(List[str]): genetic sequences being evaluated for counting
+    #   * header(str): information detailing the genetic sequence
+    #   * k(int): size of the k-mer, length of the string after parsing
+    def __init__(self, seq: List[str], header:str, k:int):
+        self.seq = seq
+        self.header = header
+        self.k = k
 
         self.kmers = {}         # Dictionary that stores the kmer and the count
         self.count_kmers()
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Adds the k-mer to the count
+    # Input:
+    #   * kmer(str): k-mer being added to the total count
     def add_kmer(self, kmer:str):
 
         if(len(kmer) != self.k):    # K-mer must have the same length k
@@ -171,11 +214,23 @@ class Kmer:
     # ----------------------------------------------------------------------------------------------------------------------
     # Parses the k-mer from the sequence and adds it to the count
     def count_kmers(self):
-        end = (len(self.seq) - len(self.seq)) % self.k  # Ignore any trailing characters
+        for sequence in self.seq:                           # Iterate thru all sequences
+            end = len(sequence) - len(sequence) % self.k    # Ignore any trailing characters
 
-        for i in range(0, end, 3):                      # Iterate thru each 3 chars in the string
-            kmer = self.seq[i:(i+self.k)]
-            self.add_kmer(kmer)                         # Add amino acid to count
+            for i in range(0, end, 3):                      # Iterate thru each 3 chars in the string
+                kmer = sequence[i:(i+self.k)]
+                self.add_kmer(kmer)                         # Add amino acid to count
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Parses the k-mer from the sequence and adds it to the count
+    # Input:
+    #   * seq(str): genetic sequence being parse into individual k-mers for counting
+    def count_kmer_str(self, seq:str):
+        end = len(seq) - len(seq) % self.k          # Ignore any trailing characters
+
+        for i in range(0, end, 3):                  # Iterate thru each 3 chars in the string
+            kmer = seq[i:(i+self.k)]
+            self.add_kmer(kmer)                     # Add amino acid to count
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Returns the totals of all k-mers as a list [k-mer, count]
