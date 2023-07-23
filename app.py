@@ -32,23 +32,33 @@ def server_error(error):
 # ====================================================================
 
 # Accessing counting_codons Page
-@app.route("/sequence_analysis", methods=["POST", "GET"])
+@app.route("/sequence_analysis", methods=["POST"])
 def counting_codons():
-    if(request.method == "GET"):                                    # Render baseline html
-        return render_template('counting_codons.html', show_id='form')
-    else:                                                           # User submitted form data
-        file = request.files["file"]                                # Get user's submitted file
-        path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file will be saved
+    # User submitted form data
+    codon = request.form.get('codon')
+    amino = request.form.get('amino')
+    kmer = request.form.get('kmer')
+    n_mer = request.form.get('n-mer')
+    
+    file = request.files["file"]                                # Get user's submitted file
+    path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file will be saved
 
-        if not os.path.exists(path):                                # Checks if path exists
-            os.makedirs(path)                                       # Create path if it doesn't exist
+    if not os.path.exists(path):                                # Checks if path exists
+        os.makedirs(path)                                       # Create path if it doesn't exist
         
-        file_path = os.path.join(path, file.filename)               # Creating saved file path
-        file.save(file_path)                                        # Saving input file
-        #data = bio.getCodons(file.filename)                         # Get codon and amino acid data
-        os.remove(file_path)                                        # File is no longer needed
-        
-        return render_template('home.html')
+    file_path = os.path.join(path, file.filename)               # Creating saved file path
+    file.save(file_path)                                        # Saving input file
+
+    data = {}
+    if codon != None:
+        data["codons"] = bio.getCodons(file.filename)           # Get codon count
+    if amino != None:
+        data["amino acids"] = bio.getCodons(file.filename)      # Get amino acid count
+    if kmer != None:
+        data["kmers"] = bio.getCodons(file.filename)            # Get k-mer count
+
+    os.remove(file_path)                                        # File is no longer needed
+    return render_template('home.html')
 
 # Accessing codon_results Page
 @app.route("/codon_results")
