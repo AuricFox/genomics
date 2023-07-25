@@ -4,7 +4,10 @@ import os
 
 # ========================================================================================================================================
 # Retreives header/sequence pair data from the fna file
-# Retruns seq_data: list of sequences, header_data: List of corresponding header info
+# Inputs:
+#   * filename(str): file that the header and sequence data is being read from
+# Retruns:
+#   * seq_data, header_data(List[str],List(str)): a tuple containing lists of sequences and header info
 def get_data(filename:str):
 
     seq_data = []
@@ -46,23 +49,35 @@ def get_data(filename:str):
     return (seq_data, header_data)
 
 # ========================================================================================================================================
-# Merging csv files with corresponding values into one file
-def merge_files(file1, file2, file3):
-    f1 = open(file1, 'r')       # Separate genes
-    f2 = open(file2, 'r')       # Whole genome
+# Merges two files together and writes the results to a third file
+# Inputs:
+#   * file1(str): path of the first file to be mergered
+#   * file2(str): path of the second file to be merged
+#   * file3(str): path of the file that the results are written too
+def merge_files(file1:str, file2:str, file3:str):
+    try:
+        with open(file1, 'r') as f1, open(file2, 'r') as f2:
+            reader1 = csv.reader(f1)
+            reader2 = csv.reader(f2)
+            data = []
 
-    data = []
+            for row1, row2 in zip(reader1, reader2):
+                # Assuming file1 and file2 have a common identifier in the first column
+                common_identifier = row1[0]
 
-    for (line1, line2) in zip(f1, f2):          # Iterates thru both files
-        line1 = (line1.strip()).split(',')      # Removing newlines and splitting string at commas
-        line2 = (line2.strip()).split(',')
+                # Merge data based on the common identifier
+                merged_row = row1 + [row2[1]]
 
-        line1.append(line2[1])                  # Appending the count from the second file to a list from the first file
-        data.append(line1)
+                data.append(merged_row)
 
-    with open(file3, 'w', newline='') as file:
-        cfile = csv.writer(file)
-        cfile.writerows(data)                           # Wrights codon or amino acid data to csv
+            with open(file3, 'w', newline='') as output_file:
+                writer = csv.writer(output_file)
+                writer.writerows(data)
+        print("Files merged successfully.")
+    except FileNotFoundError:
+        print("File not found. Please check the input filenames.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 
 # ========================================================================================================================================
 # Clears out old files

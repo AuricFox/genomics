@@ -84,6 +84,14 @@ class Codon:
         for i in self.codon:
             print(self.codon[i])
 
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Adds the codon totals from another codon object to the self's codon totals
+    # Inputs:
+    #   * other(Codon): contains the codon totals of another Codon object
+    def __add__(self, other: 'Codon'):
+        for key, value in other.codon.items():
+            self.codon[key] = self.codon.get(key, 0) + value
+
 # ==========================================================================================================================
 # Amino_Acid class, handles sequence data manipulation
 # ==========================================================================================================================
@@ -180,6 +188,15 @@ class Amino_Acid:
         for i in self.amino_acid:
             print(self.amino_acid[i])
 
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Adds the amino acid totals from another Amino_Acid object to self's amino acid totals
+    # Inputs:
+    #   * other(Amino_Acid): contains the amino acid totals of another Amino_Acid object
+    def __add__(self, other: 'Amino_Acid'):
+        for key, value in other.amino_acid.items():
+            count = value['count']
+            self.amino_acid[key]['count'] = self.amino_acid[key].get(key, 0) + count
+
 # ==========================================================================================================================
 # Kmerclass, handles k-mer data manipulation
 # ==========================================================================================================================
@@ -241,6 +258,14 @@ class Kmer:
             kmers.append([key, self.kmers[key]])
 
         return kmers
+    
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Adds the k-mer totals from another Kmer object to the self's k-mer totals
+    # Inputs:
+    #   * other(Kmer): contains the k-mer totals of another Kmer object
+    def __add__(self, other: 'Kmer'):
+        for key, value in other.kmers.items():
+            self.kmers[key] = self.kmers.get(key, 0) + value
     
 # ==========================================================================================================================
 def main():
