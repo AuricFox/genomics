@@ -38,7 +38,7 @@ def counting_codons():
     codon = request.form.get('codon')
     amino = request.form.get('amino')
     kmer = request.form.get('kmer')
-    n_mer = request.form.get('n-mer')
+    k = request.form.get('n-mer', type=int)
     
     file = request.files["file"]                                # Get user's submitted file
     path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file will be saved
@@ -48,17 +48,11 @@ def counting_codons():
         
     file_path = os.path.join(path, file.filename)               # Creating saved file path
     file.save(file_path)                                        # Saving input file
+    data = bio.get_sequence_data(file.filename, codon, amino, kmer, k)   # Get the totals
 
-    data = {}
-    if codon != None:
-        data["codons"] = bio.getCodons(file.filename)           # Get codon count
-    if amino != None:
-        data["amino acids"] = bio.getCodons(file.filename)      # Get amino acid count
-    if kmer != None:
-        data["kmers"] = bio.getCodons(file.filename)            # Get k-mer count
-
+    print(data)
     os.remove(file_path)                                        # File is no longer needed
-    return render_template('home.html')
+    return redirect('/home')
 
 # Accessing codon_results Page
 @app.route("/codon_results")

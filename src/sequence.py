@@ -234,7 +234,7 @@ class Kmer:
         for sequence in self.seq:                           # Iterate thru all sequences
             end = len(sequence) - len(sequence) % self.k    # Ignore any trailing characters
 
-            for i in range(0, end, 3):                      # Iterate thru each 3 chars in the string
+            for i in range(0, end, self.k):                 # Iterate thru each k chars in the string
                 kmer = sequence[i:(i+self.k)]
                 self.add_kmer(kmer)                         # Add amino acid to count
 
@@ -245,7 +245,7 @@ class Kmer:
     def count_kmer_str(self, seq:str):
         end = len(seq) - len(seq) % self.k          # Ignore any trailing characters
 
-        for i in range(0, end, 3):                  # Iterate thru each 3 chars in the string
+        for i in range(0, end, self.k):             # Iterate thru each k chars in the string
             kmer = seq[i:(i+self.k)]
             self.add_kmer(kmer)                     # Add amino acid to count
 
@@ -270,22 +270,8 @@ class Kmer:
 # ==========================================================================================================================
 def main():
 
-    test = Codon()
-    codons = [ # list of all 64 possible DNA codon combinations
-        "AAA", "ACA", "AGA", "ATA", "AAC", "ACC", "AGC", "ATC", "AAG", "ACG", "AGG", "ATG", "AAT", "ACT", "AGT", "ATT",
-        "CAA", "CCA", "CGA", "CTA", "CAC", "CCC", "CGC", "CTC", "CAG", "CCG", "CGG", "CTG", "CAT", "CCT", "CGT", "CTT",
-        "GAA", "GCA", "GGA", "GTA", "GAC", "GCC", "GGC", "GTC", "GAG", "GCG", "GGG", "GTG", "GAT", "GCT", "GGT", "GTT",
-        "TAA", "TCA", "TGA", "TTA", "TAC", "TCC", "TGC", "TTC", "TAG", "TCG", "TGG", "TTG", "TAT", "TCT", "TGT", "TTT"
-    ]
-
-    for x in codons:
-        test.add_codon(x)
-        #test.add_to_sequence(x)
-    
-    t = Codon()
-    t.add_to_sequence("AATGAAAAAAAAAAAATAAA")
-    # print(t.get_amino_count())
-    print(t.codon_to_amino())
+    test = Kmer(['AAAAAAA'], 'KMER', 4)
+    print(test.kmers)
 
 if __name__ == "__main__":
     main()

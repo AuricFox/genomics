@@ -10,7 +10,7 @@ $('.seq-action').click(function () {
     
     var desc = '#' + id + '-desc';
     var form = '#' + id + '-form';
-    
+
     $('.description').not($(desc)).hide();  // Hide other descriptions
     $(desc).show();                         // Show the selected description
 
