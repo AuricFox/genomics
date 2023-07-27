@@ -28,12 +28,11 @@ def server_error(error):
     return render_template('404.html'), 404
 '''
 # ====================================================================
-# Bioinformatics Processing Functions
+# Sequence Processing Functions
 # ====================================================================
-
-# Accessing counting_codons Page
+# Handles sequence counting of codons, amino acids, and/or k-mers
 @app.route("/sequence_analysis", methods=["POST"])
-def counting_codons():
+def sequence_analysis():
     # User submitted form data
     codon = request.form.get('codon')
     amino = request.form.get('amino')
@@ -41,23 +40,51 @@ def counting_codons():
     k = request.form.get('n-mer', type=int)
     
     file = request.files["file"]                                # Get user's submitted file
-    path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file will be saved
-
-    if not os.path.exists(path):                                # Checks if path exists
-        os.makedirs(path)                                       # Create path if it doesn't exist
-        
-    file_path = os.path.join(path, file.filename)               # Creating saved file path
-    file.save(file_path)                                        # Saving input file
+    file_path = process_file(file)                              # Get temp file path
+    
     data = bio.get_sequence_data(file.filename, codon, amino, kmer, k)   # Get the totals
 
     print(data)
     os.remove(file_path)                                        # File is no longer needed
     return redirect('/home')
 
-# Accessing codon_results Page
-@app.route("/codon_results")
-def codon_results():
-    return render_template('codon_results.html',)
+# --------------------------------------------------------------------
+# Displays the results of the sequence analysis
+@app.route("/sequence_results")
+def sequence_results():
+    return render_template('sequence_results.html')
+
+# ====================================================================
+# Sequence Alignment Functions
+# ====================================================================
+# Handles sequence alignment of bases
+@app.route("/sequence_alignment", method=["POST"])
+def sequence_alingment():
+    return redirect('/home')
+
+# --------------------------------------------------------------------
+# Displays the results of the sequence alignment
+@app.route("/alignment_results")
+def aligment_results():
+    return render_template('aligment_results.html')
+
+# ====================================================================
+# File Functions
+# ====================================================================
+# Takes in a file object and saves the file to the temp directory
+# Input:
+#   * file: the user input file being saved
+# Output:
+#   * file_path: the path to the saved file
+def process_file(file):
+    path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file will be saved
+
+    os.makedirs(path, exist_ok=True)                            # Create path if it doesn't exist
+        
+    file_path = os.path.join(path, file.filename)               # Creating saved file path
+    file.save(file_path)                                        # Saving input file
+
+    return file_path
 
 # ====================================================================
 # Run Main

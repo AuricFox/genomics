@@ -34,8 +34,23 @@ def get_sequence_data(file:str, codon=None, amino=None, kmer=None, k:int=3):
     return res
 
 # ==============================================================================================================
+# Extracts the header and sequence data from the input file and counts the totals in the sequence
+# Input:
+#   * file(str): path to the file containing the sequence data
+# Returns:
+#   * res(dict): dictionary response containing the totals of codons, amino acids, and/or kmers
+# ==============================================================================================================
+def get_alignment_data(file1:str, file2:str, option:str):
+    seq1 = utils.get_data(os.path.join(path, file1))
+    seq2 = utils.get_data(os.path.join(path, file2))
+    res = {}
+
+    
+
+    return res
+# ==============================================================================================================
 def main():
-    data = get_sequence_data('test.fna', kmer='kmer', k=4)
+    data = get_sequence_data('testing.fna', kmer='kmer', k=4)
     print(data)
     return
 
