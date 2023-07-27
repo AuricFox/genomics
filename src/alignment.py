@@ -124,8 +124,9 @@ class alignment:
         col = len(self.ref)
         position = self.n[row][col]                 # Start alignment here (n-row, n-col)
         
-        while(position != None):
-            # print(f"Alignment: {position} Row: {row} Col: {col}")
+        # Iterate until the position is at row 0 and column 0
+        while(position != (0,0)):
+            #print(f"Alignment: {position} Row: {row} Col: {col}")
             self.alignment_string(row, col, position)
 
             # Incrementing values to next neighbor
@@ -153,7 +154,8 @@ class alignment:
             self.counts['end gaps'] += 1                                        # Incrementing start/end gap count
             i -= 1
 
-        while(row != 0 and col != 0):                                           # Adding alignment characters
+        # Adding alignment characters
+        while(row != 0 and col != 0):
             #print("Alignment: ", position, " Row: ", row, " Col: ", col, " Score: ",  self.results['score'])
             self.alignment_string(row, col, position)
 
@@ -162,12 +164,15 @@ class alignment:
             col = position[1]
             position = self.n[row][col]
 
-        while(position != None):                                                # Adding start characters to alignment strings
+        # Adding start characters to alignment strings
+        while(position != (0,0)):
             #print("Row: ", row, " Col: ", col, " position: ", position)
-            if(col == 0):                                                       # End of reference string reached
+            # End of reference string reached
+            if(col == 0):
                 self.results['reference'] = f"_{self.results['reference']}"
                 self.results['sequence'] = f"{self.seq[row-1]}{self.results['sequence']}"
-            elif(row == 0):                                                     # End of sequence being aligned
+            # End of sequence string reached
+            elif(row == 0):
                 self.results['reference'] = f"{self.ref[col-1]}{self.results['reference']}"
                 self.results['sequence'] = f"_{self.results['sequence']}"
 
@@ -270,12 +275,11 @@ class alignment:
 # ==========================================================================================================================
 # Testing
 def main():
-    ref = "ATGTTTGTTTTTCTTGTTTTATTGCCACTAGTCTCTAGTCAGTGTGTTAATCTTACAACCAGA"
-    seq = "AACCCGCCACCATGTTCGTGTTCCTGGTGCTGCTGCCTCTGGTGTCCAGCCAGTGTGTGAACC"
+    seq = "ATGTTTGTTTTTCTTGTTTTTTACAACCAGA"
+    ref = "AACCCTCTGGTGTCCAGCCAGTGTC"
 
-    #b = alignment(ref, seq, -2, -1, True)
-    #b.get_local_alignment()
-    #b.get_alignment()
+    b = alignment(ref, seq, -2, -1, True)
+    print(b.results)
     #b.print_alignment()
     #b.print_matrices()
 
