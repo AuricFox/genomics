@@ -32,7 +32,7 @@ class alignment:
             'visual': ''                # Visualization of alignment (for text file)
         }
         
-        self.counts = {
+        self.counter = {
             'matches': 0,
             'mismatches': 0,
             'gaps': 0,
@@ -45,6 +45,15 @@ class alignment:
         self.build_matrix()
         self.get_alignment()
     
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Resets results and counter dictionaries, rebuilds the matrices, and aligns sequences
+    def reset(self):
+        self.results = {'score': 0, 'reference': '', 'sequence': '', 'visual': ''}
+        self.counter = {'matches': 0, 'mismatches': 0, 'gaps': 0, 'start gaps': 0, 'end gaps': 0}
+
+        self.build_matrix()
+        self.get_alignment()
+
     # ----------------------------------------------------------------------------------------------------------------------
     # Initializes scoring and neighbor matrices
     def build_matrix(self):
@@ -99,12 +108,6 @@ class alignment:
     # Universal getter for alignment strings
     def get_alignment(self):
 
-        # Resetting alignment values
-        self.results["score"] = 0
-        self.results["reference"] = ""
-        self.results["sequence"] = ""
-        self.results["visual"] = ""
-
         if(self.ignore): 
             self.get_local_alignment()               # Get alignment that ignores start/end gaps
         else: 
@@ -118,20 +121,20 @@ class alignment:
 
         if(self.ignore):                            # Matrix must be rebuilt to count start/end gaps
             self.ignore = False
-            self.build_matrix()
+            self.reset()
 
         row = len(self.seq)
         col = len(self.ref)
-        position = self.n[row][col]                 # Start alignment here (n-row, n-col)
+        neighbor = self.n[row][col]                 # Start alignment here (n-row, n-col)
         
-        # Iterate until the position is at row 0 and column 0
-        while(position != (0,0)):
-            #print(f"Alignment: {position} Row: {row} Col: {col}")
-            self.alignment_string(row, col, position)
+        # Iterate until neighbor is row 0 and column 0
+        while(neighbor != (0,0)):
+            #print(f"Alignment: {neighbor} Row: {row} Col: {col}")
+            self.alignment_string(row, col, neighbor)
 
             # Incrementing values to next neighbor
-            row, col = position[0], position[1]
-            position = self.n[row][col]
+            row, col = neighbor[0], neighbor[1]
+            neighbor = self.n[row][col]
 
     # ----------------------------------------------------------------------------------------------------------------------
     # # Creates alignment strings for sequence reference, sequence 1, and alignment visualization while ingoring start/end gaps
@@ -139,34 +142,51 @@ class alignment:
 
         if not self.ignore:                         # Matrix must be rebuilt to ignore start/end gaps
             self.ignore = True
-            self.build_matrix()
+            self.reset()
 
-        row = len(self.seq)                         # Last Row
-        col = np.argmax(self.s[row])                # Get index with max value
-        position = self.n[row][col]                 # Get contributing neighbor
+        row_i = len(self.seq)                       # Get Last row
+        col_i = len(self.ref)                       # Get Last column
+        mri = (row_i, np.argmax(self.s[row_i]))     # Index of max value in last row
+        mci = (np.argmax(self.s[:,col_i]), col_i)   # Index of max value in last column
+        max_index = [mri, mci]
+        max_row_value = self.s[mri[0]][mri[1]]      # Max value in the row
+        max_col_value = self.s[mci[0]][mci[1]]      # Max value in the column
+        max_score_index = np.argmax([max_row_value, max_col_value])
 
+        index = max_index[max_score_index]          # Get final index of max value
+        neighbor = self.n[index[0]][index[1]]       # Get contributing neighbor
+
+        row = index[0]                              # Starting row for alignment (sequence)
+        col = index[1]                              # Starting column for alignment (reference)
+        
+        print(f'neighbor: {neighbor}, Score: {self.s[index[0]][index[1]] }')
+        print(f'Row: {row}, Column: {col}, Start Row: {row_i}, Start Column: {col_i}')
+
+        start = max(row_i, col_i)
         i = len(self.ref)
-        while(i > col):                             # Adding end characters to alignment strings
+        # Adding end characters(gaps) to alignment strings
+        while(i > col):
             #print("Index: ", i)
             self.results['reference'] = f"{self.ref[i-1]}{self.results['reference']}"
             self.results['sequence'] = f"_{self.results['sequence']}"
+
             self.results['visual'] = f" {self.results['visual']}"
-            self.counts['end gaps'] += 1                                        # Incrementing start/end gap count
+            self.counter['end gaps'] += 1                                        # Incrementing start/end gap count
             i -= 1
 
         # Adding alignment characters
         while(row != 0 and col != 0):
-            #print("Alignment: ", position, " Row: ", row, " Col: ", col, " Score: ",  self.results['score'])
-            self.alignment_string(row, col, position)
+            #print("Alignment: ", neighbor, " Row: ", row, " Col: ", col, " Score: ",  self.results['score'])
+            self.alignment_string(row, col, neighbor)
 
             # Incrementing values to next neighbor
-            row = position[0]
-            col = position[1]
-            position = self.n[row][col]
+            row = neighbor[0]
+            col = neighbor[1]
+            neighbor = self.n[row][col]
 
-        # Adding start characters to alignment strings
-        while(position != (0,0)):
-            #print("Row: ", row, " Col: ", col, " position: ", position)
+        # Adding start characters(gaps) to alignment strings
+        while(neighbor != (0,0)):
+            #print("Row: ", row, " Col: ", col, " neighbor: ", neighbor)
             # End of reference string reached
             if(col == 0):
                 self.results['reference'] = f"_{self.results['reference']}"
@@ -177,19 +197,25 @@ class alignment:
                 self.results['sequence'] = f"_{self.results['sequence']}"
 
             self.results['visual'] = f" {self.results['visual']}"
-            self.counts['start gaps'] += 1                                      # Incrementing start/end gap count
+            self.counter['start gaps'] += 1                                      # Incrementing start/end gap count
             
             # Incrementing values to next neighbor
-            row = position[0]
-            col = position[1]
-            position = self.n[row][col]
+            row = neighbor[0]
+            col = neighbor[1]
+            neighbor = self.n[row][col]
 
     # ----------------------------------------------------------------------------------------------------------------------
-    # Appends to alignment strings (self.results['reference'], self.results['sequence'], and self.results['visual'])
-    def alignment_string(self, row, col, position):
+    """
+    Appends to alignment strings (self.results['reference'], self.results['sequence'], and self.results['visual'])
+    Inputs:
+        * col (int): Column index of the current cell.
+        * row (int): Row index of the current cell.
+        * neighbor (int, int): the neighboring cell that the current cell is pointing too
+    """
+    def alignment_string(self, row, col, neighbor):
 
         # Diagonal alignment (Diagonal neighbor is the best neighbor)
-        if(position[0] == row-1 and position[1] == col-1):
+        if(neighbor[0] == row-1 and neighbor[1] == col-1):
             self.results['reference'] = f"{self.ref[col-1]}{self.results['reference']}"
             self.results['sequence'] = f"{self.seq[row-1]}{self.results['sequence']}"
 
@@ -197,33 +223,27 @@ class alignment:
             if(self.ref[col-1] == self.seq[row-1]):
                 self.results['visual'] = f"|{self.results['visual']}"
                 self.results['score'] += 1
-                self.counts['matches'] += 1                                 # Incrementing match count
+                self.counter['matches'] += 1
             # Characters from both sequences don't match (Add penalty to score)
             else:
                 self.results['visual'] = f"X{self.results['visual']}"
                 self.results['score'] += self.match_pen
-                self.counts['mismatches'] += 1                              # Incrementing mismatch count
+                self.counter['mismatches'] += 1
             
-        # Right alignment (Right neighbor is the best neighbor)
-        elif(position[0] == row-1 and position[1] == col):                  # Verticle alignment (sequence 1 gap)
+        # Right alignment (Add gap to reference sequence)
+        elif(neighbor[0] == row-1 and neighbor[1] == col):
             self.results['reference'] = f"_{self.results['reference']}"
             self.results['sequence'] = f"{self.seq[row-1]}{self.results['sequence']}"
             self.results['visual'] = f" {self.results['visual']}"
             self.results['score'] += self.gap_pen                           # Add gap penalty to score
-            self.counts['gaps'] += 1                                        # Incrementing gap count
-        # Left alignment (Left neighbor is the best neighbor)
-        elif(row == position[0] and position[1] == col-1):                  # Horizontal alignment (sequence 2 gap)
+            self.counter['gaps'] += 1                                       # Incrementing gap count
+        # Left alignment (Add gap to sequence)
+        elif(row == neighbor[0] and neighbor[1] == col-1):                  # Horizontal alignment (sequence 2 gap)
             self.results['reference'] = f"{self.ref[col-1]}{self.results['reference']}"
             self.results['sequence'] = f"_{self.results['sequence']}"
             self.results['visual'] = f" {self.results['visual']}"
             self.results['score'] += self.gap_pen                           # Add gap penalty to score
-            self.counts['gaps'] += 1                                        # Incrementing gap count
-    
-    # ----------------------------------------------------------------------------------------------------------------------
-    # Prints score and neighbor matrices (I didn't want to keep typing the prints in main)
-    def print_matrices(self):
-        print(self.s)
-        print(self.n)
+            self.counter['gaps'] += 1                                       # Incrementing gap count
     
     # ----------------------------------------------------------------------------------------------------------------------
     # Prints aligned sequences with visiualization (I didn't want to keep typing the prints in main as well)
@@ -241,8 +261,8 @@ class alignment:
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Writes alignment data to a text file
-    def alignment_file(self, kmer):
-        filename = f'./output/align/alignment_{kmer}.txt'
+    def alignment_file(self, num):
+        filename = f'./output/alignment_{num}.txt'
 
         with open(filename, 'w') as f:
             f.write(str( self.results['score']) + '\n')
@@ -252,11 +272,11 @@ class alignment:
     
     # ----------------------------------------------------------------------------------------------------------------------
     # Creates a figure displaying the similarities between the two sequences
-    def plot_compare(self, kmer, show_fig=False, save_fig=True):
+    def plot_compare(self, num, show_fig=False, save_fig=True):
 
         plt.clf()                                                           # Clear figure
         count = 0
-        for c in range(len(self.results['visual'])):                                      # Plot only matches
+        for c in range(len(self.results['visual'])):                        # Plot only matches
             if(self.results['visual'][c] == '|'):
                 plt.plot(c, c, '.', color='#570503')
                 count += 1
@@ -268,18 +288,18 @@ class alignment:
 
         if(show_fig): plt.show()
         if(save_fig): 
-            file = './output/align/alignment_{}.png'.format(kmer)
+            file = f'./output/alignment_{num}.png'
             print("Creating Comparison Plot: ", file)
             plt.savefig(file, dpi=500)
 
 # ==========================================================================================================================
 # Testing
 def main():
-    seq = "ATGTTTGTTTTTCTTGTTTTTTACAACCAGA"
-    ref = "AACCCTCTGGTGTCCAGCCAGTGTC"
+    seq = "GAACAGTGTCA"
+    ref = "ACAGTGTC"
 
     b = alignment(ref, seq, -2, -1, True)
-    print(b.results)
+    print(b.s)
     #b.print_alignment()
     #b.print_matrices()
 
