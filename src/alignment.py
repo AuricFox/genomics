@@ -17,7 +17,7 @@ T |   |   |   |   |   |T
 -----------------------
 '''
 
-class alignment:
+class Alignment:
     def __init__(self, ref:str, seq:str, gap_pen:int=-2, match_pen:int=-1, ignore:bool=False):
         self.ref = ref                  # Sequence being referenced
         self.seq = seq                  # Sequence 1
@@ -29,10 +29,7 @@ class alignment:
             'score': 0,                 # Alignment score
             'reference': '',            # Alignment of the reference sequence with gaps added
             'sequence': '',             # Alignment of the input sequence with gaps added
-            'visual': ''                # Visualization of alignment (for text file)
-        }
-        
-        self.counter = {
+            'visual': '',               # Visualization of alignment (for text file)
             'matches': 0,
             'mismatches': 0,
             'gaps': 0,
@@ -46,10 +43,12 @@ class alignment:
         self.get_alignment()
     
     # ----------------------------------------------------------------------------------------------------------------------
-    # Resets results and counter dictionaries, rebuilds the matrices, and aligns sequences
+    # Resets results dictionary, rebuilds the matrices, and aligns sequences
     def reset(self):
-        self.results = {'score': 0, 'reference': '', 'sequence': '', 'visual': ''}
-        self.counter = {'matches': 0, 'mismatches': 0, 'gaps': 0, 'start gaps': 0, 'end gaps': 0}
+        self.results = {
+            'score': 0, 'reference': '', 'sequence': '', 'visual': '',
+            'matches': 0, 'mismatches': 0, 'gaps': 0, 'start gaps': 0, 'end gaps': 0
+        }
 
         self.build_matrix()
         self.get_alignment()
@@ -81,7 +80,7 @@ class alignment:
     # ----------------------------------------------------------------------------------------------------------------------
     """
     Updates the neighbor and scoring matrices with corresponding placement scores and neighbor
-    Inputs:
+    Parameter(s):
         * col (int): Column index of the current cell.
         * row (int): Row index of the current cell.
     """
@@ -143,7 +142,7 @@ class alignment:
         if not self.ignore:                         # Matrix must be rebuilt to ignore start/end gaps
             self.ignore = True
             self.reset()
-
+        
         row = len(self.seq)                         # Get Last row
         col = len(self.ref)                         # Get Last column
         mri = (row, np.argmax(self.s[row]))         # Index of max value in last row
@@ -157,12 +156,12 @@ class alignment:
         start = self.n[index[0]][index[1]]          # Get contributing neighbor where sequence begins
         neighbor = self.n[row][col]                 # Start alignment here (n-row, n-col)
 
-        # print(f'neighbor: {neighbor}, Score: {self.s[index[0]][index[1]] }')
-        # print(f'Row: {row}, Column: {col}, Start Row: {row}, Start Column: {col}')
+        print(f'neighbor: {neighbor}, Start: {start}, Score: {self.s[index[0]][index[1]] }')
+        print(f'Row: {row}, Column: {col}, Start Row: {row}, Start Column: {col}')
         
         # Iterate thru the end gaps
-        while(neighbor != start):
-            #print(f"Alignment: {neighbor} Row: {row} Col: {col}")
+        while(neighbor[0] != start[0] and neighbor[1] != start[1]):
+            # print(f"Alignment: {neighbor} Row: {row} Col: {col}")
             self.alignment_string(row, col, neighbor, True)
 
             # Incrementing values to next neighbor
@@ -185,10 +184,12 @@ class alignment:
     # ----------------------------------------------------------------------------------------------------------------------
     """
     Appends to alignment strings (self.results['reference'], self.results['sequence'], and self.results['visual'])
-    Inputs:
+    Parameter(s):
         * col (int): Column index of the current cell.
         * row (int): Row index of the current cell.
         * neighbor (int, int): the neighboring cell that the current cell is pointing too
+    Returns:
+        * A string indicating the alignment type (match, mismatch, or gap)
     """
     def alignment_string(self, row:int, col:int, neighbor, ignore:bool=False):
 
@@ -201,13 +202,13 @@ class alignment:
             if(self.ref[col-1] == self.seq[row-1]):
                 self.results['visual'] = f"|{self.results['visual']}"
                 self.results['score'] += 1
-                self.counter['matches'] += 1
+                self.results['matches'] += 1
                 return "match"
             # Characters from both sequences don't match (Add penalty to score)
             else:
                 self.results['visual'] = f"X{self.results['visual']}"
                 self.results['score'] += self.match_pen
-                self.counter['mismatches'] += 1
+                self.results['mismatches'] += 1
                 return "mismatch"
             
         # Right alignment (Add gap to reference sequence)
@@ -223,7 +224,7 @@ class alignment:
         
         if not ignore: self.results['score'] += self.gap_pen            # Add gap penalty to score
         self.results['visual'] = f" {self.results['visual']}"
-        self.counter['gaps'] += 1                                       # Incrementing gap count
+        self.results['gaps'] += 1                                       # Incrementing gap count
         
         return "gap"
     
@@ -243,7 +244,7 @@ class alignment:
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Writes alignment data to a text file
-    def alignment_file(self, num:int):
+    def alignment_file(self, num:int=1):
         filename = f'./output/alignment_{num}.txt'
 
         with open(filename, 'w') as f:
@@ -285,7 +286,7 @@ def main():
     seq = "GAACAGTGTCA"
     ref = "ACAGTGTC"
 
-    b = alignment(ref, seq, -2, -1, True)
+    b = Alignment(ref, seq, -2, -1, True)
     print(b.results)
     #print(b.s)
     #print(b.n)

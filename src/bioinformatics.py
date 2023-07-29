@@ -11,11 +11,13 @@ import utils
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp")
 
 # ==============================================================================================================
-# Extracts the header and sequence data from the input file and counts the totals in the sequence
-# Input:
-#   * file(str): path to the file containing the sequence data
-# Returns:
-#   * res(dict): dictionary response containing the totals of codons, amino acids, and/or kmers
+"""
+Extracts the header and sequence data from the input file and counts the totals in the sequence
+Parameter(s):
+    * file(str): path to the file containing the sequence data
+Returns:
+    * res(dict): dictionary response containing the totals of codons, amino acids, and/or kmers
+"""
 # ==============================================================================================================
 def get_sequence_data(file:str, codon=None, amino=None, kmer=None, k:int=3):
     data = utils.get_data(os.path.join(path, file))
@@ -34,24 +36,31 @@ def get_sequence_data(file:str, codon=None, amino=None, kmer=None, k:int=3):
     return res
 
 # ==============================================================================================================
-# Extracts the header and sequence data from the input file and counts the totals in the sequence
-# Input:
-#   * file(str): path to the file containing the sequence data
-# Returns:
-#   * res(dict): dictionary response containing the totals of codons, amino acids, and/or kmers
+"""
+Extracts the header and sequence data from the input file and counts the totals in the sequence
+Parameter(s):
+    * file1 (str): path to the file containing the first sequence data
+    * file2 (str): path to the file containing the second sequence data
+    * gap_pen (int): penalty for gaps in the alignment
+    * match_pen (int): penalty for mismatches in the alignment
+    * ignore (bool): condition to ignore start and end gap penalties for local alignment
+Returns:
+    * res(dict): dictionary response containing the totals of codons, amino acids, and/or kmers
+"""
 # ==============================================================================================================
-def get_alignment_data(file1:str, file2:str, option:str):
+def get_alignment_data(file1:str, file2:str, gap_pen:int=-2, match_pen:int=-1, ignore:bool=False):
     seq1 = utils.get_data(os.path.join(path, file1))
     seq2 = utils.get_data(os.path.join(path, file2))
-    res = {}
 
-    
+    data = al.Alignment(seq1[0][0], seq2[0][0], gap_pen, match_pen, ignore)
+    res = data.results
+
+    data.alignment_file()
 
     return res
 # ==============================================================================================================
 def main():
-    data = get_sequence_data('testing.fna', kmer='kmer', k=4)
-    print(data)
+    data = get_alignment_data(file1='pfizer_mrna.fna', file2='sars_spike_protein.fna',  ignore=True)
     return
 
 
