@@ -48,14 +48,22 @@ Returns:
     * res(dict): dictionary response containing the totals of codons, amino acids, and/or kmers
 """
 # ==============================================================================================================
-def get_alignment_data(file1:str, file2:str, gap_pen:int=-2, match_pen:int=-1, ignore:bool=False):
+def get_alignment_data(file1:str, file2:str, gap_pen:int=-2, match_point:int=1, match_pen:int=-1, ignore:bool=False):
     seq1 = utils.get_data(os.path.join(path, file1))
     seq2 = utils.get_data(os.path.join(path, file2))
 
-    data = al.Alignment(seq1[0][0], seq2[0][0], gap_pen, match_pen, ignore)
+    data = al.Alignment(
+        seq=seq1[0][0], 
+        ref=seq2[0][0], 
+        gap_pen=gap_pen, 
+        match_point=match_point, 
+        match_pen=match_pen, 
+        ignore=ignore
+    )
+
     res = data.results
 
-    data.alignment_file()
+    data.alignment_file(1)
 
     return res
 # ==============================================================================================================

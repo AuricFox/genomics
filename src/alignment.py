@@ -18,10 +18,11 @@ T |   |   |   |   |   |T
 '''
 
 class Alignment:
-    def __init__(self, ref:str, seq:str, gap_pen:int=-2, match_pen:int=-1, ignore:bool=False):
+    def __init__(self, ref:str, seq:str, gap_pen:int=-2, match_point:int=1, match_pen:int=-1, ignore:bool=False):
         self.ref = ref                  # Sequence being referenced
         self.seq = seq                  # Sequence 1
         self.gap_pen = gap_pen          # Gap penalty
+        self.match_point = match_point  # Match point
         self.match_pen = match_pen      # Mismatch penalty
         self.ignore = ignore            # Ignore start and end gaps
 
@@ -87,21 +88,26 @@ class Alignment:
     def align_sequence(self, col:int, row:int):
         #print("Col: ", col," Row: ", row)
 
-        left = self.s[row][col-1] + self.gap_pen                        # Score from left neighbor                             
-        right = self.s[row-1][col] + self.gap_pen                       # Score from right neighbor
-        corner = self.s[row-1][col-1]                                   # Score from corner neighbor
+        left = self.s[row][col-1] + self.gap_pen                    # Score from left neighbor                             
+        right = self.s[row-1][col] + self.gap_pen                   # Score from right neighbor
+        corner = self.s[row-1][col-1]                               # Score from corner neighbor
 
-        if(self.ref[col-1] == self.seq[row-1]):                         # Match, add point
-            corner = corner + 1
-        else:                                                           # No match, add penalty
+        if(self.ref[col-1] == self.seq[row-1]):                     # Match, add point
+            corner = corner + self.match_point
+        else:                                                       # No match, add penalty
             corner = corner + self.match_pen
 
-        score_index = np.argmax([left, corner, right])                  # Take the best score
-        neighbors = [(row, col-1), (row-1, col-1), (row-1, col)]        # [left, corner, right]
-        best_neighbor = neighbors[score_index]                          # Get neighbor with the best score
+        score_index = np.argmax([left, corner, right])              # Take the best score
+        neighbors = [(row, col-1), (row-1, col-1), (row-1, col)]    # [left, corner, right]
+        best_neighbor = neighbors[score_index]                      # Get neighbor with the best score
 
-        self.s[row][col] = max(left,corner, right)                      # Add best score to matrix
-        self.n[row][col] = best_neighbor                                # Add best neighbor to matrix
+        # Add best score to matrix or zero if numbers negative for local alignment
+        if self.ignore:
+            self.s[row][col] = max(left,corner, right, 0)
+        # Add best score to matrix for global alignment
+        else:
+            self.s[row][col] = max(left,corner, right)
+        self.n[row][col] = best_neighbor                            # Add best neighbor to matrix
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Universal getter for alignment strings
@@ -148,38 +154,46 @@ class Alignment:
         mri = (row, np.argmax(self.s[row]))         # Index of max value in last row
         mci = (np.argmax(self.s[:,col]), col)       # Index of max value in last column
         max_index = [mri, mci]
+
         max_row_value = self.s[mri[0]][mri[1]]      # Max value in the row
         max_col_value = self.s[mci[0]][mci[1]]      # Max value in the column
         max_score_index = np.argmax([max_row_value, max_col_value])
 
-        index = max_index[max_score_index]          # Get final index of max value
-        start = self.n[index[0]][index[1]]          # Get contributing neighbor where sequence begins
-        neighbor = self.n[row][col]                 # Start alignment here (n-row, n-col)
+        index = max_index[max_score_index]          # Index of max value in the score matrix
+        neighbor = self.n[index[0]][index[1]]       # Index of contributing neighbor in neighbor matrix
+        next_point = (row, col)
 
-        print(f'neighbor: {neighbor}, Start: {start}, Score: {self.s[index[0]][index[1]] }')
-        print(f'Row: {row}, Column: {col}, Start Row: {row}, Start Column: {col}')
+        # print(f'neighbor: {neighbor}, Start: {point}, Score: {self.s[index[0]][index[1]]}')
+        # print(f'Row: {row}, Column: {col}, Start Row: {index[0]}, Start Column: {index[1]}')
         
-        # Iterate thru the end gaps
-        while(neighbor[0] != start[0] and neighbor[1] != start[1]):
-            # print(f"Alignment: {neighbor} Row: {row} Col: {col}")
-            self.alignment_string(row, col, neighbor, True)
+        # Iterate thru the end gaps in the last row/col of the matrix
+        while (row != index[0] or col != index[1]):
+            # print(f"Next Point: {point} Row: {row} Col: {col}")
+            
+            row, col = next_point[0], next_point[1] # Incrementing values to next point
 
+            if index[0] < row:                      # End gaps in the reference sequence
+                next_point = (row-1, col)
+            elif index[1] < col:                    # End gaps in the lookup sequence
+                next_point = (row, col-1)
+            else:                                   # No end gaps (first alignment)
+                next_point = neighbor
+
+            self.alignment_string(row, col, next_point, True)
+
+
+        # Iterate until neighbor is row 0 and column 0
+        while(neighbor[0] >= 0 and neighbor[1] >= 0):
             # Incrementing values to next neighbor
             row, col = neighbor[0], neighbor[1]
             neighbor = self.n[row][col]
 
-        # Iterate until neighbor is row 0 and column 0
-        while(neighbor[0] >= 0 and neighbor[1] >= 0):
             # Align sequence and add gap penalties
             if (row != 0 and col != 0):
                 self.alignment_string(row, col, neighbor, False)
             # End gap reached, don't add gap penalty
             elif ((row != 0 and col == 0) or (row == 0 and col != 0)):
                 self.alignment_string(row, col, neighbor, True)
-
-            # Incrementing values to next neighbor
-            row, col = neighbor[0], neighbor[1]
-            neighbor = self.n[row][col]
 
     # ----------------------------------------------------------------------------------------------------------------------
     """
@@ -201,7 +215,7 @@ class Alignment:
             # Characters from both sequences match (Increment match score)
             if(self.ref[col-1] == self.seq[row-1]):
                 self.results['visual'] = f"|{self.results['visual']}"
-                self.results['score'] += 1
+                self.results['score'] += self.match_point
                 self.results['matches'] += 1
                 return "match"
             # Characters from both sequences don't match (Add penalty to score)
@@ -278,19 +292,15 @@ class Alignment:
 # ==========================================================================================================================
 # Testing
 def main():
-    """
-    GAACAGTGTCA
-      |||||||| 
-    __ACAGTGTC_
-    """
-    seq = "GAACAGTGTCA"
-    ref = "ACAGTGTC"
+    
+    seq = "THISLINEISATEST"
+    ref = "ISALIGNED"
 
-    b = Alignment(ref, seq, -2, -1, True)
-    print(b.results)
+    b = Alignment(ref=ref, seq=seq, gap_pen=-2, match_point=1, match_pen=-1, ignore=True)
+    #print(b.results)
     #print(b.s)
     #print(b.n)
-    #b.print_alignment()
+    b.print_alignment()
     #b.print_matrices()
 
 if __name__ == "__main__":
