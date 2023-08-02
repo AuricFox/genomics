@@ -142,26 +142,25 @@ class Alignment:
             neighbor = self.n[row][col]
 
     # ----------------------------------------------------------------------------------------------------------------------
-    # # Creates alignment strings for sequence reference, sequence 1, and alignment visualization while ingoring start/end gaps
+    # # Creates alignment strings for reference sequence, sequence 1, and alignment visualization while ingoring start/end gaps
     def get_local_alignment(self):
 
         if not self.ignore:                         # Matrix must be rebuilt to ignore start/end gaps
             self.ignore = True
             self.reset()
         
-        row = len(self.seq)                         # Get Last row
-        col = len(self.ref)                         # Get Last column
+        row = len(self.seq)                         # Numbre of rows
+        col = len(self.ref)                         # Number of columns
         mri = (row, np.argmax(self.s[row]))         # Index of max value in last row
         mci = (np.argmax(self.s[:,col]), col)       # Index of max value in last column
         max_index = [mri, mci]
 
         max_row_value = self.s[mri[0]][mri[1]]      # Max value in the row
         max_col_value = self.s[mci[0]][mci[1]]      # Max value in the column
-        max_score_index = np.argmax([max_row_value, max_col_value])
+        max_score_index = np.argmax([max_row_value, max_col_value]) # Max value index from both
 
         index = max_index[max_score_index]          # Index of max value in the score matrix
-        neighbor = self.n[index[0]][index[1]]       # Index of contributing neighbor in neighbor matrix
-        next_point = (row, col)
+        neighbor = (row, col)                       # Index of next element in path
 
         # print(f'neighbor: {neighbor}, Start: {point}, Score: {self.s[index[0]][index[1]]}')
         # print(f'Row: {row}, Column: {col}, Start Row: {index[0]}, Start Column: {index[1]}')
@@ -170,16 +169,18 @@ class Alignment:
         while (row != index[0] or col != index[1]):
             # print(f"Next Point: {point} Row: {row} Col: {col}")
             
-            row, col = next_point[0], next_point[1] # Incrementing values to next point
+            row, col = neighbor[0], neighbor[1]     # Updating values to next point in path
 
             if index[0] < row:                      # End gaps in the reference sequence
-                next_point = (row-1, col)
-            elif index[1] < col:                    # End gaps in the lookup sequence
-                next_point = (row, col-1)
+                neighbor = (row-1, col)
+                self.results['end gaps'] += 1
+            elif index[1] < col:                    # End gaps in the first sequence
+                neighbor = (row, col-1)
+                self.results['end gaps'] += 1
             else:                                   # No end gaps (first alignment)
-                next_point = neighbor
+                neighbor = self.n[index[0]][index[1]]
 
-            self.alignment_string(row, col, next_point, True)
+            self.alignment_string(row, col, neighbor, True)
 
 
         # Iterate until neighbor is row 0 and column 0
@@ -194,6 +195,7 @@ class Alignment:
             # End gap reached, don't add gap penalty
             elif ((row != 0 and col == 0) or (row == 0 and col != 0)):
                 self.alignment_string(row, col, neighbor, True)
+                self.results['start gaps'] += 1
 
     # ----------------------------------------------------------------------------------------------------------------------
     """
@@ -202,7 +204,7 @@ class Alignment:
         * col (int): Column index of the current cell.
         * row (int): Row index of the current cell.
         * neighbor (int, int): the neighboring cell that the current cell is pointing too
-    Returns:
+    Output:
         * A string indicating the alignment type (match, mismatch, or gap)
     """
     def alignment_string(self, row:int, col:int, neighbor, ignore:bool=False):
@@ -297,7 +299,7 @@ def main():
     ref = "ISALIGNED"
 
     b = Alignment(ref=ref, seq=seq, gap_pen=-2, match_point=1, match_pen=-1, ignore=True)
-    #print(b.results)
+    print(b.results)
     #print(b.s)
     #print(b.n)
     b.print_alignment()
