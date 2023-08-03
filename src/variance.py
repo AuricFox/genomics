@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-from scipy.interpolate import make_interp_spline
 import matplotlib.pyplot as plt
 
 class Variance:
@@ -44,7 +43,7 @@ class Variance:
 
     # ==============================================================================================================
     # Plots raw Data
-    def plot_raw_data(self, show=True, ret=False):
+    def plot_raw_data(self, show:bool=True, ret:bool=False):
         figure = plt.figure()
         y = self.get_var()
         x = [i+1 for i in range(len(y))]                    # X axis, nucleotide base positions
@@ -60,7 +59,7 @@ class Variance:
 
     # ==============================================================================================================
     # Plots smooth Data after raw data has been converted
-    def plot_smooth_data(self, show=True, return_fig=False):
+    def plot_smooth_data(self, show:bool=True, return_fig:bool=False):
         figure = plt.figure()
         y = self.moving_avg()                               # Y axis, get moving averages
         x = [i+1 for i in range(len(y))]                    # X axis, nucleotide base positions
@@ -77,7 +76,7 @@ class Variance:
     # ==============================================================================================================
     # Covert the variability to moving averages in order to smooth the data
     # The default size was selected because the output graph closely matched the one in the hw documentation
-    def moving_avg(self, size=60):
+    def moving_avg(self, size:int=60):
 
         if(size >= len(self.var)):
             print("ERROR: Window size exceeds array size!")
@@ -106,7 +105,7 @@ class Variance:
     # return_fig: boolean value that toggels whether the figure is returned
     # spacing: integer that specifies the min number of bases needed for a v region
     # numV: integer that specifies the number of desired v regions
-    def plot_v_regions(self, show=True, return_fig=False, spacing=30, numV=6):
+    def plot_v_regions(self, show:bool=True, return_fig:bool=False, spacing:int=30, numV:int=6):
         figure = plt.figure()
         y_1 = np.array(self.moving_avg())                               # Variability y
         x = np.array([i+1 for i in range(len(y_1))])                    # X axis, nucleotide base positions
@@ -154,3 +153,11 @@ class Variance:
         #print(self.smatrix)
         for i in range(len(self.var)):
             print(self.var[i])
+
+
+def main():
+    return
+
+
+if __name__ == '__main__':
+    main()
