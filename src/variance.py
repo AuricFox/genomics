@@ -3,26 +3,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Variance:
-    def __init__(self, data = [], header = []):
-        self.data = data                            # List of taxa sequences
+    def __init__(self, sequences = [], header = []):
+        self.sequences = sequences                  # List of taxa sequences
         self.header = header                        # Correspoding markers for sequences
+
         self.var = []
         self.intersect = []
-        self.calc_var(data)
+
+        self.calc_var()
     
     # ==============================================================================================================
-    # Calculates fraction of the most common base
-    def calc_var(self, data):
+    '''
+    Calculates fraction of the most common base
+    '''
+    def calc_var(self):
 
-        for i in range(len(data[0])):                           # Iterates thru columns
+        for i in enumerate(self.sequences[0]):                  # Iterates thru the bases in the sequence (columns)
             count = {'A':0, 'C':0, 'G':0, 'T':0, '-':0}         # Initializing base counts
 
-            for j in range(len(data)):                          # Iterates thru rows
-                if(data[j][i] in count.keys()):
-                    count[data[j][i]] += 1                      # Increment count at specified base
+            for j in enumerate(self.sequences):                 # Iterates thru the sequences (rows)
 
-                else:                                           # Key needs to be added to count
-                    count[data[j][i]] = 1
+                # Increment base count if it exists, else initialize with one
+                count[self.sequences[j][i]] = count.get(self.sequences[j][i], 0) + 1
             
             max_value = max(count['A'], count['C'], count['G'], count['T'])         # Find the max non-gap character (most common base)
             total = sum(k for k in count.values())                                  # Sum of characters
@@ -42,8 +44,15 @@ class Variance:
         return data
 
     # ==============================================================================================================
-    # Plots raw Data
-    def plot_raw_data(self, show:bool=True, ret:bool=False):
+    '''
+    Plots raw Data
+    Parameter(s):
+        * show (bool): toggels the display of the figure
+        * return_fig(bool): toggels whether the figure is returned
+    Output(s):
+        * figure (image): a figure of the smoothed data with marked v regions (peaks)
+    '''
+    def plot_raw_data(self, show:bool=True, return_fig:bool=False):
         figure = plt.figure()
         y = self.get_var()
         x = [i+1 for i in range(len(y))]                    # X axis, nucleotide base positions
@@ -55,10 +64,17 @@ class Variance:
         plt.title('Raw Data w/No Smoothing')
   
         if show: plt.show()                                 # Toggle show option
-        if ret: return figure                               # Toggle return option (Plot figure)
+        if return_fig: return figure                        # Toggle return option (Plot figure)
 
     # ==============================================================================================================
-    # Plots smooth Data after raw data has been converted
+    '''
+    Plots smooth Data after raw data has been converted
+    Parameter(s):
+        * show (bool): toggels the display of the figure
+        * return_fig(bool): toggels whether the figure is returned
+    Output(s):
+        * figure (image): a figure of the smoothed data with marked v regions (peaks)
+    '''
     def plot_smooth_data(self, show:bool=True, return_fig:bool=False):
         figure = plt.figure()
         y = self.moving_avg()                               # Y axis, get moving averages
@@ -100,11 +116,16 @@ class Variance:
         f.savefig(filename)             # Write plot to pdf
 
     # ==============================================================================================================
-    # Plots smoothed Data with Intersections
-    # show: boolean value that toggels the display of the figure
-    # return_fig: boolean value that toggels whether the figure is returned
-    # spacing: integer that specifies the min number of bases needed for a v region
-    # numV: integer that specifies the number of desired v regions
+    '''
+    Plots smoothed data with variance regions
+    Parameter(s):
+        * show (bool): toggels the display of the figure
+        * return_fig(bool): toggels whether the figure is returned
+        * spacing (int): specifies the minimum number of bases needed for a v region (peak)
+        * numV (int): specifies the number of desired v regions (peaks)
+    Output(s):
+        * figure (image): a figure of the smoothed data with marked v regions (peaks)
+    '''
     def plot_v_regions(self, show:bool=True, return_fig:bool=False, spacing:int=30, numV:int=6):
         figure = plt.figure()
         y_1 = np.array(self.moving_avg())                               # Variability y
@@ -144,7 +165,7 @@ class Variance:
         plt.title('Smoothed Data w/Intersection line')
   
         if show: plt.show()                                             # Toggle show option
-        if return_fig: return figure                                           # Toggle return option (Plot figure)
+        if return_fig: return figure                                    # Toggle return option (Plot figure)
 
     # ==============================================================================================================
     # Prints class attributes

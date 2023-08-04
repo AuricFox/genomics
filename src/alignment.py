@@ -79,12 +79,12 @@ class Alignment:
                 self.align_sequence(m, n)               # Computing each score at row x column
     
     # ----------------------------------------------------------------------------------------------------------------------
-    """
+    '''
     Updates the neighbor and scoring matrices with corresponding placement scores and neighbor
     Parameter(s):
         * col (int): Column index of the current cell.
         * row (int): Row index of the current cell.
-    """
+    '''
     def align_sequence(self, col:int, row:int):
         #print("Col: ", col," Row: ", row)
 
@@ -198,7 +198,7 @@ class Alignment:
                 self.results['start gaps'] += 1
 
     # ----------------------------------------------------------------------------------------------------------------------
-    """
+    '''
     Appends to alignment strings (self.results['reference'], self.results['sequence'], and self.results['visual'])
     Parameter(s):
         * col (int): Column index of the current cell.
@@ -206,7 +206,7 @@ class Alignment:
         * neighbor (int, int): the neighboring cell that the current cell is pointing too
     Output:
         * A string indicating the alignment type (match, mismatch, or gap)
-    """
+    '''
     def alignment_string(self, row:int, col:int, neighbor, ignore:bool=False):
 
         # Diagonal alignment (Diagonal neighbor is the best neighbor)

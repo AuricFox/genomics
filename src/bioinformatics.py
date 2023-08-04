@@ -12,13 +12,13 @@ import utils
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp")
 
 # ==============================================================================================================
-"""
+'''
 Extracts the header and sequence data from the input file and counts the totals in the sequence
 Parameter(s):
     * file(str): path to the file containing the sequence data
 Output:
     * res(dict): dictionary response containing the totals of codons, amino acids, and/or kmers
-"""
+'''
 # ==============================================================================================================
 def get_sequence_data(file:str, codon=None, amino=None, kmer=None, k:int=3):
     data = utils.get_data(os.path.join(path, file))
@@ -37,7 +37,7 @@ def get_sequence_data(file:str, codon=None, amino=None, kmer=None, k:int=3):
     return res
 
 # ==============================================================================================================
-"""
+'''
 Extracts the header and sequence data from the input file and counts the totals in the sequence
 Parameter(s):
     * file1 (str): path to the file containing the first sequence data
@@ -48,7 +48,7 @@ Parameter(s):
     * ignore (bool): condition to ignore start and end gap penalties for local alignment
 Output:
     * res(dict): dictionary response containing the totals of codons, amino acids, and/or kmers
-"""
+'''
 # ==============================================================================================================
 def get_alignment_data(file1:str, file2:str, gap_pen:int=-2, match_point:int=1, match_pen:int=-1, ignore:bool=False):
     seq1 = utils.get_data(os.path.join(path, file1))

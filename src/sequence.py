@@ -28,7 +28,7 @@ class Codon:
         * header (str): information detailing the genetic sequence
         * seq (List[str]): genetic sequences being evaluated for counting
     """
-    def __init__(self, seq: List[str], header:str):
+    def __init__(self, seq:List[str], header:str):
         # Codon dictionary, track codon count
         self.codon = {
             "AAA": 0, "AAC": 0, "AAG": 0, "AAT": 0, "ACA": 0, "ACC": 0, "ACG": 0, "ACT": 0, "AGA": 0, "AGC": 0, "AGG": 0, "AGT": 0, 
