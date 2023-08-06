@@ -7,7 +7,8 @@ class Variance:
         self.sequences = sequences                  # List of taxa sequences
         self.header = header                        # Correspoding markers for sequences
 
-        self.var = []
+        self.data = {}
+        self.variance = []
         self.intersect = []
 
         self.calc_var()
@@ -28,75 +29,71 @@ class Variance:
             
             max_value = max(count['A'], count['C'], count['G'], count['T'])         # Find the max non-gap character (most common base)
             total = sum(k for k in count.values())                                  # Sum of characters
-            MCB = [k for k,v in count.items() if v == max_value][0]
+            MCB = [key for key,value in count.items() if value == max_value][0]
 
             count['MCB'] = MCB
-            count['var'] = max_value/total
-            self.var.append(count)
+            count['variance'] = max_value/total
+            self.data[i] = count
 
     # ==============================================================================================================
-    # Retrieves the variance from each column and returns it as a list
+    '''
+    Retrieves the variance from each column and returns it as a list used for plotting
+    Parameter(s): None
+    Output(s):
+        * data (list[float]): the variance of each column in a sequence
+    '''
     def get_var(self):
         data = []
-        for i in range(len(self.var)):          # Iterate thru each dictionary
-            data.append(self.var[i]['var'])     # Retrieve each variance and add it to the list
+        for key in self.data:              # Iterate thru each dictionary
+            data.append(self.data[key]['variance'])    # Retrieve each variance and add it to the list
 
         return data
 
     # ==============================================================================================================
     '''
-    Plots raw Data
+    Plots raw or smoothed data
     Parameter(s):
-        * show (bool): toggels the display of the figure
+        * display (bool): toggels the display of the plotted figure
         * return_fig(bool): toggels whether the figure is returned
+        * smooth (bool): toggels between raw (false) and smooth (true) data for plotting
     Output(s):
-        * figure (image): a figure of the smoothed data with marked v regions (peaks)
+        * figure (image): a figure of the plotted data with marked v regions (peaks)
     '''
-    def plot_raw_data(self, show:bool=True, return_fig:bool=False):
+    def plot_data(self, display:bool=True, return_fig:bool=False, smooth:bool=True):
         figure = plt.figure()
-        y = self.get_var()
-        x = [i+1 for i in range(len(y))]                    # X axis, nucleotide base positions
+
+        # Plot smooth data
+        if smooth:
+            y = self.moving_avg()                           # Y axis, get moving averages
+            x = [i+1 for i in range(len(y))]                # X axis, nucleotide base positions
+            plt.title('Raw Data w/Smoothing')
+        # Plot raw data
+        else:
+            y = self.get_var()
+            x = [i+1 for i in range(len(y))]                # X axis, nucleotide base positions
+            plt.title('Raw Data w/No Smoothing')
 
         plt.plot(x, y)
-  
         plt.xlabel('Position in the 16S rRNA gene')         # X axis name
         plt.ylabel('Pct Conserved')                         # Y axis name
-        plt.title('Raw Data w/No Smoothing')
   
-        if show: plt.show()                                 # Toggle show option
-        if return_fig: return figure                        # Toggle return option (Plot figure)
-
-    # ==============================================================================================================
-    '''
-    Plots smooth Data after raw data has been converted
-    Parameter(s):
-        * show (bool): toggels the display of the figure
-        * return_fig(bool): toggels whether the figure is returned
-    Output(s):
-        * figure (image): a figure of the smoothed data with marked v regions (peaks)
-    '''
-    def plot_smooth_data(self, show:bool=True, return_fig:bool=False):
-        figure = plt.figure()
-        y = self.moving_avg()                               # Y axis, get moving averages
-        x = [i+1 for i in range(len(y))]                    # X axis, nucleotide base positions
-
-        plt.plot(x, y)
-  
-        plt.xlabel('Position in the 16S rRNA gene')         # X axis name
-        plt.ylabel('Pct Conserved')                         # Y axis name
-        plt.title('Raw Data w/Smoothing')
-  
-        if show: plt.show()                                 # Toggle show option
+        if display: plt.show()                              # Toggle show option
         if return_fig: return figure                        # Toggle return option (Plot figure)
     
     # ==============================================================================================================
-    # Covert the variability to moving averages in order to smooth the data
-    # The default size was selected because the output graph closely matched the one in the hw documentation
+    '''
+    Coverts the variability to moving averages in order to smooth the data
+    NOTE: The default size was selected because the output graph closely matched the one in the documentation
+    Parameter(s):
+        * size (int): dictates the number of variances used for calculating the moving average
+    Output(s):
+        * mavg (List[float]): calculated moving averages
+    '''
     def moving_avg(self, size:int=60):
 
         if(size >= len(self.var)):
             print("ERROR: Window size exceeds array size!")
-            print("Windox Size: ", size, " Array Size: ", len(self.var))
+            print(f'Windox Size: {size}, Array Size: {len(self.var)}')
             return
         
         y = np.array(self.get_var())            # Get list of variances
@@ -119,14 +116,14 @@ class Variance:
     '''
     Plots smoothed data with variance regions
     Parameter(s):
-        * show (bool): toggels the display of the figure
+        * display (bool): toggels the display of the figure
         * return_fig(bool): toggels whether the figure is returned
         * spacing (int): specifies the minimum number of bases needed for a v region (peak)
         * numV (int): specifies the number of desired v regions (peaks)
     Output(s):
         * figure (image): a figure of the smoothed data with marked v regions (peaks)
     '''
-    def plot_v_regions(self, show:bool=True, return_fig:bool=False, spacing:int=30, numV:int=6):
+    def plot_v_regions(self, display:bool=True, return_fig:bool=False, spacing:int=30, numV:int=6):
         figure = plt.figure()
         y_1 = np.array(self.moving_avg())                               # Variability y
         x = np.array([i+1 for i in range(len(y_1))])                    # X axis, nucleotide base positions
@@ -143,7 +140,7 @@ class Variance:
                 check = True
 
                 for i in range(0, numV*2, 2):                                           # Iterate thru intersecting points
-                    #print("I: ", intersect[i+1], " J: ", intersect[i], " Total: ", intersect[i+1] - intersect[i])
+                    #print(f'I: {intersect[i+1]}, J: {intersect[i]}, Total: {intersect[i+1] - intersect[i]}')
                     if(intersect[i+1] - intersect[i] < spacing): check = False          # Check spacing between points (fails if too low)
                 
                 if(check == True): break                                                # Intersecting points looks good
@@ -157,23 +154,20 @@ class Variance:
         for i in range(0, len(intersect), 2):
             x1 = intersect[i]
             x2 = intersect[i+1]
-            #print('X1: ', x1, ' X2: ', x2)
+            #print(f'X1: {x1}, X2: {x2}')
             plt.plot([x1,x2],[line,line], color='red')
 
         plt.xlabel('Position in the 16S rRNA gene')                     # X axis name
         plt.ylabel('Pct Conserved')                                     # Y axis name
         plt.title('Smoothed Data w/Intersection line')
   
-        if show: plt.show()                                             # Toggle show option
+        if display: plt.show()                                          # Toggle show option
         if return_fig: return figure                                    # Toggle return option (Plot figure)
 
     # ==============================================================================================================
     # Prints class attributes
-    def debug(self):
-        print("HEADER: ", self.header)
-        #print(self.smatrix)
-        for i in range(len(self.var)):
-            print(self.var[i])
+    def __str__(self):
+        return f'HEADER: {self.header}, Variance(s):\n{self.var}'
 
 
 def main():
