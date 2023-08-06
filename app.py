@@ -34,9 +34,9 @@ def server_error(error):
 @app.route("/sequence_analysis", methods=["POST"])
 def sequence_analysis():
     # User submitted form data
-    codon = request.form.get('codon')
-    amino = request.form.get('amino')
-    kmer = request.form.get('kmer')
+    codon = request.form.get('codon', type=str)
+    amino = request.form.get('amino', type=str)
+    kmer = request.form.get('kmer', type=str)
     k = request.form.get('n-mer', type=int)
     
     file = request.files["file"]                                # Get user's submitted file

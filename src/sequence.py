@@ -28,7 +28,7 @@ class Codon:
         * header (str): information detailing the genetic sequence
         * seq (List[str]): genetic sequences being evaluated for counting
     """
-    def __init__(self, seq:List[str], header:str):
+    def __init__(self, sequences:List[str], header:str):
         # Codon dictionary, track codon count
         self.codon = {
             "AAA": 0, "AAC": 0, "AAG": 0, "AAT": 0, "ACA": 0, "ACC": 0, "ACG": 0, "ACT": 0, "AGA": 0, "AGC": 0, "AGG": 0, "AGT": 0, 
@@ -39,7 +39,7 @@ class Codon:
             "TTA": 0, "TTC": 0, "TTG": 0, "TTT": 0
         }
 
-        self.seq = seq          # Character string of bases
+        self.seq = sequences    # Character string of bases
         self.header = header    # Character string for header info
         self.count_codons()     # Begin counting codons
 
@@ -119,7 +119,7 @@ class Amino_Acid:
         * seq (List[str]): genetic sequences being evaluated for counting
         * header (str): information detailing the genetic sequence
     """
-    def __init__(self, seq: List[str], header:str):
+    def __init__(self, sequences: List[str], header:str):
 
         # Amino acid dictionary, tracks amino acid count
         self.amino_acid = { 
@@ -127,7 +127,7 @@ class Amino_Acid:
             "Tyr": 0, "Pro": 0, "Gln": 0, "Arg": 0, "Cys": 0, "Met": 0, "His": 0, "Trp": 0, "Stp": 0
         }
 
-        self.seq = seq
+        self.seq = sequences
         self.header = header
         self.count_amino_acids()
 
@@ -235,8 +235,8 @@ class Kmer:
         * header (str): information detailing the genetic sequence
         * k (int): size of the k-mer, length of the string after parsing
     """
-    def __init__(self, seq: List[str], header:str, k:int):
-        self.seq = seq
+    def __init__(self, sequences: List[str], header:str, k:int):
+        self.seq = sequences
         self.header = header
         self.k = k
 
