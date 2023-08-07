@@ -36,11 +36,10 @@ class Variance:
             None
         '''
 
-        for i in enumerate(self.sequences[0]):                  # Iterates thru the bases in the sequence (columns)
+        for i in range(len(self.sequences[0])):                  # Iterates thru the bases in the sequence (columns)
             count = {'A':0, 'C':0, 'G':0, 'T':0, '-':0}         # Initializing base counts
 
-            for j in enumerate(self.sequences):                 # Iterates thru the sequences (rows)
-
+            for j in range(len(self.sequences)):                 # Iterates thru the sequences (rows)
                 # Increment base count if it exists, else initialize with one
                 count[self.sequences[j][i]] = count.get(self.sequences[j][i], 0) + 1
             
@@ -92,12 +91,12 @@ class Variance:
         # Plot smooth data
         if smooth:
             y = self.moving_avg()
-            x = [i+1 for i in enumerate(y)]                # X axis, nucleotide base positions
+            x = [i+1 for i in range(len(y))]                # X axis, nucleotide base positions
             plt.title('Raw Data w/Smoothing')
         # Plot raw data
         else:
             y = self.variance
-            x = [i+1 for i in enumerate(y)]                # X axis, nucleotide base positions
+            x = [i+1 for i in range(len(y))]                # X axis, nucleotide base positions
             plt.title('Raw Data w/No Smoothing')
 
         plt.plot(x, y)
@@ -154,7 +153,7 @@ class Variance:
 
         figure = plt.figure()
         y_1 = np.array(self.moving_avg())                               # Variability y
-        x = np.array([i+1 for i in enumerate(y_1)])                     # X axis, nucleotide base positions
+        x = np.array([i+1 for i in range(len(y_1))])                     # X axis, nucleotide base positions
 
         line = 0.0                                                      # Intersection line used for identifying v regions
         intersect = []                                                  # Intersection points

@@ -94,11 +94,19 @@ def get_variance_data(file:str, plot:bool, smooth:bool, vRegion:bool, spacing:in
     seq = utils.get_data(os.path.join(path, file))
     data = vr.Variance(sequences=seq[0], header=seq[1])
 
-    return
+    data.save_plot(
+        plot=plot, 
+        smooth=smooth, 
+        vRegion=vRegion, 
+        spacing=spacing, 
+        numV=numV
+    )
+
+    return True
 
 # ==============================================================================================================
 def main():
-    data = get_alignment_data(file1='pfizer_mrna.fna', file2='sars_spike_protein.fna',  ignore=True)
+    data = get_variance_data(file='sequences.fna', plot=True, smooth=True, vRegion=True)
     return
 
 
