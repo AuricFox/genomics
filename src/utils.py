@@ -1,60 +1,79 @@
 import sys
 import csv
 import os
+import zipfile
+import json
+from typing import List
+
+PATH = os.path.dirname(os.path.abspath(__file__))
 
 # ========================================================================================================================================
-# Retreives header/sequence pair data from the fna file
-# Inputs:
-#   * filename(str): file that the header and sequence data is being read from
-# Retruns:
-#   * seq_data, header_data(List[str],List(str)): a tuple containing lists of sequences and header info
 def get_data(filename:str):
+    '''
+    Retreives header/sequence pair data from fna, fastq, and txt files
+    
+    Parameter(s):
+        filename (str): file that the header and sequence data is being read from
+    
+    Output(s):
+        sequences, headers (List[str],List(str)): a tuple containing lists of sequences and header info
+    '''
 
-    seq_data = []
-    header_data = []
+    sequences = []
+    headers = []
     mime = filename.split('.').pop()                        # Get file MIME type
 
-    if(mime == 'fna'):                                      # Input file is a fna (data every two lines)
+    # Handle fna files (data every two lines)
+    if(mime == 'fna'):
         print("Reading FNA file: ", filename)
 
         with open(filename) as f:
             for head, seq in zip(f,f):                      # Get header and sequence info
                 head, seq = head.strip(), seq.strip()       # Strip newline characters
-                header_data.append(head[1:])                # Add to header list
-                seq_data.append(seq)                        # Add to sequece list
+                headers.append(head[1:])                    # Add to header list
+                sequences.append(seq)                       # Add to sequece list
 
-    elif(mime == 'fastq'):                                  # File is a fastq (data every four lines)
+    # Handle fastq files (data every four lines)
+    elif(mime == 'fastq'):
         print("Reading FASTQ file: ", filename)
 
         with open(filename) as f:
             for head, seq, p, score in zip(f,f,f,f):        # Get four line at a time (Header, sequence, plus thingy, score)
                 head, seq = head.strip(), seq.strip()       # Strip header and sequece data of newline chars
-                header_data.append(head[1:])                # Add to header list
-                seq_data.append(seq)                        # Add to sequence list
+                headers.append(head[1:])                    # Add to header list
+                sequences.append(seq)                       # Add to sequence list
 
-    elif(mime == 'txt'):                                    # File is a Text
+    # Handle text files
+    elif(mime == 'txt'):
         print("Reading text file ", filename)
 
         with open(filename) as f:
             for seq in f:                                   # Read each line
                 seq = seq.strip()                           # Strip data of new line characters
-                seq_data.append(seq)                        # Append data to list
+                sequences.append(seq)                       # Append data to list
 
-            header_data.append('Assembled data')            # No headers should be in the file so add this one
+            headers.append('Assembled data')            # No headers should be in the file so add this one
     else:
         print("ERROR: Invalid File Type!")
-        print("Only fna, fastq, or txt types! The entered file type is ", mime)
+        print(f"Only fna, fastq, or txt types! The entered file type is {mime}")
         return
 
-    return (seq_data, header_data)
+    return (sequences, headers)
 
 # ========================================================================================================================================
-# Merges two files together and writes the results to a third file
-# Inputs:
-#   * file1(str): path of the first file to be mergered
-#   * file2(str): path of the second file to be merged
-#   * file3(str): path of the file that the results are written too
 def merge_files(file1:str, file2:str, file3:str):
+    '''
+    Merges two files together and writes the results to a third file
+    
+    Parameter(s):
+        file1 (str): path of the first file to be mergered
+        file2 (str): path of the second file to be merged
+        file3 (str): path of the file that the results are written too
+    
+    Output(s):
+        file3 (str): a file containing the data from file1 and file2
+    '''
+
     try:
         with open(file1, 'r') as f1, open(file2, 'r') as f2:
             reader1 = csv.reader(f1)
@@ -80,49 +99,155 @@ def merge_files(file1:str, file2:str, file3:str):
         print(f"An error occurred: {str(e)}")
 
 # ========================================================================================================================================
-# Clears out old files
-def rmove():
-    print("Removing files\n")
-    dir = './output/align/'
-    for f in os.listdir(dir):
-        os.remove(os.path.join(dir, f))     # Remove files in align directory
+def create_zip(files:List[str], zipname:str):
+    '''
+    Takes in a list of files and zips them up into one zipfile
 
-    dir = './output/eulerian/'
-    for f in os.listdir(dir):
-        os.remove(os.path.join(dir, f))     # Remove files in eulerian directory
+    Parameter(s):
+        files (List[str]): list of file names being zipped
+        zipname (str): path of the zip file being saved (path from src)
 
-    dir = './output/graph/'
-    for f in os.listdir(dir):
-        os.remove(os.path.join(dir, f))     # Remove files in graph directory
+    Output(s):
+        file_path (str): the path to the saved zip file or None if no files to process
+    '''
 
-    dir = './output/temp/'
-    for f in os.listdir(dir):
-        os.remove(os.path.join(dir, f))     # Remove files in temp directory
+    if len(files) == 0:                                 # No files to process
+        return None
+    
+    file_path = os.path.join(PATH, zipname)             # Creating saved file path
 
-# ========================================================================================================================================
-# Writes data to a text file
-def make_txt(data, filename:str='./output/temp/output.txt'):
+    with zipfile.ZipFile(file_path, "w") as zipf:
+        for file in files:
+            zipf.write(file, os.path.basename(file))
 
-    with open(filename, 'w', newline='') as file:
-        for x in data:
-            file.write(str(x) + '\n')
+    return file_path
 
 # ========================================================================================================================================
-# Writes data to a text file
-def make_csv(data, filename:str='./output/runtime.csv'):
+def remove_files(files:List[str]):
+    '''
+    Remove files from memory
 
-    with open(filename, 'w', newline='') as file:
+    Parameter(s):
+        files (List[str]): a list of files being removed
+
+    Output(s): None
+    '''
+
+    for file in files:
+        print(f"Removing file {file}")
+
+        file_path = os.path.join(PATH, file)                    # Creating saved file path
+
+        try:
+            os.remove(file_path)                                # File is no longer needed
+        except OSError as e:
+            print(f'Error while removing file {file}: {e}')
+
+# ========================================================================================================================================
+def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
+    '''
+    Takes in a dictionary and writes the data to a txt file
+    
+    Parameter(s):
+        data (dict): dictionary containing the data being written to a file
+        header (List[str]): list of header info for the corresponding data
+        filename (str): file path where the data will be saved
+        
+    Output(s):
+        A file with the user input filename containing the dictionary data
+    '''
+
+    file_path = os.path.join(PATH, filename)             # Creating saved file path
+
+    with open(file_path, 'w', newline='') as file:
+        if header != []:
+            file.write('\t'.join(header) + '\n')
+
+        for key,value in data.items():
+            file.write(f'{key}\t{value}\n')
+
+    return file_path
+
+# ========================================================================================================================================
+def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
+    '''
+    Takes in a dictionary and writes the data to a csv file
+    
+    Parameter(s):
+        data (dict): dictionary containing the data being written to a file
+        header (List[str]): list of header info for the corresponding data
+        filename (str): file path where the data will be saved
+        
+    Output(s):
+        A file with the user input filename containing the dictionary data
+    '''
+
+    file_path = os.path.join(PATH, filename)
+
+    with open(file_path, 'w', newline='') as file:
         cfile = csv.writer(file)
-        cfile.writerow(['K-mer', '# of Reads', 'Run-Time(s)'])  # Wrights codon header to csv
-        cfile.writerows(data)                                   # Wrights codon or amino acid data to csv
+
+        if header != []:
+            cfile.writerow(header)
+
+        for key,value in data.items():
+            cfile.writerow([key, value])
+
+    return file_path
+
+# ========================================================================================================================================
+def make_json(data:dict, filename:str='./temp/output.json'):
+    '''
+    Takes in a dictionary and writes the data to a json file
+    
+    Parameter(s):
+        data (dict): dictionary containing the data being written to a file
+        filename (str): file path where the data will be saved
+        
+    Output(s):
+        A file with the user input filename containing the dictionary data
+    '''
+
+    file_path = os.path.join(PATH, filename)
+
+    with open(file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+
+    return file_path
+
+# ========================================================================================================================================
+def runtime_csv(data, header:List[str]=[] ,filename:str='./temp/runtime.csv'):
+    '''
+    Create csv file with compiled runtimes
+    
+    Parameter(s):
+        data: runtime data being written to the csv file
+        header (List[str]): list of header info on the data
+        filename (str, optional): file path where the data will be saved
+    
+    Output(s):
+        A file with the filename containing the runtime data
+    '''
+    file_path = os.path.join(PATH, filename)            # Creating saved file path
+
+    with open(file_path, 'w', newline='') as file:
+        cfile = csv.writer(file)
+
+        # Add header if it is not empty
+        if header != []:
+            cfile.writerow(header)
+
+        cfile.writerows(data)                           # Wrights codon or amino acid data to csv
 
 # ========================================================================================================================================
 if __name__ == "__main__":
 
-    # merge_files('SARS-CoV-2_separate_genes.csv', 'SARS-CoV-2_whole_genome.csv', 'combined_codons.csv')
-    # merge_files('separate_amino_acids.csv', 'whole_amino_acids.csv', 'combined_amino_acids.csv')
+    '''
+    merge_files('SARS-CoV-2_separate_genes.csv', 'SARS-CoV-2_whole_genome.csv', 'combined_codons.csv')
+    merge_files('separate_amino_acids.csv', 'whole_amino_acids.csv', 'combined_amino_acids.csv')
 
     if(len(sys.argv) == 5 and sys.argv[1] == "merge"):    # Merging two csv files into one
         merge_files(sys.argv[2], sys.argv[3], sys.argv[4])
-
+    '''
+    print(PATH)
     

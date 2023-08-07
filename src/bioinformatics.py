@@ -9,7 +9,7 @@ import de_bruijn as db
 import variance as vr
 import utils
 
-path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp")
+PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp")
 
 # ==============================================================================================================
 def get_sequence_data(file:str, codon:str=None, amino:str=None, kmer:str=None, k:int=3):
@@ -27,7 +27,7 @@ def get_sequence_data(file:str, codon:str=None, amino:str=None, kmer:str=None, k
         response (dict): dictionary response containing the totals of codons, amino acids, and/or kmers
     '''
 
-    data = utils.get_data(os.path.join(path, file))
+    data = utils.get_data(os.path.join(PATH, file))
     response = {}
 
     if codon != None:
@@ -39,6 +39,8 @@ def get_sequence_data(file:str, codon:str=None, amino:str=None, kmer:str=None, k
     if kmer != None:
         seq = sq.Kmer(sequences=data[0], header="K-mers", k=k)
         response['kmers'] = seq.kmers
+
+    file_path = utils.make_json(data=response)
 
     return response
 
@@ -55,12 +57,12 @@ def get_alignment_data(file1:str, file2:str, gap_pen:int=-2, match_point:int=1, 
         match_pen (int, optional): penalty for mismatches in the alignment
         ignore (bool, optional): condition to ignore start and end gap penalties for local alignment
     
-    Output:
-        response (dict): dictionary response containing the totals of codons, amino acids, and/or kmers
+    Output(s):
+        A dictionary response containing the totals of codons, amino acids, and/or kmers
     '''
 
-    seq1 = utils.get_data(os.path.join(path, file1))
-    seq2 = utils.get_data(os.path.join(path, file2))
+    seq1 = utils.get_data(os.path.join(PATH, file1))
+    seq2 = utils.get_data(os.path.join(PATH, file2))
 
     data = al.Alignment(
         seq=seq1[0][0], 
@@ -71,9 +73,7 @@ def get_alignment_data(file1:str, file2:str, gap_pen:int=-2, match_point:int=1, 
         ignore=ignore
     )
 
-    response = data.results
-
-    return response
+    return data.results
 
 # ==============================================================================================================
 def get_variance_data(file:str, plot:bool, smooth:bool, vRegion:bool, spacing:int=30, numV:int=6,):
@@ -85,29 +85,52 @@ def get_variance_data(file:str, plot:bool, smooth:bool, vRegion:bool, spacing:in
         plot (bool): save the raw/smooth plot to a file if true
         smooth (bool): smooth the data if true, else plot the raw data
         vRegion (bool): save the plot with variance regions to a file if true
-        spacing (int, optional): specifies the minimum number of bases needed for a v region (peak)
-        numV (int, optional): specifies the number of desired v regions (peaks)
+        spacing (int, optional): specifies the minimum number of bases needed for a variance region (peak)
+        numV (int, optional): specifies the minimum number of desired variance regions (peaks)
     
     Output(s):
+        zipPth (str): a path to a zip file containing the ploted data
     '''
 
-    seq = utils.get_data(os.path.join(path, file))
+    file1 = './temp/plot.jpg'
+    file2 = './temp/v_regions_plot.jpg'
+
+    seq = utils.get_data(os.path.join(PATH, file))
     data = vr.Variance(sequences=seq[0], header=seq[1])
+    files = []
 
-    data.save_plot(
-        plot=plot, 
-        smooth=smooth, 
-        vRegion=vRegion, 
-        spacing=spacing, 
-        numV=numV
-    )
+    # Plot smooth/raw data and save to a file
+    if plot:
+        data.plot_data(
+            display=False,
+            smooth=smooth,
+            filename=file1
+        )
 
-    return True
+        files.append(file1)
+
+    # Plot variance regions and save to a file
+    if vRegion:
+        data.plot_v_regions(
+            display=False,
+            spacing=spacing,
+            numV=numV,
+            filename=file2
+        )
+
+        files.append(file2)
+
+    # Create zip file for export
+    zipPath = utils.create_zip(files=files, zipname='./temp/variance.zip')
+    # Delete individual files that are no longer needed
+    utils.remove_files(files=files)
+
+    return zipPath
 
 # ==============================================================================================================
 def main():
-    data = get_variance_data(file='sequences.fna', plot=True, smooth=True, vRegion=True)
-    return
+    sequence_data = get_sequence_data(file='testing.fna', codon='codon', amino='amino')
+    #variance_data = get_variance_data(file='sequences.fna', plot=True, smooth=True, vRegion=True)
 
 
 if __name__ == "__main__":

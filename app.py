@@ -40,7 +40,7 @@ def sequence_analysis():
     k = request.form.get('n-mer', type=int)
     
     file = request.files["file"]                                # Get user's submitted file
-    file_path = process_file(file)                              # Get temp file path
+    file_path = create_file(file)                               # Get temp file path
     
     data = bio.get_sequence_data(file.filename, codon, amino, kmer, k)   # Get the totals
 
@@ -69,14 +69,19 @@ def aligment_results():
     return render_template('aligment_results.html')
 
 # ====================================================================
-# File Functions
+# File Function(s)
 # ====================================================================
-# Takes in a file object and saves the file to the temp directory
-# Input:
-#   * file: the user input file being saved
-# Output:
-#   * file_path: the path to the saved file
-def process_file(file):
+def create_file(file):
+    '''
+    Takes in a file object and saves the file to the temp directory
+
+    Parameter(s):
+        file: the user input file being saved
+
+    Output(s):
+        file_path (str): the path to the saved file
+    '''
+
     path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file will be saved
 
     os.makedirs(path, exist_ok=True)                            # Create path if it doesn't exist
@@ -85,6 +90,25 @@ def process_file(file):
     file.save(file_path)                                        # Saving input file
 
     return file_path
+
+# --------------------------------------------------------------------
+def remove_file(filename:str):
+    '''
+    Takes in a file object and removes the file from the temp directory
+
+    Parameter(s):
+        file (str): the input file being removed
+
+    Output(s): None
+    '''
+
+    path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file is saved
+    file_path = os.path.join(path, filename)                    # Creating saved file path
+
+    try:
+        os.remove(file_path)                                    # File is no longer needed
+    except OSError as e:
+        print(f'Error while removing file {filename}: {e}')
 
 # ====================================================================
 # Run Main

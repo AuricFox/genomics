@@ -65,25 +65,24 @@ class Variance:
         '''
 
         data = []
-        for key in self.data:              # Iterate thru each dictionary
-            data.append(self.data[key]['variance'])    # Retrieve each variance and add it to the list
+        for key in self.data:                           # Iterate thru each dictionary
+            data.append(self.data[key]['variance'])     # Retrieve each variance and add it to the list
 
         return data
 
     # ==============================================================================================================
-    def plot_data(self, display:bool=False, return_fig:bool=True, save_fig:bool=False, smooth:bool=True):
+    def plot_data(self, display:bool=False, smooth:bool=True, filename:str=None):
         '''
         Plots raw or smoothed data
 
         Parameter(s):
             display (bool, optional): toggels the display of the plotted figure
-            return_fig(bool, optional): toggels whether the figure is returned
-            save_fig (bool, optional): saves the plotted figure to a pdf
             smooth (bool, optional): toggels between raw (false) and smooth (true) data for plotting
+            filename (str, optional): path where the plotted figure is saved if not None
         
         Output(s):
             figure (image) or None: if return_fig is true, a figure of the data is returned
-            file (pdf) or None: if save_fig is true the figure will be saved to a pdf
+            file or None: if save_fig is true the figure will be saved to a pdf
         '''
         
         figure = plt.figure()
@@ -104,8 +103,9 @@ class Variance:
         plt.ylabel('Pct Conserved')
   
         if display: plt.show()                              # Toggle show option
-        if return_fig: return figure                        # Toggle return option (Plot figure)
-        if save_fig: figure.savefig('./output/plot.pdf')
+        
+        if filename != None: 
+            figure.savefig(filename)
     
     # ==============================================================================================================
     def moving_avg(self, size:int=60):
@@ -135,25 +135,24 @@ class Variance:
         return mavg
 
     # ==============================================================================================================
-    def plot_v_regions(self, display:bool=False, return_fig:bool=True, save_fig:bool=False, spacing:int=30, numV:int=6):
+    def plot_v_regions(self, display:bool=False, spacing:int=30, numV:int=6, filename:str=None):
         '''
         Plots smoothed data with variance regions
         
         Parameter(s):
             display (bool, optional): toggels the display of the figure
-            return_fig (bool, optional): toggels whether the figure is returned
-            save_fig (bool, optional): saves the plotted figure to a pdf
             spacing (int, optional): specifies the minimum number of bases needed for a v region (peak)
-            numV (int, optional): specifies the number of desired v regions (peaks)
+            numV (int, optional): specifies the minimum number of desired v regions (peaks)
+            filename (str, optional): path where the plotted figure is saved if not None
         
         Output(s):
             figure (image) or None: if return_fig is true, a figure of the smoothed data with marked v regions is returned
-            file (pdf) or None: if save_fig is true the figure will be saved to a pdf
+            file or None: if save_fig is true the figure will be saved to a pdf
         '''
 
         figure = plt.figure()
         y_1 = np.array(self.moving_avg())                               # Variability y
-        x = np.array([i+1 for i in range(len(y_1))])                     # X axis, nucleotide base positions
+        x = np.array([i+1 for i in range(len(y_1))])                    # X axis, nucleotide base positions
 
         line = 0.0                                                      # Intersection line used for identifying v regions
         intersect = []                                                  # Intersection points
@@ -184,51 +183,45 @@ class Variance:
             #print(f'X1: {x1}, X2: {x2}')
             plt.plot([x1,x2],[line,line], color='red')
 
-        plt.xlabel('Position in the 16S rRNA gene')                     # X axis name
-        plt.ylabel('Pct Conserved')                                     # Y axis name
+        plt.xlabel('Position in the 16S rRNA gene')
+        plt.ylabel('Pct Conserved')
         plt.title('Smoothed Data w/Intersection line')
   
         if display: plt.show()                                          # Toggle show option
-        if return_fig: return figure                                    # Toggle return option (Plot figure)
-        if save_fig: figure.savefig('./output/v_region_plot.pdf')
+        
+        if filename != None: 
+            figure.savefig(filename)
 
     # ==============================================================================================================
-    def save_plot(self, plot:bool, smooth:bool, vRegion:bool, spacing:int=30, numV:int=6, filename:str='plot.pdf'):
+    def save_plot(self, smooth:bool, spacing:int=30, numV:int=6, plotFile:str=None, regionFile:str=None):
         '''
         Function used to save plotted figures to a file
 
         Parameter(s):
-            plot (bool): save the raw/smooth plot to a file if true
             smooth (bool): smooth the data if true, else plot the raw data
-            vRegion (bool): save the plot with variance regions to a file if true
             spacing (int, optional): specifies the minimum number of bases needed for a v region (peak)
             numV (int, optional): specifies the number of desired v regions (peaks)
-            filename (str): name of the file being saved (not the path)
+            plotFile (str, optional): path where the plotted data is saved if not None
+            regionFile (str, optional): path where the variance region data is saved if not None
 
         Output(s):
-            A file with the saved plot(s) if variables plot or vRegion are true, else outputs None
+            A file with the saved plot(s) if plotFile or regionFile are not None, else outputs nothing
         '''
 
-        if plot:
-            figure = self.plot_data(
-                display=False, 
-                return_fig=True, 
-                save_fig=False, 
-                smooth=smooth
+        if plotFile != None:
+            self.plot_data(
+                display=False,
+                smooth=smooth,
+                filename=plotFile
             )
-
-            figure.savefig(f'./output/raw_{filename}')
         
-        if vRegion:
-            figure = self.plot_v_regions(
-                display=False, 
-                return_fig=True, 
-                save_fig=False, 
+        if regionFile != None:
+            self.plot_v_regions(
+                display=False,
                 spacing=spacing, 
-                numV=numV
+                numV=numV,
+                filename=regionFile
             )
-
-            figure.savefig(f'./output/v_region_{filename}')
 
     # ==============================================================================================================
     def __str__(self):
