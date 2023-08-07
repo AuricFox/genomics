@@ -19,12 +19,27 @@ T |   |   |   |   |   |T
 
 class Alignment:
     def __init__(self, ref:str, seq:str, gap_pen:int=-2, match_point:int=1, match_pen:int=-1, ignore:bool=False):
-        self.ref = ref                  # Sequence being referenced
-        self.seq = seq                  # Sequence 1
-        self.gap_pen = gap_pen          # Gap penalty
-        self.match_point = match_point  # Match point
-        self.match_pen = match_pen      # Mismatch penalty
-        self.ignore = ignore            # Ignore start and end gaps
+        '''
+        Initializes alignment of the two sequences and the matrices. Uses local alignment if ignore is true, else
+        uses global alignment if ignore is false.
+
+        Parameter(s):
+            ref (str): the reference sequence being aligned (sequence 1)
+            seq (str): the secondary sequence being aligned with the reference sequence (sequence 2)
+            gap_pen (int, optional): a penalty imposed when there is a gap in the alignment
+            match_point (int, optional): the point(s) added to the score if there is a match in the alignment
+            match_pen (int, optional): a penalty imposed if there is a mismatch in the alignment
+            ignore (bool, optional): toggles between ingoring end gaps if true and counting end gaps if false
+        
+        Output(s): None
+        '''
+
+        self.ref = ref
+        self.seq = seq
+        self.gap_pen = gap_pen
+        self.match_point = match_point
+        self.match_pen = match_pen
+        self.ignore = ignore
 
         self.results = {
             'score': 0,                 # Alignment score
@@ -44,8 +59,15 @@ class Alignment:
         self.get_alignment()
     
     # ----------------------------------------------------------------------------------------------------------------------
-    # Resets results dictionary, rebuilds the matrices, and aligns sequences
     def reset(self):
+        '''
+        Resets results dictionary, rebuilds the matrices, and aligns sequences
+        
+        Parameter(s): None
+        
+        Output(s): None
+        '''
+        
         self.results = {
             'score': 0, 'reference': '', 'sequence': '', 'visual': '',
             'matches': 0, 'mismatches': 0, 'gaps': 0, 'start gaps': 0, 'end gaps': 0
@@ -55,8 +77,15 @@ class Alignment:
         self.get_alignment()
 
     # ----------------------------------------------------------------------------------------------------------------------
-    # Initializes scoring and neighbor matrices
     def build_matrix(self):
+        '''
+        Initializes scoring and neighbor matrices
+
+        Parameter(s): None
+        
+        Output(s): None
+        '''
+
         col = len(self.ref) + 1
         row = len(self.seq) + 1
 
@@ -79,14 +108,17 @@ class Alignment:
                 self.align_sequence(m, n)               # Computing each score at row x column
     
     # ----------------------------------------------------------------------------------------------------------------------
-    '''
-    Updates the neighbor and scoring matrices with corresponding placement scores and neighbor
-    Parameter(s):
-        * col (int): Column index of the current cell.
-        * row (int): Row index of the current cell.
-    '''
     def align_sequence(self, col:int, row:int):
-        #print("Col: ", col," Row: ", row)
+        '''
+        Updates the neighbor and scoring matrices with corresponding placement scores and neighbor
+
+        Parameter(s):
+            col (int): Column index of the current cell.
+            row (int): Row index of the current cell.
+
+        Output(s): None
+        '''
+        #print(f'Col: {col}, Row: {row}')
 
         left = self.s[row][col-1] + self.gap_pen                    # Score from left neighbor                             
         right = self.s[row-1][col] + self.gap_pen                   # Score from right neighbor
@@ -110,8 +142,14 @@ class Alignment:
         self.n[row][col] = best_neighbor                            # Add best neighbor to matrix
 
     # ----------------------------------------------------------------------------------------------------------------------
-    # Universal getter for alignment strings
     def get_alignment(self):
+        '''
+        Universal method for performing alignment. Performs local alignment if self.ignore is true, else performs global alignment
+
+        Parameter(s): None
+        
+        Output(s): None
+        '''
 
         if(self.ignore): 
             self.get_local_alignment()               # Get alignment that ignores start/end gaps
@@ -121,8 +159,15 @@ class Alignment:
         return (self.results)
     
     # ----------------------------------------------------------------------------------------------------------------------
-    # Creates alignment strings for sequence reference, sequence 1, and alignment visualization. Also computes total alignment score.
     def get_global_alignment(self):
+        '''
+        Creates alignment strings for sequence reference, sequence 1, and alignment visualization. Also computes total 
+        alignment score
+
+        Parameter(s): None
+
+        Output(s): None
+        '''
 
         if(self.ignore):                            # Matrix must be rebuilt to count start/end gaps
             self.ignore = False
@@ -142,8 +187,14 @@ class Alignment:
             neighbor = self.n[row][col]
 
     # ----------------------------------------------------------------------------------------------------------------------
-    # # Creates alignment strings for reference sequence, sequence 1, and alignment visualization while ingoring start/end gaps
     def get_local_alignment(self):
+        '''
+        Creates alignment strings for reference sequence, sequence 1, and alignment visualization while ingoring start/end gaps
+
+        Parameter(s): None
+        
+        Output(s): None
+        '''
 
         if not self.ignore:                         # Matrix must be rebuilt to ignore start/end gaps
             self.ignore = True
@@ -200,12 +251,14 @@ class Alignment:
     # ----------------------------------------------------------------------------------------------------------------------
     '''
     Appends to alignment strings (self.results['reference'], self.results['sequence'], and self.results['visual'])
+    
     Parameter(s):
-        * col (int): Column index of the current cell.
-        * row (int): Row index of the current cell.
-        * neighbor (int, int): the neighboring cell that the current cell is pointing too
-    Output:
-        * A string indicating the alignment type (match, mismatch, or gap)
+        col (int): Column index of the current cell.
+        row (int): Row index of the current cell.
+        neighbor (int, int): the neighboring cell that the current cell is pointing too
+    
+    Output(s):
+        A string indicating the alignment type (match, mismatch, or gap)
     '''
     def alignment_string(self, row:int, col:int, neighbor, ignore:bool=False):
 
@@ -243,25 +296,17 @@ class Alignment:
         self.results['gaps'] += 1                                       # Incrementing gap count
         
         return "gap"
-    
-    # ----------------------------------------------------------------------------------------------------------------------
-    # Prints aligned sequences with visiualization (I didn't want to keep typing the prints in main as well)
-    '''
-    Score: 23
-    __C_GATT_TCGGG...
-      |  ||| |xx||
-    AGCA_ATTCTTCGG...
-    '''
-    def print_alignment(self):
-        print(f"Score: {self.results['score']}")
-        print(self.results['reference'])
-        print(self.results['visual'])
-        print(self.results['sequence'])
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Writes alignment data to a text file
-    def alignment_file(self, num:int=1):
-        filename = f'./output/alignment_{num}.txt'
+    def alignment_file(self, filename:str='./output/alignment.txt'):
+        '''
+        Parameter(s):
+            filename (str, optional): the name of a file where the alignment data will be saved
+        
+        Output(s):
+            A file with the saved alignment data
+        '''
 
         with open(filename, 'w') as f:
             f.write(str( self.results['score']) + '\n')
@@ -270,8 +315,18 @@ class Alignment:
             f.write(self.results['sequence'] + '\n')
     
     # ----------------------------------------------------------------------------------------------------------------------
-    # Creates a figure displaying the similarities between the two sequences
-    def plot_compare(self, num:int, show_fig:bool=False, save_fig:bool=True):
+    def plot_compare(self, display:bool=False, filename:str=None):
+        '''
+        Creates a figure displaying the similarities between the two sequences
+
+        Parameter(s):
+            display (bool, optional): displays the plotted figure if true, else displays nothing
+            filename (str, optional): name of the file where the plot is saved if not None, else saves nothing
+        
+        Output(s):
+            returns a plotted figure as a window display if display is true, and ouputs a saved
+                file if filename is not None. If both are false then nothing is returned
+        '''
 
         plt.clf()                                                           # Clear figure
         count = 0
@@ -285,11 +340,31 @@ class Alignment:
         plt.xlabel('Assembled SARS Spike Protein ')
         plt.ylabel('Our Assembled Contig(s)')
 
-        if(show_fig): plt.show()
-        if(save_fig): 
-            file = f'./output/alignment_{num}.png'
-            print("Creating Comparison Plot: ", file)
-            plt.savefig(file, dpi=500)
+        if(display): plt.show()
+        if(filename != None): 
+            #print(f'Creating Comparison Plot: {filename}')
+            plt.savefig(filename, dpi=500)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    def __str__(self):
+        '''
+        Combines the aligment score, aligned sequences, and visiualization into one string for printing
+        Score: 23
+        __C_GATT_TCGGG...
+          |  ||| |xx||
+        AGCA_ATTCTTCGG...
+
+        Parameter(s): None
+        
+        Output(s):
+            A string containing the alignment score, reference sequence, sequnece 2, and the alignment visualization
+        '''
+        return (
+            f'Score: {self.results["score"]}\n'
+            f'{self.results["reference"]}\n'
+            f'{self.results["visual"]}\n'
+            f'{self.results["sequence"]}'
+        )
 
 # ==========================================================================================================================
 # Testing
