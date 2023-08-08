@@ -99,13 +99,13 @@ def merge_files(file1:str, file2:str, file3:str):
         print(f"An error occurred: {str(e)}")
 
 # ========================================================================================================================================
-def create_zip(files:List[str], zipname:str):
+def create_zip(files:List[str], zipname:str='./temp/output.zip'):
     '''
     Takes in a list of files and zips them up into one zipfile
 
     Parameter(s):
         files (List[str]): list of file names being zipped
-        zipname (str): path of the zip file being saved (path from src)
+        zipname (str, optional): path of the zip file being saved (path from src)
 
     Output(s):
         file_path (str): the path to the saved zip file or None if no files to process

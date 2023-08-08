@@ -12,9 +12,17 @@ import utils
 PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp")
 
 # ==============================================================================================================
-def get_sequence_data(file:str, codon:str=None, amino:str=None, kmer:str=None, k:int=3):
+def get_sequence_data(
+    file:str, 
+    codon:str=None, 
+    amino:str=None, 
+    kmer:str=None, 
+    k:int=3, 
+    file_type:str='csv'):
     '''
-    Extracts the header and sequence data from the input file and counts the totals in the sequence
+    Extracts the header and sequence data from the input file and counts the totals in the sequence. The data is
+    then saved to individual files depending on the file type and zipped into one zip file. The path to the zip
+    file is then returned. 
     
     Parameter(s):
         file (str): path to the file containing the sequence data
@@ -22,30 +30,71 @@ def get_sequence_data(file:str, codon:str=None, amino:str=None, kmer:str=None, k
         amino (str, optional): get the amino acid count if not None
         kmer (str, optional): get the k-mer count if not None
         k (int, optional): size of the k-mer
+        file_type (str, optional): type of file(s) to be returned in the zip file
     
-    Output:
-        response (dict): dictionary response containing the totals of codons, amino acids, and/or kmers
+    Output(s):
+        Creates a zip file containing a series of files depending on file_type which contain the counts of codons, 
+        amino acids, and/or k-mers if no errors occur. Returns a dictionary response containing the path of the zip 
+        file or any errors.
     '''
-
-    data = utils.get_data(os.path.join(PATH, file))
     response = {}
+    files = []
 
-    if codon != None:
-        seq = sq.Codon(sequences=data[0], header="Codons")
-        response['codons'] = seq.codon
-    if amino != None:
-        seq = sq.Amino_Acid(sequences=data[0], header="Amino Acids")
-        response['amino acids'] = seq.amino_acid
-    if kmer != None:
-        seq = sq.Kmer(sequences=data[0], header="K-mers", k=k)
-        response['kmers'] = seq.kmers
+    try:
+        sequences = utils.get_data(os.path.join(PATH, file))
+        data = {}
 
-    file_path = utils.make_json(data=response)
+        # Counting codons
+        if codon != None:
+            seq = sq.Codon(sequences=sequences[0], header="Codons")
+            data['codons'] = seq.codon
+        # Counting amino acids
+        if amino != None:
+            seq = sq.Amino_Acid(sequences=sequences[0], header="Amino Acids")
+            data['amino acids'] = seq.amino_acid
+        # Counting k-mers
+        if kmer != None:
+            seq = sq.Kmer(sequences=sequences[0], header="K-mers", k=k)
+            data['kmers'] = seq.kmers
+
+        # Create a text file for each sequence type
+        if file_type == 'txt':
+            for key,value in data.items():
+                filename = f'./temp/{key}_count.txt'
+                files.append(utils.make_txt(data=value, header=[key, 'Count'], filename=filename))
+
+        # Create a csv file for each sequence type
+        elif file_type == 'csv':
+            for key,value in data.items():
+                filename = f'./temp/{key}_count.csv'
+                files.append(utils.make_csv(data=value, header=[key, 'Count'], filename=filename))
+
+        # Create a json file for the sequence data
+        elif file_type == 'json':
+            filename = f'./temp/sequenece_count.json'
+            files.append(utils.make_json(data=data, filename=filename))
+
+        # Zipping the collection of files
+        response['zip_file'] = utils.create_zip(files=files, zipname='./temp/sequence.zip')
+
+    except Exception as e:
+        response['error'] = str(e)
+    finally:
+        if 'zip_file' in response:
+            # Removing residual files
+            utils.remove_files(files=files)
 
     return response
 
 # ==============================================================================================================
-def get_alignment_data(file1:str, file2:str, gap_pen:int=-2, match_point:int=1, match_pen:int=-1, ignore:bool=False):
+def get_alignment_data(
+        file1:str, 
+        file2:str, 
+        gap_pen:int=-2, 
+        match_point:int=1, 
+        match_pen:int=-1, 
+        ignore:bool=False, 
+        file_type:str='json'):
     '''
     Extracts the header and sequence data from the input file and counts the totals in the sequence
     
@@ -56,27 +105,64 @@ def get_alignment_data(file1:str, file2:str, gap_pen:int=-2, match_point:int=1, 
         match_point (int, optional): point(s) added to the score for matches in the alignment
         match_pen (int, optional): penalty for mismatches in the alignment
         ignore (bool, optional): condition to ignore start and end gap penalties for local alignment
+        file_type (str, optional): type of file(s) to be returned in the zip file
     
     Output(s):
-        A dictionary response containing the totals of codons, amino acids, and/or kmers
+        Creates a zip file composed of a file depending on file_type which contains the alignment results of a
+        sequence if no errors occur. Returns a dictionary response containing the path of the zip file or any errors.
     '''
 
-    seq1 = utils.get_data(os.path.join(PATH, file1))
-    seq2 = utils.get_data(os.path.join(PATH, file2))
+    response = {}
+    files = []
 
-    data = al.Alignment(
-        seq=seq1[0][0], 
-        ref=seq2[0][0], 
-        gap_pen=gap_pen, 
-        match_point=match_point, 
-        match_pen=match_pen, 
-        ignore=ignore
-    )
+    try:
+        seq1 = utils.get_data(os.path.join(PATH, file1))
+        seq2 = utils.get_data(os.path.join(PATH, file2))
 
-    return data.results
+        data = al.Alignment(
+            seq=seq1[0][0], 
+            ref=seq2[0][0], 
+            gap_pen=gap_pen, 
+            match_point=match_point, 
+            match_pen=match_pen, 
+            ignore=ignore
+        )
+
+        # Create a text file for each alignment type
+        if file_type == 'txt':
+            filename = f'./temp/alignment.txt'
+            files.append(utils.make_txt(data=data.results, filename=filename))
+
+        # Create a csv file for each alignment type
+        elif file_type == 'csv':
+            filename = f'./temp/alignment.csv'
+            files.append(utils.make_csv(data=data.results, filename=filename))
+
+        # Create a json file for the alignment data
+        elif file_type == 'json':
+            filename = f'./temp/alignment.json'
+            files.append(utils.make_json(data=data.results, filename=filename))
+
+        # Zipping the collection of files
+        response['zip_file'] = utils.create_zip(files=files, zipname='./temp/alignment.zip')
+
+    except Exception as e:
+        response['error'] = str(e)
+    finally:
+        if 'zip_file' in response:
+            utils.remove_files(files=files)
+
+    return response
 
 # ==============================================================================================================
-def get_variance_data(file:str, plot:bool, smooth:bool, vRegion:bool, spacing:int=30, numV:int=6,):
+def get_variance_data(
+        file:str, 
+        plot:bool, 
+        smooth:bool, 
+        vRegion:bool, 
+        spacing:int=30, 
+        numV:int=6,
+        file_type:str='json'):
     '''
     Calculates the variance between the sequences and plots the data
     
@@ -87,50 +173,60 @@ def get_variance_data(file:str, plot:bool, smooth:bool, vRegion:bool, spacing:in
         vRegion (bool): save the plot with variance regions to a file if true
         spacing (int, optional): specifies the minimum number of bases needed for a variance region (peak)
         numV (int, optional): specifies the minimum number of desired variance regions (peaks)
+        file_type (str, optional): type of file(s) to be returned in the zip file
     
     Output(s):
         zipPth (str): a path to a zip file containing the ploted data
     '''
 
-    file1 = './temp/plot.jpg'
-    file2 = './temp/v_regions_plot.jpg'
-
-    seq = utils.get_data(os.path.join(PATH, file))
-    data = vr.Variance(sequences=seq[0], header=seq[1])
+    response = {}
     files = []
 
-    # Plot smooth/raw data and save to a file
-    if plot:
-        data.plot_data(
-            display=False,
-            smooth=smooth,
-            filename=file1
-        )
+    try:
+        # These are hard coded (user can't change)
+        file1 = './temp/plot.jpg'
+        file2 = './temp/v_regions_plot.jpg'
 
-        files.append(file1)
+        seq = utils.get_data(os.path.join(PATH, file))
+        data = vr.Variance(sequences=seq[0], header=seq[1])
 
-    # Plot variance regions and save to a file
-    if vRegion:
-        data.plot_v_regions(
-            display=False,
-            spacing=spacing,
-            numV=numV,
-            filename=file2
-        )
+        # Plot smooth/raw data and save to a file
+        if plot:
+            data.plot_data(
+                display=False,
+                smooth=smooth,
+                filename=file1
+            )
 
-        files.append(file2)
+            files.append(file1)
 
-    # Create zip file for export
-    zipPath = utils.create_zip(files=files, zipname='./temp/variance.zip')
-    # Delete individual files that are no longer needed
-    utils.remove_files(files=files)
+        # Plot variance regions and save to a file
+        if vRegion:
+            data.plot_v_regions(
+                display=False,
+                spacing=spacing,
+                numV=numV,
+                filename=file2
+            )
 
-    return zipPath
+            files.append(file2)
+
+        # Create zip file for export
+        response['zip_file'] = utils.create_zip(files=files, zipname='./temp/variance.zip')
+
+    except Exception as e:
+        response['error'] = str(e)
+    finally:
+        if 'zip_file' in response:
+            # Delete individual files that are no longer needed
+            utils.remove_files(files=files)
+
+    return response
 
 # ==============================================================================================================
 def main():
-    sequence_data = get_sequence_data(file='testing.fna', codon='codon', amino='amino')
-    #variance_data = get_variance_data(file='sequences.fna', plot=True, smooth=True, vRegion=True)
+    #sequence_data = get_sequence_data(file='testing.fna', codon='codon', amino='amino')
+    variance_data = get_variance_data(file='sequences.fna', plot=True, smooth=True, vRegion=True)
 
 
 if __name__ == "__main__":

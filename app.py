@@ -1,7 +1,10 @@
-from flask import Flask, request, redirect, render_template, url_for, jsonify
+from flask import Flask, request, redirect, render_template, url_for
 
 import os
 import sys
+import re
+import mimetypes
+
 sys.path.append('./src/')
 import bioinformatics as bio
 
@@ -73,7 +76,7 @@ def aligment_results():
 # ====================================================================
 def create_file(file):
     '''
-    Takes in a file object and saves the file to the temp directory
+    Takes in a file object, sanitizes, validates, and saves it to the temp directory
 
     Parameter(s):
         file: the user input file being saved
@@ -81,6 +84,24 @@ def create_file(file):
     Output(s):
         file_path (str): the path to the saved file
     '''
+
+    # Replace special characters with underscores
+    sanitized_name = re.sub(r'[\\/*?:"<>|]', '_', file.filename)
+    # Remove leading and trailing whitespace
+    file.filename = sanitized_name.strip()
+
+    allowed_mime_types = ['image/jpeg', 'image/png', 'application/pdf', 'text/plain']
+    allowed_extensions = ['.jpg', '.jpeg', '.png', '.pdf', '.fna', '.fastq', '.txt']
+
+    # Get the file's MIME type and extension
+    file_mime_type, _ = mimetypes.guess_type(file.filename)
+    file_extension = os.path.splitext(file.filename)[1].lower()
+
+    # Check if the file's MIME type or extension is allowed
+    if file_mime_type not in allowed_mime_types or file_extension not in allowed_extensions:
+        print(f'{file.filename} MIME type or extension is not supported! '
+              f'MIME type: {file_mime_type}, Extension: {file_extension}')
+        return None
 
     path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file will be saved
 
