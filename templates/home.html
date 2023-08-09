@@ -46,6 +46,17 @@
                 </div>
             </div>
         </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error-messages">
+                    {% for message in messages %}
+                        <div class="error-message">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
         <div id="user-portal">
             <form action="/sequence_analysis" method="POST" id="analysis-form" enctype="multipart/form-data" class="forms">
                 <div class="large-form-group">
@@ -54,7 +65,7 @@
                             Sequence Type(s):
                         </div>
                         <div class="form-group">
-                            <input type="checkbox" name="codon" value="codon" id="codon">
+                            <input type="checkbox" name="codon" value="codon" id="codon" checked>
                             <label for="codon">Count Codons</label>
                         </div>
                         <div class="form-group">
@@ -76,7 +87,7 @@
                             Return File:
                         </div>
                         <div class="form-group">
-                            <input type="radio" id="txt" name="file_type" value="txt">
+                            <input type="radio" id="txt" name="file_type" value="txt" checked>
                             <label for="txt">Text File</label>
                         </div>
                         <div class="form-group">

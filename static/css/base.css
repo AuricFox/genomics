@@ -74,6 +74,50 @@ body {
     font-size: larger;
 }
 
+/* ========== Error Messages ========== */
+
+.page-error-message {
+    width: 80%;
+    margin: 2rem auto;
+    text-align: center;
+    font-size: 4rem;
+    color: white;
+}
+
+.return-home {
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.return-home a {
+    background-color: #45a049;
+    border-radius: 8px;
+    text-decoration: none;
+    padding: 1rem;
+    color: white;
+    font-size: 1rem;
+}
+
+.return-home a:hover {
+    background-color: #4CAF50;
+    transition: background-color 0.3s ease;
+}
+
+.error-messages {
+    width: 80%;
+    margin: auto;
+    text-align: center;
+}
+
+.error-message {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: rgba(255,0,0,0.5);
+    color: white;
+    font-weight: bold;
+}
+
 /* ========== forms ========== */
 
 .forms{

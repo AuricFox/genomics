@@ -1,13 +1,53 @@
-import sys
-import csv
-import os
-import zipfile
-import json
+import os, sys, re, mimetypes, json, csv, zipfile
 from typing import List
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
 # ========================================================================================================================================
+# Functions used for processing files
+# ========================================================================================================================================
+def create_file(file):
+    '''
+    Takes in a file object, sanitizes, validates, and saves it to the temp directory
+
+    Parameter(s):
+        file: the user input file being saved
+
+    Output(s):
+        file_path (str): the path to the saved file
+    '''
+
+    # Replace special characters with underscores
+    sanitized_name = re.sub(r'[\\/*?:"<>|]', '_', file.filename)
+    # Remove leading and trailing whitespace
+    file.filename = sanitized_name.strip()
+
+    allowed_mime_types = ['image/jpeg', 'image/png', 'application/pdf', 'text/plain']
+    allowed_extensions = ['.jpg', '.jpeg', '.png', '.pdf', '.fna', '.fastq', '.txt']
+
+    # Get the file's MIME type and extension
+    file_mime_type, _ = mimetypes.guess_type(file.filename)
+    file_extension = os.path.splitext(file.filename)[1].lower()
+
+    # Check if the file's MIME type or extension is allowed
+    if file_mime_type is not None and file_mime_type not in allowed_mime_types:
+        print(f'{file.filename} MIME type is not supported! MIME type: {file_mime_type}')
+        return None
+
+    if file_extension not in allowed_extensions:
+        print(f'{file.filename} extension is not supported! Extension: {file_extension}')
+        return None
+    
+    path = os.path.join(PATH, "temp")                           # Path where file will be saved
+    os.makedirs(path, exist_ok=True)                            # Create path if it doesn't exist
+    
+    print(f"Creating file: {file.filename}")
+    file_path = os.path.join(path, file.filename)               # Creating saved file path
+    file.save(file_path)                                        # Saving input file
+
+    return file_path
+
+# ----------------------------------------------------------------------------------------------------------------------------
 def get_data(filename:str):
     '''
     Retreives header/sequence pair data from fna, fastq, and txt files
@@ -25,7 +65,7 @@ def get_data(filename:str):
 
     # Handle fna files (data every two lines)
     if(mime == 'fna'):
-        print("Reading FNA file: ", filename)
+        print(f"Reading FNA file: {filename}")
 
         with open(filename) as f:
             for head, seq in zip(f,f):                      # Get header and sequence info
@@ -35,7 +75,7 @@ def get_data(filename:str):
 
     # Handle fastq files (data every four lines)
     elif(mime == 'fastq'):
-        print("Reading FASTQ file: ", filename)
+        print(f"Reading FASTQ file: {filename}")
 
         with open(filename) as f:
             for head, seq, p, score in zip(f,f,f,f):        # Get four line at a time (Header, sequence, plus thingy, score)
@@ -45,7 +85,7 @@ def get_data(filename:str):
 
     # Handle text files
     elif(mime == 'txt'):
-        print("Reading text file ", filename)
+        print(f"Reading text file {filename}")
 
         with open(filename) as f:
             for seq in f:                                   # Read each line
@@ -60,7 +100,7 @@ def get_data(filename:str):
 
     return (sequences, headers)
 
-# ========================================================================================================================================
+# ----------------------------------------------------------------------------------------------------------------------------
 def merge_files(file1:str, file2:str, file3:str):
     '''
     Merges two files together and writes the results to a third file
@@ -98,7 +138,7 @@ def merge_files(file1:str, file2:str, file3:str):
     except Exception as e:
         print(f"An error occurred: {str(e)}")
 
-# ========================================================================================================================================
+# ----------------------------------------------------------------------------------------------------------------------------
 def create_zip(files:List[str], zipname:str='./temp/output.zip'):
     '''
     Takes in a list of files and zips them up into one zipfile
@@ -122,7 +162,26 @@ def create_zip(files:List[str], zipname:str='./temp/output.zip'):
 
     return file_path
 
-# ========================================================================================================================================
+# ----------------------------------------------------------------------------------------------------------------------------
+def remove_file(filename:str):
+    '''
+    Takes in a file object and removes the file from the temp directory
+
+    Parameter(s):
+        file (str): the input file being removed
+
+    Output(s): None
+    '''
+
+    path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file is saved
+    file_path = os.path.join(path, filename)                    # Creating saved file path
+
+    try:
+        os.remove(file_path)                                    # File is no longer needed
+    except OSError as e:
+        print(f'Error while removing file {filename}: {e}')
+
+# ----------------------------------------------------------------------------------------------------------------------------
 def remove_files(files:List[str]):
     '''
     Remove files from memory
@@ -143,6 +202,8 @@ def remove_files(files:List[str]):
         except OSError as e:
             print(f'Error while removing file {file}: {e}')
 
+# ========================================================================================================================================
+# Function(s) used for creating txt, csv, and Json file
 # ========================================================================================================================================
 def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
     '''
@@ -168,7 +229,7 @@ def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
 
     return file_path
 
-# ========================================================================================================================================
+# ----------------------------------------------------------------------------------------------------------------------------
 def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
     '''
     Takes in a dictionary and writes the data to a csv file
@@ -195,7 +256,7 @@ def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
 
     return file_path
 
-# ========================================================================================================================================
+# ----------------------------------------------------------------------------------------------------------------------------
 def make_json(data:dict, filename:str='./temp/output.json'):
     '''
     Takes in a dictionary and writes the data to a json file
@@ -215,6 +276,8 @@ def make_json(data:dict, filename:str='./temp/output.json'):
 
     return file_path
 
+# ========================================================================================================================================
+# Function(s) used for testing
 # ========================================================================================================================================
 def runtime_csv(data, header:List[str]=[] ,filename:str='./temp/runtime.csv'):
     '''

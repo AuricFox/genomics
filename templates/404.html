@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="title" content="">
+        <meta name="keywords" content="">
+        <title>Page Not Found</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="{{ url_for('static', filename='js/base.js') }}" defer></script>
+    </head>
+    <body>
+        <div class="page-error-message">
+            Sorry, Page Not Found!
+        </div>
+        <div class="return-home">
+            <a href="{{ url_for('home') }}">Return to Home</a>
+        </div>        
+    </body>
+</html>
