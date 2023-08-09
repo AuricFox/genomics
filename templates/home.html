@@ -21,44 +21,73 @@
             <div id="description">
                 <div class="description" id="analysis-desc">
                     Analize the number of codons (3-mers), amino acids, or specified k-mers within a genetic sequence. This tool 
-                    takes in a fna or fastq file containing genetic sequences and analizes the data within the file.
+                    takes in a fna or fastq file containing genetic sequences and analizes the data within the file. The final results 
+                    are then returned as the selected file type.
                 </div>
                 <div class="description" id="alignment-desc">
                     Perform an allignment of two sequences to see how they compare. This tool takes in two fna or fastq files 
-                    containing genetic sequences and aligns them using the Needleman-Wunsch algorithm.
+                    containing genetic sequences and aligns them using the Needleman-Wunsch algorithm. The final results
+                    are then returned as the selected file type.
                 </div>
                 <div class="description" id="variance-desc">
                     Identify variable regions in amplicon sequences, pieces of DNA/RNA that is the source of amplification or 
-                    replication events. This tool takes in a fna or fastq file containing genetic sequences and plots the variance regions.
+                    replication events. This tool takes in a fna or fastq file containing genetic sequences and plots the variance regions. 
+                    The final results are then returned as the selected file type.
                 </div>
                 <div class="description" id="assembly-desc">
                     Assemble sequence fragments into a complete genome. This tool takes in a fna or fastq file containing genetic 
-                    fragments (reads) and assembles them using a de Bruijn graph and eulerian cycle algorithm.
+                    fragments (reads) and assembles them using a de Bruijn graph and eulerian cycle algorithm. The final results
+                    are then returned as the selected file type.
                 </div>
                 <div class="description" id="phylogeny-desc">
                     Construct a phylogeny tree from a series of genetic sequences. This tool takes in a fna or fastq file 
-                    containing genetic sequences and implements the Nei-Saitou neighbor-joining algorithm for phylogeny construction.
+                    containing genetic sequences and implements the Nei-Saitou neighbor-joining algorithm for phylogeny construction. 
+                    The final results are then returned as the selected file type.
                 </div>
             </div>
         </div>
         <div id="user-portal">
             <form action="/sequence_analysis" method="POST" id="analysis-form" enctype="multipart/form-data" class="forms">
-                <div class="form-group">
-                    <input type="checkbox" name="codon" value="codon" id="codon">
-                    <label for="codon">Count Codons</label>
-                </div>
-                <div class="form-group">
-                    <input type="checkbox" name="amino" value="amino" id="amino">
-                    <label for="amino">Count Amino Acids</label>
-                </div>
-                <div class="form-group">
-                    <input type="checkbox" name="kmer" value="kmer" id="kmer">
-                    <label for="kmer">Count k-mers</label>
-                </div>
-            
-                <div class="form-group">
-                    <label for="n-mer">K number:</label>
-                    <input type="number" name="n-mer" min="1" max="1000" value="3">
+                <div class="large-form-group">
+                    <div class="input-group">
+                        <div class="info">
+                            Sequence Type(s):
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" name="codon" value="codon" id="codon">
+                            <label for="codon">Count Codons</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" name="amino" value="amino" id="amino">
+                            <label for="amino">Count Amino Acids</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" name="kmer" value="kmer" id="kmer">
+                            <label for="kmer">Count k-mers</label>
+                        </div>
+                    
+                        <div class="form-group">
+                            <label for="n-mer">K-mer Size:</label>
+                            <input type="number" name="n-mer" min="1" max="1000" value="3">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="info">
+                            Return File:
+                        </div>
+                        <div class="form-group">
+                            <input type="radio" id="txt" name="file_type" value="txt">
+                            <label for="txt">Text File</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="radio" id="csv" name="file_type" value="csv">
+                            <label for="csv">CSV File</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="radio" id="json" name="file_type" value="json">
+                            <label for="json">JSON File</label>
+                        </div>
+                    </div>
                 </div>
             
                 <div class="form-group">
@@ -70,22 +99,22 @@
                     <input type="submit" value="Submit" onclick="submitForm('analysis-form')">
                 </div>
             </form>
-
+            <!-- ======================================================================================================== -->
             <form action="/sequence_alignemnt" method="POST" id="alignment-form" enctype="multipart/form-data" class="forms">
                 <input type="file" name="file" required>
                 <input type="submit" value="Submit" onclick="submitForm('alignment-form')">
             </form>
-
+            <!-- ======================================================================================================== -->
             <form action="/sequence_variance" method="POST" id="variance-form" enctype="multipart/form-data" class="forms">
                 <input type="file" name="file" required>
                 <input type="submit" value="Submit" onclick="submitForm('variance-form')">
             </form>
-
+            <!-- ======================================================================================================== -->
             <form action="/sequence_assembly" method="POST" id="assembly-form" enctype="multipart/form-data" class="forms">
                 <input type="file" name="file" required>
                 <input type="submit" value="Submit" onclick="submitForm('assembly-form')">
             </form>
-
+            <!-- ======================================================================================================== -->
             <form action="/phylogeny" method="POST" id="phylogeny-form" enctype="multipart/form-data" class="forms">
                 <input type="file" name="file" required>
                 <input type="submit" value="Submit" onclick="submitForm('phylogeny-form')">

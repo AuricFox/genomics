@@ -51,7 +51,7 @@ body {
 
 /* ========== Sequence Action(s) ========== */
 
-#seq-actions{
+#seq-actions {
     display: flex;
     flex-direction: row;
     color: white;
@@ -61,14 +61,14 @@ body {
     padding-bottom: 2rem;
 }
 
-.seq-action:hover{
+.seq-action:hover {
     color: red;
     cursor: pointer;
 }
 
 /* ========== Sequence Decsriptions ========== */
 
-#description{
+#description {
     color: white;
     text-align: center;
     font-size: larger;
@@ -88,6 +88,12 @@ body {
     font-size: large;
 }
 
+.large-form-group {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
 .form-group {
     margin-bottom: 15px;
 }
@@ -97,9 +103,15 @@ body {
     margin-right: 10px;
 }
 
+/* Style the checkboxes and labels */
+.form-group input[type="radio"] {
+    margin-right: 10px;
+}
+
 /* Style the file input and label */
 .form-group input[type="file"] {
     color: #f0f0f0;
+    margin-top: 1rem;
 }
 
 .form-group label {
@@ -107,11 +119,12 @@ body {
     border: 1px solid #ccc;
     border-radius: 5px;
     cursor: pointer;
+    background: rgba(0, 0, 127, 0.3);
 }
 
-/* Highlight the label when hovering over the file input */
-.form-group input[type="file"]+label:hover {
-    background-color: #f0f0f0;
+.form-group label:hover {
+    background: rgba(0, 0, 200, 0.8);
+    transition: background-color 0.4s ease;
 }
 
 /* Style the submit button */
@@ -132,4 +145,9 @@ body {
 .center {
     display: flex;
     justify-content: center;
+}
+
+.info {
+    margin-bottom: 10px;
+    font-size: 20px;
 }

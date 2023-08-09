@@ -41,14 +41,22 @@ def sequence_analysis():
     amino = request.form.get('amino', type=str)
     kmer = request.form.get('kmer', type=str)
     k = request.form.get('n-mer', type=int)
+    file_type = request.form.get('file_type', type=str)
     
-    file = request.files["file"]                                # Get user's submitted file
-    file_path = create_file(file)                               # Get temp file path
+    file = request.files["file"]                    # Get user's submitted file
+    file_path = create_file(file)                   # Get temp file path
     
-    data = bio.get_sequence_data(file.filename, codon, amino, kmer, k)   # Get the totals
+    data = bio.get_sequence_data(                   # Path of zip file
+        file=file.filename, 
+        codon=codon, 
+        amino=amino, 
+        kmer=kmer, 
+        k=k,
+        file_type=file_type
+    )
 
     print(data)
-    os.remove(file_path)                                        # File is no longer needed
+    os.remove(file_path)                            # File is no longer needed
     return redirect('/home')
 
 # --------------------------------------------------------------------
@@ -61,7 +69,7 @@ def sequence_results():
 # Sequence Alignment Functions
 # ====================================================================
 # Handles sequence alignment of bases
-@app.route("/sequence_alignment", method=["POST"])
+@app.route("/sequence_alignment", methods=["POST"])
 def sequence_alingment():
     return redirect('/home')
 
@@ -90,7 +98,7 @@ def create_file(file):
     # Remove leading and trailing whitespace
     file.filename = sanitized_name.strip()
 
-    allowed_mime_types = ['image/jpeg', 'image/png', 'application/pdf', 'text/plain']
+    allowed_mime_types = ['image/jpeg', 'image/png', 'application/pdf', 'text/plain', None]
     allowed_extensions = ['.jpg', '.jpeg', '.png', '.pdf', '.fna', '.fastq', '.txt']
 
     # Get the file's MIME type and extension
@@ -102,7 +110,7 @@ def create_file(file):
         print(f'{file.filename} MIME type or extension is not supported! '
               f'MIME type: {file_mime_type}, Extension: {file_extension}')
         return None
-
+    print('ksbvibeiornvornv')
     path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file will be saved
 
     os.makedirs(path, exist_ok=True)                            # Create path if it doesn't exist
