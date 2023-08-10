@@ -11,7 +11,7 @@
     </head>
     <body>
         <div id="info">
-            <div id="seq-actions">
+            <div class="seq-actions">
                 <a href="{{ url_for('analysis') }}" class="seq-action {% if active == 'analysis-page' %}active{% endif %}" id="analysis">Sequence Analysis</a>
                 <a href="{{ url_for('alignment') }}" class="seq-action {% if active == 'alignment-page' %}active{% endif %}" id="alignment">Sequence Alignment</a>
                 <a href="{{ url_for('variance') }}" class="seq-action {% if active == 'variance-page' %}active{% endif %}" id="variance">Sequence Variance</a>

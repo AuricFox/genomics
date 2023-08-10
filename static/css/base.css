@@ -43,27 +43,36 @@ body {
     display: flex;
     flex-direction: column;
     width: 80%;
-    margin: 2rem auto;
+    margin: 1rem auto;
     background-color: rgba(0, 0, 0, 0.4);
     border-radius: 8px;
-    padding: 2rem;
+    padding: 1rem;
 }
 
 /* ========== Sequence Action(s) ========== */
 
-#seq-actions {
+.active {
+    background-color: rgb(56, 56, 255);
+}
+
+.seq-actions {
     display: flex;
     flex-direction: row;
     color: white;
     font-weight: bold;
     font-size: larger;
-    justify-content: space-around;
-    padding-bottom: 2rem;
+    justify-content: space-around;    
+}
+
+.seq-actions a {
+    border-radius: 8px;
+    text-decoration: none;
+    color: white;
+    padding: 1rem;
 }
 
 .seq-action:hover {
-    color: red;
-    cursor: pointer;
+    background-color: rgb(56, 56, 255);
 }
 
 /* ========== Sequence Decsriptions ========== */
@@ -72,6 +81,7 @@ body {
     color: white;
     text-align: center;
     font-size: larger;
+    padding: 1rem;
 }
 
 /* ========== Error Messages ========== */
@@ -126,7 +136,7 @@ body {
     background-color: rgba(0,0,0, 0.4);
     border-radius: 8px;
     width: fit-content;
-    margin: 2rem auto;
+    margin: 1rem auto;
     padding: 2rem;
     color: white;
     font-size: large;
@@ -136,6 +146,10 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+}
+
+.input-group:first-child {
+    margin-right: 5rem;
 }
 
 .form-group {

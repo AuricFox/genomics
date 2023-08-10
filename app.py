@@ -14,7 +14,6 @@ app.secret_key = 'my_super_secret_totaly_unbreakable_key'
 # Main Pages
 # ====================================================================
 
-# Accessing Home page
 @app.route("/")
 @app.route("/home")
 def home():
@@ -31,6 +30,14 @@ def alignment():
 @app.route("/variance")
 def variance():
     return render_template('variance.html', active='variance-page')
+
+@app.route("/assembly")
+def assembly():
+    return render_template('assembly.html', active='assembly-page')
+
+@app.route("/phylogeny")
+def phylogeny():
+    return render_template('phylogeny.html', active='phylogeny-page')
 
 # Custom page not found
 @app.errorhandler(404)
