@@ -156,17 +156,15 @@ body {
     margin-bottom: 15px;
 }
 
-/* Style the checkboxes and labels */
-.form-group input[type="checkbox"] {
-    margin-right: 10px;
+.spacing {
+    margin-top: 2rem;
 }
 
-/* Style the checkboxes and labels */
+.form-group input[type="checkbox"],
 .form-group input[type="radio"] {
     margin-right: 10px;
 }
 
-/* Style the file input and label */
 .form-group input[type="file"] {
     color: #f0f0f0;
     margin-top: 1rem;

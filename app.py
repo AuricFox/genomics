@@ -50,7 +50,7 @@ def server_error(error):
     return render_template('404.html'), 404
 '''
 # ====================================================================
-# Sequence Processing Functions
+# Sequence Processing Function(s)
 # ====================================================================
 # Handles sequence counting of codons, amino acids, and/or k-mers
 @app.route("/sequence_analysis", methods=["POST"])
@@ -104,9 +104,8 @@ def sequence_analysis():
     return response
 
 # ====================================================================
-# Sequence Alignment Functions
+# Sequence Alignment Function(s)
 # ====================================================================
-# Handles sequence alignment of bases
 @app.route("/sequence_alignment", methods=["POST"])
 def sequence_alingment():
 
@@ -168,6 +167,66 @@ def sequence_alingment():
     finally:
         try:
             utils.remove_files([file_path1, file_path2])
+        except:
+            print(f'Error removing file(s): {str(e)}')
+
+    return response
+
+# ====================================================================
+# Sequence Variance Function(s)
+# ====================================================================
+@app.route("/sequence_variance", methods=["POST"])
+def sequence_variance():
+
+    try:
+        plot = True if request.form.get('plot', type=str) is not None else False
+        smooth = True if request.form.get('smooth', type=str) is not None else False
+        vRegion = True if request.form.get('vRegion', type=str) is not None else False
+        spacing = request.form.get('spacing', type=int)
+        numV = request.form.get('numV', type=int)
+
+        if spacing < 1 or spacing > 1000:
+            flash('Spacing Must Be Between 1 and 1000!', 'error')
+            return redirect(request.referrer)
+
+        if numV < 1 or numV > 1000:
+            flash('Number of V-Regions Must Be Between 1 and 1000!', 'error')
+            return redirect(request.referrer)
+        
+        file_type = request.form.get('file_type', type=str)
+
+        file = request.files['file']
+        file_path = utils.create_file(file)
+
+        if file_path is None:
+            flash(f'{file.filename} is an Invalid File or FileType', 'error')
+            return redirect(request.referrer)
+        
+        # Creating alignment data
+        data = bio.get_variance_data(
+            file=file_path,
+            plot=True if plot or smooth else False,     # Plot data if plot or smooth are true
+            smooth=smooth,
+            vRegion=vRegion,
+            spacing=spacing,
+            numV=numV,
+            file_type=file_type
+        )
+
+        # Return zip file if found else return error message
+        if 'zip_file' in data:
+            response = send_file(data['zip_file'], as_attachment=True) 
+        else:
+            flash(f'Failed to create Zip File!', 'error')
+            response = redirect(request.referrer)
+    
+    except Exception as e:
+        flash(f'An Error occured: {str(e)}', 'error')
+        response = redirect(request.referrer)
+
+    finally:
+        try:
+            utils.remove_files([file_path])
         except:
             print(f'Error removing file(s): {str(e)}')
 

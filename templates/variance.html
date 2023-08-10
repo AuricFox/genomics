@@ -4,7 +4,62 @@
 
 {% block content %}
 <form action="/sequence_variance" method="POST" id="variance-form" enctype="multipart/form-data" class="forms">
-    <input type="file" name="file" required>
-    <input type="submit" value="Submit" onclick="submitForm('variance-form')">
+    <div class="large-form-group">
+        <div class="input-group">
+            <div class="info">
+                Plot Data:
+            </div>
+                
+            <div class="form-group">
+                <input type="checkbox" name="plot" value="true" id="plot">
+                <label for="plot">Get Plot Without V-Regions</label>
+            </div>
+            <div class="form-group">
+                <input type="checkbox" name="smooth" value="true" id="smooth">
+                <label for="smooth">Smooth Plot Data</label>
+            </div>
+            <div class="form-group">
+                <input type="checkbox" name="vRegion" value="true" id="vRegion">
+                <label for="vRegion">Get Plot With V-Regions</label>
+            </div>
+
+            <div class="form-group spacing">
+                <label for="spacing">Spacing:</label>
+                <input type="number" name="spacing" value="30" min="1" max="1000" id="spacing">
+            </div>
+            <div class="form-group">
+                <label for="numV">Number of V-Regions:</label>
+                <input type="number" name="numV" value="6" min="1" max="1000" id="numV">
+            </div>
+
+        </div>
+    
+        <div class="input-group">
+            <div class="info">
+                Return Type:
+            </div>
+            <div class="form-group">
+                <input type="radio" id="txt" name="file_type" value="txt" checked>
+                <label for="txt">Text File</label>
+            </div>
+            <div class="form-group">
+                <input type="radio" id="csv" name="file_type" value="csv">
+                <label for="csv">CSV File</label>
+            </div>
+            <div class="form-group">
+                <input type="radio" id="json" name="file_type" value="json">
+                <label for="json">JSON File</label>
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="file">Sequence File:</label>
+        <input type="file" name="file" required>
+    </div>
+
+    <div class="form-group center">
+        <input type="submit" value="Submit" onclick="submitForm('variance-form')">
+    </div>    
 </form>
 {% endblock %}
