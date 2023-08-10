@@ -18,7 +18,19 @@ app.secret_key = 'my_super_secret_totaly_unbreakable_key'
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template('home.html')
+    return render_template('home.html', active='analysis-page')
+
+@app.route("/analysis")
+def analysis():
+    return render_template('analysis.html', active='analysis-page')
+
+@app.route("/alignment")
+def alignment():
+    return render_template('alignment.html', active='alignment-page')
+
+@app.route("/variance")
+def variance():
+    return render_template('variance.html', active='variance-page')
 
 # Custom page not found
 @app.errorhandler(404)
@@ -84,25 +96,75 @@ def sequence_analysis():
     
     return response
 
-# --------------------------------------------------------------------
-# Displays the results of the sequence analysis
-@app.route("/sequence_results")
-def sequence_results():
-    return render_template('sequence_results.html')
-
 # ====================================================================
 # Sequence Alignment Functions
 # ====================================================================
 # Handles sequence alignment of bases
 @app.route("/sequence_alignment", methods=["POST"])
 def sequence_alingment():
-    return redirect('/home')
 
-# --------------------------------------------------------------------
-# Displays the results of the sequence alignment
-@app.route("/alignment_results")
-def aligment_results():
-    return render_template('aligment_results.html')
+    try:
+        match_point = request.form.get('match_point', type=int)
+        match_penalty = request.form.get('match_penalty', type=int)
+        gap_penalty = request.form.get('gap_penalty', type=int)
+        ignore_gaps = request.form.get('ignore_gaps', type=bool)
+
+        if match_point < 1:
+            flash('Match Point Must Be Greater Than Zero!', 'error')
+            return redirect(request.referrer)
+
+        if match_penalty > -1:
+            flash('Match Penalty Must Be Less Than Zero!', 'error')
+            return redirect(request.referrer)
+
+        if gap_penalty > -1:
+            flash('Gap Penalty Must Be Less Than Zero!', 'error')
+            return redirect(request.referrer)
+        
+        file_type = request.form.get('file_type', type=str)
+
+        file1 = request.files['file1']
+        file2 = request.files['file2']
+        file_path1 = utils.create_file(file1)
+        file_path2 = utils.create_file(file2)
+
+        if file_path1 is None:
+            flash(f'{file1.filename} is an Invalid File or FileType', 'error')
+            return redirect(request.referrer)
+        
+        if file_path2 is None:
+            flash(f'{file2.filename} is an Invalid File or FileType', 'error')
+            return redirect(request.referrer)
+        
+        # Creating alignment data
+        data = bio.get_alignment_data(
+            file1=file_path1,
+            file2=file_path2,
+            gap_pen=gap_penalty,
+            match_point=match_point,
+            match_pen=match_penalty,
+            ignore=ignore_gaps,
+            file_type=file_type
+        )
+
+        # Return zip file if found else return error message
+        if 'zip_file' in data:
+            response = send_file(data['zip_file'], as_attachment=True) 
+        else:
+            flash(f'Failed to create Zip File!', 'error')
+            response = redirect(request.referrer)
+    
+    except Exception as e:
+        flash(f'An Error occured: {str(e)}', 'error')
+        response = redirect(request.referrer)
+
+    finally:
+        try:
+            utils.remove_files([file_path1, file_path2])
+        except:
+            print(f'Error removing file(s): {str(e)}')
+
+    return response
 
 # ====================================================================
 # Run Main

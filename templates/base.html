@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="title" content="">
+        <meta name="keywords" content="">
+        <title>{% block title %}{% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="{{ url_for('static', filename='js/base.js') }}" defer></script>
+    </head>
+    <body>
+        <div id="info">
+            <div id="seq-actions">
+                <a href="{{ url_for('analysis') }}" class="seq-action {% if active == 'analysis-page' %}active{% endif %}" id="analysis">Sequence Analysis</a>
+                <a href="{{ url_for('alignment') }}" class="seq-action {% if active == 'alignment-page' %}active{% endif %}" id="alignment">Sequence Alignment</a>
+                <a href="{{ url_for('variance') }}" class="seq-action {% if active == 'variance-page' %}active{% endif %}" id="variance">Sequence Variance</a>
+                <a href="{{ url_for('assembly') }}" class="seq-action {% if active == 'assembly-page' %}active{% endif %}" id="assembly">Sequence Assembly</a>
+                <a href="{{ url_for('phylogeny') }}" class="seq-action {% if active == 'phylogeny-page' %}active{% endif %}" id="phylogeny">Phylogeny</a>
+            </div>
+            <div id="description">
+                <div class="description" id="analysis-desc">
+                    Analize the number of codons (3-mers), amino acids, or specified k-mers within a genetic sequence. This tool 
+                    takes in a fna or fastq file containing genetic sequences and analizes the data within the file. The final results 
+                    are then returned as the selected file type.
+                </div>
+                <div class="description" id="alignment-desc">
+                    Perform an allignment of two sequences to see how they compare. This tool takes in two fna or fastq files 
+                    containing genetic sequences and aligns them using the Needleman-Wunsch algorithm. The final results
+                    are then returned as the selected file type.
+                </div>
+                <div class="description" id="variance-desc">
+                    Identify variable regions in amplicon sequences, pieces of DNA/RNA that is the source of amplification or 
+                    replication events. This tool takes in a fna or fastq file containing genetic sequences and plots the variance regions. 
+                    The final results are then returned as the selected file type.
+                </div>
+                <div class="description" id="assembly-desc">
+                    Assemble sequence fragments into a complete genome. This tool takes in a fna or fastq file containing genetic 
+                    fragments (reads) and assembles them using a de Bruijn graph and eulerian cycle algorithm. The final results
+                    are then returned as the selected file type.
+                </div>
+                <div class="description" id="phylogeny-desc">
+                    Construct a phylogeny tree from a series of genetic sequences. This tool takes in a fna or fastq file 
+                    containing genetic sequences and implements the Nei-Saitou neighbor-joining algorithm for phylogeny construction. 
+                    The final results are then returned as the selected file type.
+                </div>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error-messages">
+                    {% for message in messages %}
+                        <div class="error-message">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div id="user-portal">
+            {% block content %}{% endblock %}
+        </div>        
+    </body>
+</html>

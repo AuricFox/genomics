@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Sequence Alignment{% endblock %}
+
+{% block content %}
+<form action="/sequence_alignemnt" method="POST" id="alignment-form" enctype="multipart/form-data" class="forms">
+    <div class="large-form-group">
+        <div class="input-group">
+            <div class="info">
+                Sequence Type(s):
+            </div>
+            <div class="form-group">
+                <label for="match_point">Match Point(s)</label>
+                <input type="number" name="match_point" value="1" min="1" max="1000" id="match_point">
+            </div>
+            <div class="form-group">
+                <label for="match_penalty">Mismatch Penalty</label>
+                <input type="number" name="match_penalty" value="-1" min="-1000" max="-1" id="match_penalty">
+            </div>
+            <div class="form-group">
+                <label for="gap_penalty">Gap Penalty</label>
+                <input type="number" name="gap_penalty" value="-2" min="-1000" max="-1" id="gap_penalty">
+            </div>
+
+            <div class="form-group">
+                <label for="n-mer">K-mer Size:</label>
+                <input type="number" name="n-mer" min="1" max="1000" value="3">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="info">
+                Return File:
+            </div>
+            <div class="form-group">
+                <input type="radio" id="txt" name="file_type" value="txt" checked>
+                <label for="txt">Text File</label>
+            </div>
+            <div class="form-group">
+                <input type="radio" id="csv" name="file_type" value="csv">
+                <label for="csv">CSV File</label>
+            </div>
+            <div class="form-group">
+                <input type="radio" id="json" name="file_type" value="json">
+                <label for="json">JSON File</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="file1">Sequence 1:</label>
+        <input type="file" name="file1" required>
+    </div>
+
+    <div class="form-group">
+        <label for="file2">Sequence 2:</label>
+        <input type="file" name="file2" required>
+    </div>
+
+    <div class="form-group center">
+        <input type="submit" value="Submit" onclick="submitForm('alignment-form')">
+    </div>
+</form>
+{% endblock %}
