@@ -53,7 +53,7 @@ def server_error(error):
 # Sequence Processing Function(s)
 # ====================================================================
 # Handles sequence counting of codons, amino acids, and/or k-mers
-@app.route("/sequence_analysis", methods=["POST"])
+@app.route("/sequence_analysis", methods=["POST", "GET"])
 def sequence_analysis():
     try:
         # User submitted form data
@@ -106,7 +106,7 @@ def sequence_analysis():
 # ====================================================================
 # Sequence Alignment Function(s)
 # ====================================================================
-@app.route("/sequence_alignment", methods=["POST"])
+@app.route("/sequence_alignment", methods=["POST", "GET"])
 def sequence_alingment():
 
     try:
@@ -157,25 +157,25 @@ def sequence_alingment():
         if 'zip_file' in data:
             response = send_file(data['zip_file'], as_attachment=True) 
         else:
-            flash(f'Failed to create Zip File!', 'error')
+            flash(f'Failed to Create Zip File!', 'error')
             response = redirect(request.referrer)
     
     except Exception as e:
-        flash(f'An Error occured: {str(e)}', 'error')
+        flash(f'An Error Occured: {str(e)}', 'error')
         response = redirect(request.referrer)
 
     finally:
         try:
             utils.remove_files([file_path1, file_path2])
         except:
-            print(f'Error removing file(s): {str(e)}')
+            print(f'Error Removing File(s): {str(e)}')
 
     return response
 
 # ====================================================================
 # Sequence Variance Function(s)
 # ====================================================================
-@app.route("/sequence_variance", methods=["POST"])
+@app.route("/sequence_variance", methods=["POST", "GET"])
 def sequence_variance():
 
     try:
@@ -217,18 +217,19 @@ def sequence_variance():
         if 'zip_file' in data:
             response = send_file(data['zip_file'], as_attachment=True) 
         else:
-            flash(f'Failed to create Zip File!', 'error')
+            print(f"Error: {data['error']}")
+            flash(f"Failed to Create Zip File!", 'error')
             response = redirect(request.referrer)
     
     except Exception as e:
-        flash(f'An Error occured: {str(e)}', 'error')
+        flash(f'An Error Occured: {str(e)}', 'error')
         response = redirect(request.referrer)
 
     finally:
         try:
             utils.remove_files([file_path])
         except:
-            print(f'Error removing file(s): {str(e)}')
+            print(f'Error Removing File(s): {str(e)}')
 
     return response
 

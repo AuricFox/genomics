@@ -192,24 +192,22 @@ def get_variance_data(
 
         # Plot smooth/raw data and save to a file
         if plot or smooth:
-            data.plot_data(
-                display=False,
+            fd = data.plot_data(
                 smooth=smooth,
                 filename=file1
             )
 
-            files.append(file1)
-
+            files.append(fd)
+        
         # Plot variance regions and save to a file
         if vRegion:
-            data.plot_v_regions(
-                display=False,
+            fd = data.plot_v_regions(
                 spacing=spacing,
                 numV=numV,
                 filename=file2
             )
 
-            files.append(file2)
+            files.append(fd)
 
         # Create zip file for export
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/variance.zip')
@@ -226,7 +224,9 @@ def get_variance_data(
 # ==============================================================================================================
 def main():
     #sequence_data = get_sequence_data(file='testing.fna', codon='codon', amino='amino')
-    variance_data = get_variance_data(file='sequences.fna', plot=True, smooth=True, vRegion=True)
+    variance_data = get_variance_data(file='../input/sequences.fna', plot=True, smooth=True, vRegion=True)
+
+    print(variance_data)
 
 
 if __name__ == "__main__":

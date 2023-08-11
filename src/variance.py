@@ -1,8 +1,12 @@
-import sys
+import os
 import numpy as np
+from typing import List
+import matplotlib
 import matplotlib.pyplot as plt
 
-from typing import List
+matplotlib.use('agg')
+
+PATH = os.path.dirname(os.path.abspath(__file__))
 
 class Variance:
     def __init__(self, sequences:List[str], header:List[str]):
@@ -73,20 +77,18 @@ class Variance:
         return data
 
     # ==============================================================================================================
-    def plot_data(self, display:bool=False, smooth:bool=True, filename:str=None):
+    def plot_data(self, smooth:bool=True, filename:str='./temp/variance_plot.jpg'):
         '''
         Plots raw or smoothed data
 
         Parameter(s):
-            display (bool, default=False): toggels the display of the plotted figure
             smooth (bool, default=True): toggels between raw (false) and smooth (true) data for plotting
-            filename (str, default=None): path where the plotted figure is saved if not None
+            filename (str, default=./temp/variance_plot.jpg): path where the plotted figure is saved
         
         Output(s):
-            figure (image) or None: if return_fig is true, a figure of the data is returned
-            file or None: if save_fig is true the figure will be saved to a pdf
+            A plot figure of the variance data is saved to a file. Returns the file path.
         '''
-        
+        filename = os.path.join(PATH, filename)
         figure = plt.figure()
 
         # Plot smooth data
@@ -104,10 +106,8 @@ class Variance:
         plt.xlabel('Position in the 16S rRNA gene')
         plt.ylabel('Pct Conserved')
   
-        if display: plt.show()                              # Toggle show option
-        
-        if filename != None: 
-            figure.savefig(filename)
+        figure.savefig(filename)
+        return filename
     
     # ==============================================================================================================
     def moving_avg(self, size:int=60):
@@ -137,22 +137,21 @@ class Variance:
         return mavg
 
     # ==============================================================================================================
-    def plot_v_regions(self, display:bool=False, spacing:int=30, numV:int=6, filename:str=None):
+    def plot_v_regions(self, spacing:int=30, numV:int=6, filename:str='./temp/variance_v_plot.jpg'):
         '''
         Plots smoothed data with variance regions
         
         Parameter(s):
-            display (bool, default=False): toggels the display of the figure
             spacing (int, default=30): specifies the minimum number of bases needed for a v region (peak)
             numV (int, default=6): specifies the minimum number of desired v regions (peaks)
-            filename (str, default=None): path where the plotted figure is saved if not None
+            filename (str, default=./temp/variance_v_plot.jpg): path where the plotted figure is saved
         
         Output(s):
-            figure (image) or None: if return_fig is true, a figure of the smoothed data with marked v regions is returned
-            file or None: if save_fig is true the figure will be saved to a pdf
+            A plot figure of the variance data with v regions/peaks is saved to a file. Returns the file path.
         '''
-
+        filename = os.path.join(PATH, filename)
         figure = plt.figure()
+
         y_1 = np.array(self.moving_avg())                               # Variability y
         x = np.array([i+1 for i in range(len(y_1))])                    # X axis, nucleotide base positions
 
@@ -188,11 +187,9 @@ class Variance:
         plt.xlabel('Position in the 16S rRNA gene')
         plt.ylabel('Pct Conserved')
         plt.title('Smoothed Data w/Intersection line')
-  
-        if display: plt.show()                                          # Toggle show option
         
-        if filename != None: 
-            figure.savefig(filename)
+        figure.savefig(filename)
+        return filename
 
     # ==============================================================================================================
     def save_plot(self, smooth:bool, spacing:int=30, numV:int=6, plotFile:str=None, regionFile:str=None):
@@ -212,14 +209,12 @@ class Variance:
 
         if plotFile != None:
             self.plot_data(
-                display=False,
                 smooth=smooth,
                 filename=plotFile
             )
         
         if regionFile != None:
             self.plot_v_regions(
-                display=False,
                 spacing=spacing, 
                 numV=numV,
                 filename=regionFile

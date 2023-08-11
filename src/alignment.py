@@ -1,5 +1,8 @@
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+
+matplotlib.use('agg')
 
 '''
    REFERENCE SEQUENCE
@@ -316,13 +319,12 @@ class Alignment:
             f.write(self.results['sequence'] + '\n')
     
     # ----------------------------------------------------------------------------------------------------------------------
-    def plot_compare(self, display:bool=False, filename:str=None):
+    def plot_compare(self, filename:str='./temp/alignment_plot.jpg'):
         '''
         Creates a figure displaying the similarities between the two sequences
 
         Parameter(s):
-            display (bool, default=False): displays the plotted figure if true, else displays nothing
-            filename (str, default=None): name of the file where the plot is saved if not None, else saves nothing
+            filename (str, default=./temp/alignment_plot.jpg): name of the file where the plot is saved if not None, else saves nothing
         
         Output(s):
             returns a plotted figure as a window display if display is true, and ouputs a saved
@@ -341,10 +343,7 @@ class Alignment:
         plt.xlabel('Assembled SARS Spike Protein ')
         plt.ylabel('Our Assembled Contig(s)')
 
-        if(display): plt.show()
-        if(filename != None): 
-            #print(f'Creating Comparison Plot: {filename}')
-            plt.savefig(filename, dpi=500)
+        plt.savefig(filename, dpi=500)
 
     # ----------------------------------------------------------------------------------------------------------------------
     def __str__(self):
