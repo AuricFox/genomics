@@ -144,12 +144,18 @@ body {
 
 .large-form-group {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: space-between;
 }
 
-.input-group:first-child {
-    margin-right: 5rem;
+.input-group-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group-row {
+    display: flex;
+    flex-direction: row;
 }
 
 .form-group {
@@ -157,17 +163,22 @@ body {
 }
 
 .spacing {
-    margin-top: 2rem;
+    margin-left: 15px;
+}
+
+.form-group input[type="number"]{
+    padding: 2px;
+    font-size: large;
 }
 
 .form-group input[type="checkbox"],
 .form-group input[type="radio"] {
     margin-right: 10px;
+    margin-left: 5px;
 }
 
 .form-group input[type="file"] {
     color: #f0f0f0;
-    margin-top: 1rem;
 }
 
 .form-group label {

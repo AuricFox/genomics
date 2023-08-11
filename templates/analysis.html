@@ -5,50 +5,58 @@
 {% block content %}
 <form action="/sequence_analysis" method="POST" id="analysis-form" enctype="multipart/form-data" class="forms">
     <div class="large-form-group">
-        <div class="input-group">
+        <div class="input-group-col">
             <div class="info">
                 Sequence Type(s):
             </div>
-            <div class="form-group">
-                <input type="checkbox" name="codon" value="codon" id="codon" checked>
-                <label for="codon">Count Codons</label>
-            </div>
-            <div class="form-group">
-                <input type="checkbox" name="amino" value="amino" id="amino">
-                <label for="amino">Count Amino Acids</label>
-            </div>
-            <div class="form-group">
-                <input type="checkbox" name="kmer" value="kmer" id="kmer">
-                <label for="kmer">Count k-mers</label>
+            <div class="input-group-row">
+                <div class="form-group">
+                    <label for="codon">Count Codons</label>
+                    <input type="checkbox" name="codon" value="codon" id="codon" checked>
+                </div>
+                <div class="form-group">
+                    <label for="amino">Count Amino Acids</label>
+                    <input type="checkbox" name="amino" value="amino" id="amino">
+                </div>
+                <div class="form-group">
+                    <label for="kmer">Count k-mers</label>
+                    <input type="checkbox" name="kmer" value="kmer" id="kmer">
+                </div>
             </div>
 
-            <div class="form-group spacing">
+            <div class="form-group">
                 <label for="n-mer">K-mer Size:</label>
                 <input type="number" name="n-mer" min="1" max="1000" value="3">
             </div>
         </div>
-        <div class="input-group">
-            <div class="info">
-                Return Type:
-            </div>
+
+        <div class="info">
+            Type of File Returned:
+        </div>
+        <div class="input-group-row">
             <div class="form-group">
+                <label for="txt">Text</label>
                 <input type="radio" id="txt" name="file_type" value="txt" checked>
-                <label for="txt">Text File</label>
             </div>
             <div class="form-group">
+                <label for="csv">CSV</label>
                 <input type="radio" id="csv" name="file_type" value="csv">
-                <label for="csv">CSV File</label>
             </div>
             <div class="form-group">
+                <label for="json">JSON</label>
                 <input type="radio" id="json" name="file_type" value="json">
-                <label for="json">JSON File</label>
             </div>
         </div>
     </div>
 
-    <div class="form-group">
-        <label for="file">Select File:</label>
-        <input type="file" name="file" required>
+    <div class="info">
+        Input File(s):
+    </div>
+    <div class="input-group-col">
+        <div class="form-group">
+            <label for="file">Sequence File:</label>
+            <input type="file" name="file" required>
+        </div>
     </div>
 
     <div class="form-group center">
