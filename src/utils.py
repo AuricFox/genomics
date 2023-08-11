@@ -145,7 +145,7 @@ def create_zip(files:List[str], zipname:str='./temp/output.zip'):
 
     Parameter(s):
         files (List[str]): list of file names being zipped
-        zipname (str, optional): path of the zip file being saved (path from src)
+        zipname (str, default=./temp/output.zip): path of the zip file being saved (path from src)
 
     Output(s):
         file_path (str): the path to the saved zip file or None if no files to process
@@ -211,8 +211,8 @@ def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
     
     Parameter(s):
         data (dict): dictionary containing the data being written to a file
-        header (List[str]): list of header info for the corresponding data
-        filename (str): file path where the data will be saved
+        header (List[str], default=[]): list of header info for the corresponding data
+        filename (str, default=./temp/output.txt): file path where the data will be saved
         
     Output(s):
         A file with the user input filename containing the dictionary data
@@ -230,14 +230,14 @@ def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
     return file_path
 
 # ----------------------------------------------------------------------------------------------------------------------------
-def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
+def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
     '''
     Takes in a dictionary and writes the data to a csv file
     
     Parameter(s):
         data (dict): dictionary containing the data being written to a file
-        header (List[str]): list of header info for the corresponding data
-        filename (str): file path where the data will be saved
+        header (List[str], default=[]): list of header info for the corresponding data
+        filename (str, default=./temp/output.csv): file path where the data will be saved
         
     Output(s):
         A file with the user input filename containing the dictionary data
@@ -263,7 +263,7 @@ def make_json(data:dict, filename:str='./temp/output.json'):
     
     Parameter(s):
         data (dict): dictionary containing the data being written to a file
-        filename (str): file path where the data will be saved
+        filename (str, default=./temp/output.json): file path where the data will be saved
         
     Output(s):
         A file with the user input filename containing the dictionary data
@@ -285,8 +285,8 @@ def runtime_csv(data, header:List[str]=[] ,filename:str='./temp/runtime.csv'):
     
     Parameter(s):
         data: runtime data being written to the csv file
-        header (List[str]): list of header info on the data
-        filename (str, optional): file path where the data will be saved
+        header (List[str], default=[]): list of header info on the data
+        filename (str, default=./temp/runtime.csv): file path where the data will be saved
     
     Output(s):
         A file with the filename containing the runtime data

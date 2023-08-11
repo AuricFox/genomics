@@ -26,10 +26,10 @@ class Alignment:
         Parameter(s):
             ref (str): the reference sequence being aligned (sequence 1)
             seq (str): the secondary sequence being aligned with the reference sequence (sequence 2)
-            gap_pen (int, optional): a penalty imposed when there is a gap in the alignment
-            match_point (int, optional): the point(s) added to the score if there is a match in the alignment
-            match_pen (int, optional): a penalty imposed if there is a mismatch in the alignment
-            ignore (bool, optional): toggles between ingoring end gaps if true and counting end gaps if false
+            gap_pen (int, default=-2): a penalty imposed when there is a gap in the alignment
+            match_point (int, default=1): the point(s) added to the score if there is a match in the alignment
+            match_pen (int, default=-1): a penalty imposed if there is a mismatch in the alignment
+            ignore (bool, default=False): toggles between ingoring end gaps if true and counting end gaps if false
         
         Output(s): None
         '''
@@ -249,18 +249,19 @@ class Alignment:
                 self.results['start gaps'] += 1
 
     # ----------------------------------------------------------------------------------------------------------------------
-    '''
-    Appends to alignment strings (self.results['reference'], self.results['sequence'], and self.results['visual'])
-    
-    Parameter(s):
-        col (int): Column index of the current cell.
-        row (int): Row index of the current cell.
-        neighbor (int, int): the neighboring cell that the current cell is pointing too
-    
-    Output(s):
-        A string indicating the alignment type (match, mismatch, or gap)
-    '''
     def alignment_string(self, row:int, col:int, neighbor, ignore:bool=False):
+        '''
+        Appends to alignment strings (self.results['reference'], self.results['sequence'], and self.results['visual'])
+
+        Parameter(s):
+            col (int): Column index of the current cell.
+            row (int): Row index of the current cell.
+            neighbor (int, int): the neighboring cell that the current cell is pointing too
+            ignore (bool, default=False): ignore end gap penalties
+
+        Output(s):
+            A string indicating the alignment type (match, mismatch, or gap)
+        '''
 
         # Diagonal alignment (Diagonal neighbor is the best neighbor)
         if(neighbor[0] == row-1 and neighbor[1] == col-1):
@@ -302,7 +303,7 @@ class Alignment:
     def alignment_file(self, filename:str='./output/alignment.txt'):
         '''
         Parameter(s):
-            filename (str, optional): the name of a file where the alignment data will be saved
+            filename (str, default=./output/alignment.txt): the name of a file where the alignment data will be saved
         
         Output(s):
             A file with the saved alignment data
@@ -320,8 +321,8 @@ class Alignment:
         Creates a figure displaying the similarities between the two sequences
 
         Parameter(s):
-            display (bool, optional): displays the plotted figure if true, else displays nothing
-            filename (str, optional): name of the file where the plot is saved if not None, else saves nothing
+            display (bool, default=False): displays the plotted figure if true, else displays nothing
+            filename (str, default=None): name of the file where the plot is saved if not None, else saves nothing
         
         Output(s):
             returns a plotted figure as a window display if display is true, and ouputs a saved

@@ -57,12 +57,12 @@ def server_error(error):
 def sequence_analysis():
     try:
         # User submitted form data
-        codon = request.form.get('codon', type=str)
-        amino = request.form.get('amino', type=str)
-        kmer = request.form.get('kmer', type=str)
+        codon = True if request.form.get('codon', type=str) is not None else False
+        amino = True if request.form.get('amino', type=str) is not None else False
+        kmer = True if request.form.get('kmer', type=str) is not None else False
 
-        if codon is None and amino is None and kmer is None:
-            flash('A Sequence Type Must Be Selected', 'error')
+        if not codon and not amino and not kmer:
+            flash('A Sequence Type Must Be Selected!', 'error')
             return redirect(request.referrer)
 
         k = request.form.get('n-mer', type=int)
@@ -113,7 +113,7 @@ def sequence_alingment():
         match_point = request.form.get('match_point', type=int)
         match_penalty = request.form.get('match_penalty', type=int)
         gap_penalty = request.form.get('gap_penalty', type=int)
-        ignore_gaps = request.form.get('ignore_gaps', type=bool)
+        ignore_gaps = True if request.form.get('ignore_gaps', type=str) is not None else False
 
         if match_point < 1:
             flash('Match Point Must Be Greater Than Zero!', 'error')
@@ -205,7 +205,7 @@ def sequence_variance():
         # Creating alignment data
         data = bio.get_variance_data(
             file=file_path,
-            plot=True if plot or smooth else False,     # Plot data if plot or smooth are true
+            plot=plot,
             smooth=smooth,
             vRegion=vRegion,
             spacing=spacing,

@@ -246,7 +246,7 @@ class Amino_Acid:
         Converts a Codon sequence to an amino acid sequence and return it
         
         Parameter(s):
-            stops(bool): used to for gene expression, use start and stop codons
+            stops(bool, default=False): used to for gene expression, use start and stop codons
 
         Output(s):
             None

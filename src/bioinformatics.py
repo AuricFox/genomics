@@ -14,11 +14,11 @@ PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp")
 # ==============================================================================================================
 def get_sequence_data(
     file:str, 
-    codon:str=None, 
-    amino:str=None, 
-    kmer:str=None, 
+    codon:bool=True, 
+    amino:bool=False, 
+    kmer:bool=False, 
     k:int=3, 
-    file_type:str='csv'):
+    file_type:str='txt'):
     '''
     Extracts the header and sequence data from the input file and counts the totals in the sequence. The data is
     then saved to individual files depending on the file type and zipped into one zip file. The path to the zip
@@ -26,11 +26,11 @@ def get_sequence_data(
     
     Parameter(s):
         file (str): path to the file containing the sequence data
-        codon (str, optional): get the codon count if not None
-        amino (str, optional): get the amino acid count if not None
-        kmer (str, optional): get the k-mer count if not None
-        k (int, optional): size of the k-mer
-        file_type (str, optional): type of file(s) to be returned in the zip file
+        codon (bool, default=True): count the number of codons in a sequence if true else don't count them
+        amino (bool, default=False): count the number of amino acids in a sequence if true else don't count them
+        kmer (bool, default=False): count the number of k-mers in a sequence if true else don't count them
+        k (int, default=3): size of the k-mer, number of bases/characters
+        file_type (str, defualt=txt): type of file(s) to be returned in the zip file
     
     Output(s):
         Creates a zip file containing a series of files depending on file_type which contain the counts of codons, 
@@ -45,15 +45,15 @@ def get_sequence_data(
         data = {}
 
         # Counting codons
-        if codon != None:
+        if codon:
             seq = sq.Codon(sequences=sequences[0], header="Codons")
             data['codons'] = seq.codon
         # Counting amino acids
-        if amino != None:
+        if amino:
             seq = sq.Amino_Acid(sequences=sequences[0], header="Amino Acids")
             data['amino acids'] = seq.amino_acid
         # Counting k-mers
-        if kmer != None:
+        if kmer:
             seq = sq.Kmer(sequences=sequences[0], header="K-mers", k=k)
             data['kmers'] = seq.kmers
 
@@ -94,18 +94,18 @@ def get_alignment_data(
         match_point:int=1, 
         match_pen:int=-1, 
         ignore:bool=False, 
-        file_type:str='json'):
+        file_type:str='txt'):
     '''
     Extracts the header and sequence data from the input file and counts the totals in the sequence
     
     Parameter(s):
         file1 (str): path to the file containing the first sequence data
         file2 (str): path to the file containing the second sequence data
-        gap_pen (int, optional): penalty for gaps in the alignment
-        match_point (int, optional): point(s) added to the score for matches in the alignment
-        match_pen (int, optional): penalty for mismatches in the alignment
-        ignore (bool, optional): condition to ignore start and end gap penalties for local alignment
-        file_type (str, optional): type of file(s) to be returned in the zip file
+        gap_pen (int, default=-2): penalty for gaps in the alignment
+        match_point (int, default=1): point(s) added to the score for matches in the alignment
+        match_pen (int, default=-1): penalty for mismatches in the alignment
+        ignore (bool, default=False): condition to ignore start and end gap penalties for local alignment
+        file_type (str, default=txt): type of file(s) to be returned in the zip file
     
     Output(s):
         Creates a zip file composed of a file depending on file_type which contains the alignment results of a
@@ -162,7 +162,7 @@ def get_variance_data(
         vRegion:bool, 
         spacing:int=30, 
         numV:int=6,
-        file_type:str='json'):
+        file_type:str='txt'):
     '''
     Calculates the variance between the sequences and plots the data
     
@@ -171,9 +171,9 @@ def get_variance_data(
         plot (bool): save the raw/smooth plot to a file if true
         smooth (bool): smooth the data if true, else plot the raw data
         vRegion (bool): save the plot with variance regions to a file if true
-        spacing (int, optional): specifies the minimum number of bases needed for a variance region (peak)
-        numV (int, optional): specifies the minimum number of desired variance regions (peaks)
-        file_type (str, optional): type of file(s) to be returned in the zip file
+        spacing (int, default=30): specifies the minimum number of bases needed for a variance region (peak)
+        numV (int, default=6): specifies the minimum number of desired variance regions (peaks)
+        file_type (str, default=txt): type of file(s) to be returned in the zip file
     
     Output(s):
         zipPth (str): a path to a zip file containing the ploted data
@@ -191,7 +191,7 @@ def get_variance_data(
         data = vr.Variance(sequences=seq[0], header=seq[1])
 
         # Plot smooth/raw data and save to a file
-        if plot:
+        if plot or smooth:
             data.plot_data(
                 display=False,
                 smooth=smooth,

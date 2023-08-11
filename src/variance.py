@@ -2,8 +2,10 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
+from typing import List
+
 class Variance:
-    def __init__(self, sequences=[], header=[]):
+    def __init__(self, sequences:List[str], header:List[str]):
         '''
         Initializes the variance analysis of a series of sequences
         
@@ -76,9 +78,9 @@ class Variance:
         Plots raw or smoothed data
 
         Parameter(s):
-            display (bool, optional): toggels the display of the plotted figure
-            smooth (bool, optional): toggels between raw (false) and smooth (true) data for plotting
-            filename (str, optional): path where the plotted figure is saved if not None
+            display (bool, default=False): toggels the display of the plotted figure
+            smooth (bool, default=True): toggels between raw (false) and smooth (true) data for plotting
+            filename (str, default=None): path where the plotted figure is saved if not None
         
         Output(s):
             figure (image) or None: if return_fig is true, a figure of the data is returned
@@ -114,7 +116,7 @@ class Variance:
         NOTE: The default size was selected because the output graph closely matched the one in the documentation
         
         Parameter(s):
-            size (int, optional): dictates the number of variances used for calculating the moving average
+            size (int, default=60): dictates the number of variances used for calculating the moving average
         
         Output(s):
             mavg (List[float]): calculated moving averages
@@ -140,10 +142,10 @@ class Variance:
         Plots smoothed data with variance regions
         
         Parameter(s):
-            display (bool, optional): toggels the display of the figure
-            spacing (int, optional): specifies the minimum number of bases needed for a v region (peak)
-            numV (int, optional): specifies the minimum number of desired v regions (peaks)
-            filename (str, optional): path where the plotted figure is saved if not None
+            display (bool, default=False): toggels the display of the figure
+            spacing (int, default=30): specifies the minimum number of bases needed for a v region (peak)
+            numV (int, default=6): specifies the minimum number of desired v regions (peaks)
+            filename (str, default=None): path where the plotted figure is saved if not None
         
         Output(s):
             figure (image) or None: if return_fig is true, a figure of the smoothed data with marked v regions is returned
@@ -199,10 +201,10 @@ class Variance:
 
         Parameter(s):
             smooth (bool): smooth the data if true, else plot the raw data
-            spacing (int, optional): specifies the minimum number of bases needed for a v region (peak)
-            numV (int, optional): specifies the number of desired v regions (peaks)
-            plotFile (str, optional): path where the plotted data is saved if not None
-            regionFile (str, optional): path where the variance region data is saved if not None
+            spacing (int, default=30): specifies the minimum number of bases needed for a v region (peak)
+            numV (int, default=6): specifies the number of desired v regions (peaks)
+            plotFile (str, default=None): path where the plotted data is saved if not None
+            regionFile (str, default=None): path where the variance region data is saved if not None
 
         Output(s):
             A file with the saved plot(s) if plotFile or regionFile are not None, else outputs nothing
