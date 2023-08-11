@@ -88,7 +88,7 @@ class Variance:
         Output(s):
             A plot figure of the variance data is saved to a file. Returns the file path.
         '''
-        filename = os.path.join(PATH, filename)
+        
         figure = plt.figure()
 
         # Plot smooth data
@@ -149,7 +149,7 @@ class Variance:
         Output(s):
             A plot figure of the variance data with v regions/peaks is saved to a file. Returns the file path.
         '''
-        filename = os.path.join(PATH, filename)
+       
         figure = plt.figure()
 
         y_1 = np.array(self.moving_avg())                               # Variability y

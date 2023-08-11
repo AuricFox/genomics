@@ -88,7 +88,7 @@ def sequence_analysis():
         if 'zip_file' in data:
             response = send_file(data['zip_file'], as_attachment=True) 
         else:
-            flash(f'Failed to create Zip File!', 'error')
+            flash(f"{data['error']}", 'error')
             response = redirect(request.referrer)
 
     except Exception as e:
@@ -157,7 +157,7 @@ def sequence_alingment():
         if 'zip_file' in data:
             response = send_file(data['zip_file'], as_attachment=True) 
         else:
-            flash(f'Failed to Create Zip File!', 'error')
+            flash(f"{data['error']}", 'error')
             response = redirect(request.referrer)
     
     except Exception as e:
@@ -218,7 +218,7 @@ def sequence_variance():
             response = send_file(data['zip_file'], as_attachment=True) 
         else:
             print(f"Error: {data['error']}")
-            flash(f"Failed to Create Zip File!", 'error')
+            flash(f"{data['error']}", 'error')
             response = redirect(request.referrer)
     
     except Exception as e:

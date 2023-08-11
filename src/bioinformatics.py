@@ -44,6 +44,9 @@ def get_sequence_data(
         sequences = utils.get_data(os.path.join(PATH, file))
         data = {}
 
+        if k < 1:
+            raise utils.InvalidInput(f"k Must Be Greater Than 0: k = {k}")
+
         # Counting codons
         if codon:
             seq = sq.Codon(sequences=sequences[0], header="Codons")
@@ -56,6 +59,10 @@ def get_sequence_data(
         if kmer:
             seq = sq.Kmer(sequences=sequences[0], header="K-mers", k=k)
             data['kmers'] = seq.kmers
+
+        # data can not be empty when written to a file
+        if data == {}:
+            raise utils.InvalidInput(f"No Type Selected (Codon, Amino Acid, or K-mer)!")
 
         # Create a text file for each sequence type
         if file_type == 'txt':
@@ -74,11 +81,16 @@ def get_sequence_data(
             filename = f'./temp/sequenece_count.json'
             files.append(utils.make_json(data=data, filename=filename))
 
+        # File type is not supported and can not be written to
+        else:
+            raise utils.InvalidFile(f"Invalid File Type {file_type}")
+
         # Zipping the collection of files
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/sequence.zip')
 
     except Exception as e:
         response['error'] = str(e)
+
     finally:
         if 'zip_file' in response:
             # Removing residual files
@@ -116,6 +128,14 @@ def get_alignment_data(
     files = []
 
     try:
+
+        if gap_pen > -1:
+            raise utils.InvalidInput(f"The Gap Penalty Must Be Less Than 0: Penalty = {gap_pen}")
+        if match_point < 1:
+            raise utils.InvalidInput(f"The Match Point(s) Must Be Greater Than 0: Point = {match_point}")
+        if match_pen > -1:
+            raise utils.InvalidInput(f"The Mis-Match Penalty Must Be Less Than 0: Penalty = {match_pen}")
+
         seq1 = utils.get_data(os.path.join(PATH, file1))
         seq2 = utils.get_data(os.path.join(PATH, file2))
 
@@ -142,6 +162,10 @@ def get_alignment_data(
         elif file_type == 'json':
             filename = f'./temp/alignment.json'
             files.append(utils.make_json(data=data.results, filename=filename))
+        
+        # File type is not supported and can not be written to
+        else:
+            raise utils.InvalidFile(f"Invalid File Type {file_type}")
 
         # Zipping the collection of files
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/alignment.zip')
@@ -181,39 +205,39 @@ def get_variance_data(
 
     response = {}
     files = []
+    file_types = ['pdf', 'png', 'jpg']
 
     try:
-        # These are hard coded (user can't change)
-        file1 = './temp/plot.jpg'
-        file2 = './temp/v_regions_plot.jpg'
+        if file_type in file_types:
+            file1 = os.path.join(PATH, f'plot.{file_type}')
+            file2 = os.path.join(PATH,f'v_regions_plot.{file_type}')
+        # File type is not supported and can not be written to
+        else:
+            raise utils.InvalidFile(f"Invalid File Type {file_type}")
 
         seq = utils.get_data(os.path.join(PATH, file))
         data = vr.Variance(sequences=seq[0], header=seq[1])
 
+        # No plot tyes have been selected so no files will be created
+        if not plot and not smooth and not vRegion:
+            raise utils.InvalidInput(f"No Plot Type Selected!")
+
         # Plot smooth/raw data and save to a file
         if plot or smooth:
-            fd = data.plot_data(
-                smooth=smooth,
-                filename=file1
-            )
-
-            files.append(fd)
+            data.plot_data(smooth=smooth, filename=file1)
+            files.append(file1)
         
         # Plot variance regions and save to a file
         if vRegion:
-            fd = data.plot_v_regions(
-                spacing=spacing,
-                numV=numV,
-                filename=file2
-            )
-
-            files.append(fd)
+            data.plot_v_regions(spacing=spacing, numV=numV, filename=file2)
+            files.append(file2)
 
         # Create zip file for export
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/variance.zip')
 
     except Exception as e:
         response['error'] = str(e)
+
     finally:
         if 'zip_file' in response:
             # Delete individual files that are no longer needed

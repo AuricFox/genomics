@@ -20,7 +20,9 @@ def create_file(file):
     # Replace special characters with underscores
     sanitized_name = re.sub(r'[\\/*?:"<>|]', '_', file.filename)
     # Remove leading and trailing whitespace
-    file.filename = sanitized_name.strip()
+    sanitized_name = sanitized_name.strip()
+    # Getting the name of the file without the extension
+    sanitized_name = sanitized_name.split('.')[0]
 
     allowed_mime_types = ['image/jpeg', 'image/png', 'application/pdf', 'text/plain']
     allowed_extensions = ['.jpg', '.jpeg', '.png', '.pdf', '.fna', '.fastq', '.txt']
@@ -41,11 +43,19 @@ def create_file(file):
     path = os.path.join(PATH, "temp")                           # Path where file will be saved
     os.makedirs(path, exist_ok=True)                            # Create path if it doesn't exist
     
-    print(f"Creating file: {file.filename}")
-    file_path = os.path.join(path, file.filename)               # Creating saved file path
-    file.save(file_path)                                        # Saving input file
+    original_file_path = os.path.join(path, f'{sanitized_name}{file_extension}')
+    new_file_path = original_file_path
+    
+    counter = 1
+    # loop thru the files to ensure the saved file does not have the same name as another
+    while os.path.exists(new_file_path):
+        new_file_path = os.path.join(path, f'{sanitized_name}_{counter}{file_extension}')
+        counter += 1
+    
+    print(f"Creating file: {new_file_path}")
+    file.save(new_file_path)
 
-    return file_path
+    return new_file_path
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def get_data(filename:str):
@@ -301,6 +311,18 @@ def runtime_csv(data, header:List[str]=[] ,filename:str='./temp/runtime.csv'):
             cfile.writerow(header)
 
         cfile.writerows(data)                           # Wrights codon or amino acid data to csv
+
+# ========================================================================================================================================
+# Error Handling
+# ========================================================================================================================================
+class InvalidFile(Exception):
+    pass
+
+class FileNotFound(Exception):
+    pass
+
+class InvalidInput(Exception):
+    pass
 
 # ========================================================================================================================================
 if __name__ == "__main__":
