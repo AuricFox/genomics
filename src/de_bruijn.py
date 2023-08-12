@@ -339,59 +339,86 @@ class De_bruijn:
 
         return files
 
+    # ----------------------------------------------------------------------------------------------------------
+    def align_sequence(self, ref_data, k:int=3, file_type:str='.png'):
+        '''
+        Aligns assembled contig with reference genome, creates text file of alignment, and plots comparison. Used 
+        for testing.
+
+        Parameter(s):
+            ref_data (List[List[str]]): a list composed of a list of sequences and a list of header info
+            k (int, default=3): size of the k-mer or sub-string
+
+        Output(s):
+            A path to the file where the alignment comparison plot is saved
+        '''
+
+        a = al.Alignment(               # Initialize alignment
+            ref=ref_data[0][0], 
+            seq=self.final_sequence, 
+            gap_pen=-2,
+            match_point=1,
+            match_pen=-1, 
+            ignore=True
+        )
+
+        file = a.plot_compare(filename=f"assembled_{k}_alignment{file_type}")
+
+        return file
+
+# ==============================================================================================================
+
+def loop_kmer(data, k_i:int=3, k_f:int=3, l_i:int=0, l_f:int=2, align:str=None, record_runtime:bool=False, get_files:bool=False):
+    '''
+    Test Function that runs through multiple k-mers. Loops thru a k-mer range, builds a set of kmers and edges
     
+    Parameter(s):
+        data (List[List[str]]): a list composed of a list of sequences and a list of header info
+        k_i (int, default=3): starting k-mer size
+        k_f (int, default=3): ending k-mer size
+        l_i (int, default=0): starting index for sequence reads
+        l_f (int, default=2): ending index for sequence reads
+        align (str, default=None): filename containing the reference sequence, get alignment if not None
+        record_runtime (bool, default=False): record run-time data if True
+        get_files (bool, default=False): create data files if True (k-mers, edges, etc)
 
-# ==============================================================================================================
-# Aligns assembled contig with reference genome, creates text file of alignment, and plots comparison
-def align_contig(filename, kmer, logging=False):
-    ref_seg = utils.get_data('./input/sars_spike_protein_assembled.fna')    # Get data for reference sequence (Spike protien)
-
-    if(logging):                                                            # Inputs are from a file, write results to a file
-        data = utils.get_data(filename)                                     # Get in data from files for alignment
-
-        a = al.alignment(ref_seg[0][0], data[0][0], -2, -1, True)           # Initialize alignment
-        a.alignment_file(kmer)
-        a.plot_compare(kmer)
-    else:                                                                   # Inputs are a string, return string
-        a = al.alignment(ref_seg[0][0], filename, -2, -1, True)             # Initialize alignment
-        return a.get_alignment()
-
-# ==============================================================================================================
-# Main Functions that run the de Bruin alogrithm
-# ==============================================================================================================
-# Loops thru a k-mer range, builds a set of kmers and edges
-# k_i, k_f: Start and end kmer size
-# l_i, l_f: Start and end index of sequence reads
-# res_align: Boolean value for aligning assembled sequence with the reference sequence
-# res_time: Boolean value for measuring program run-time
-# res_file: Boolean value for creating files
-def loop_kmer(file, k_i, k_f, l_i=0, l_f=1, res_align=False, res_time=False, logging=False):
-    data = utils.get_data(file)                                     # Processing genome data from fna file
+    Ouput(s):
+    '''
     runtime = []
-    num_reads = l_f - l_i                                           # Number of reads being assembled
+    response = {'files':[]}
+    num_reads = l_f - l_i                           # Number of reads being assembled
 
-    db_data = De_bruijn(data[0], data[1])                           # Create de Bruijn graph
+    if align is not None:
+        file_path = os.path.join(PATH, align)
+        ref_sequence = utils.get_data(file_path)
 
-    for i in range(k_i, k_f+1):                                     # Loop thru k-mer range
+    for i in range(k_i, k_f):                       # Loop thru k-mer range
         start_time = time.time()
-        db_data.de_bruijn_graph(start=l_i, end=l_f, k=i)            # Create de Bruijn graph
+        graph = De_bruijn(data[0], data[1], i)      # Create de Bruijn graph
         end_time = time.time()
-
-        if(logging):
-            file = db_data.make_docs(True, True, True, str(i))      # Create all files and get directed file
-        else:
-            file = db_data.directed_graph()                         # Gets dictionary of directed graph
-    
         runtime.append([i, num_reads, end_time - start_time])
 
-        if(res_align and logging):                                  # Perform alignment and create corresponding files
-            file = eulerian_cycle_str(file, str(i), True, True)     # Create Eulerian cycle and path
-            align_contig(file, i)
-        elif(res_align and logging == False):                       # Perform alignment without corresponding files
-            file = eulerian_cycle_str(file, str(i), False, False)   # Create Eulerian cycle and path
-            align_contig(file, i)
+        if get_files:                               # Get file information
+            files = graph.make_docs(
+                edge_file=True, 
+                dir_graph=True, 
+                plot_type='.png', 
+                file_type='txt'
+            )
+            
+            response["files"].append(files)
 
-    if(res_time):                                                   # Write program runtime
+        if align is not None:                       # Get plot alignment file
+            file = graph.align_sequence(
+                ref_data=ref_sequence[0][0],
+                k=i,
+                file_type='.png'
+            )
+
+            response["files"].append(file)
+    
+
+    if(record_runtime):                             # Write program runtime
         utils.make_csv(runtime)
 # ==============================================================================================================
 def main():
