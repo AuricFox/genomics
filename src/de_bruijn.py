@@ -47,17 +47,20 @@ class De_bruijn:
         self.sequences = sequences
         self.k = k
 
-        self.kmers = {}
-        self.edges = set()
+        self.kmers = {}             # Stores all the possible k-mer combinations from the input sequences
+        self.edges = set()          # Stores all the possible edges connecting the k-mers
+        self.dir_graph = {}         # Stores all the directed edges from the k-mers
+        self.contigs = []           # Stores the ordered sequence of contigs for assembly
+        self.final_sequence = ''    # The final assembled sequence
 
     # ----------------------------------------------------------------------------------------------------------
-    def de_bruijn_graph(self, start=0, end=2, k=3, cycle=False):
+    def de_bruijn_graph(self, start:int=0, end:int=-1, cycle:bool=False):
         '''
         Gets the k-mers and edges from a set number of sequence reads
         
         Parameter(s):
             start (int, default=0): starting index for the list of sequence reads (self.sequences)
-            end (int, default=2): ending index for the list of sequence reads (self.sequences)
+            end (int, default=-1): ending index for the list of sequence reads (self.sequences)
             cycle (bool, default=False): cycle back to the start of the sequence when building k-mers
         
         Output(s): None
@@ -74,6 +77,9 @@ class De_bruijn:
         # Get kmers from this list of sequences
         self.get_kmers(self.sequences[start:end], cycle)
         self.get_edges()
+        self.get_directed_graph()
+        self.get_eulerian_cycle()
+        self.get_assembled_str()
 
     # ----------------------------------------------------------------------------------------------------------
     def get_kmers(self, sequences:List[str], cycle=False):
@@ -142,9 +148,89 @@ class De_bruijn:
                         self.edges.add((kmers[i], kmers[j]))
 
     # ----------------------------------------------------------------------------------------------------------
+    def get_directed_graph(self):
+        '''
+        Creates a directed graph dictionary containing a node as a key and a list of destinations as the value
+        
+        Parameter(s): None
+        
+        Output(s): None
+        '''
+
+        for edge in self.edges:
+            node, dest = edge
+
+            if node not in self.dir_graph:
+                self.dir_graph[node] = []
+
+            self.dir_graph[node].append(dest)
+
+    # ----------------------------------------------------------------------------------------------------------
+    def get_eulerian_cycle(self):
+        '''
+        Finds the eulerian cycle within the directed graph. Starts by calculating the total number of edges in the 
+        graph and randomly picking a starting position. Then it iterates through the directed graph until all the 
+        edges have been accounted for and have been added to the final sequence.
+
+        Parameter(s): None
+
+        Output(s):
+            An ordered list of edges (str) ready to be assembled into a complete sequence
+        '''
+
+        copy_graph = copy.deepcopy(self.dir_graph)
+
+        num_edges = 1
+        values = [val for val_list in copy_graph.values() for val in val_list]
+        num_edges += len(values)
+
+        degrees = {key: [values.count(key), len(copy_graph[key]), 0] for key in copy_graph.keys()}
+
+        cycle = []
+
+        # Randomly select a starting node to iterate from
+        current_node = random.choice([key for key in copy_graph.keys()])
+
+        # Run until all the edges have been accounted for
+        while len(self.contigs) != num_edges:
+
+            # Current node has out going edges and is not empty
+            if copy_graph[current_node] != []:
+                cycle.append(current_node)
+                next_possibles = copy_graph[current_node]
+
+                # Randomly select a new node to iterate from
+                new_cn = random.choice(next_possibles)
+                copy_graph[current_node].remove(new_cn)
+                current_node = new_cn
+
+            # Current node has no out going edges and is empty
+            elif copy_graph[current_node] == []:
+                self.contigs.insert(0, current_node)
+                if not cycle:
+                    break
+                else:
+                    current_node = cycle[-1]
+                    cycle.pop()
+
+    # ----------------------------------------------------------------------------------------------------------
+    def get_assembled_str(self):
+        '''
+        Appends the contigs together into a final sequence string
+
+        Parameter(s): None
+
+        Output(s): None
+        '''
+
+        self.final_sequence = self.contigs[0]                   # Start with first contig
+        for contig in self.contigs[1:]:                         # Loop thru the remaining contigs
+            self.final_sequence += contig[len(contig) - 1]      # Append the last letter to the final sequence
+
+    # ----------------------------------------------------------------------------------------------------------
     def create_edges_file(self, filename:str='./temp/edges.txt'):
         '''
-        Create edges.txt file for creation of spike_protein_directed_graph.txt
+        Creates an edges file for testing
         
         Parameter(s):
             filename (str, default=./temp/edges.txt): file that stores the edge data
@@ -164,252 +250,111 @@ class De_bruijn:
         return file_path
 
     # ----------------------------------------------------------------------------------------------------------
-    # Writes edge data to a text file
-    def create_directed_graph(self, filename='./temp/spike_protein_directed_graph.txt'):
+    def create_directed_graph_file(self, filename='./temp/directed_graph.txt'):
+        '''
+        Creates a directed graph dictionary containing a node as a key and a list of destinations as the value.
+        Writes the results to a text file. Used for testing
+        
+        Parameter(s): None
+        
+        Output(s):
+            A path to the saved file containing nodes and their corresponding list of destinations.
+        '''
 
         file_path = os.path.join(PATH, filename)
         print("Creating Directed Graph File: ", file_path)
 
+        # Write the directed graph data to the file
         with open(file_path, "w") as f:
-            added_nodes = set()                                     # Set of (nodes, destination) pairs that have already been iterated through
+            for node, destinations in self.dir_graph.items():
+                f.write(node + ' -> ' + ','.join(destinations) + '\n')
 
-            for edge in self.edges:
-                node,dest = edge
-                if edge not in added_nodes:                         # Check if (node, destination) pair has already been writted
-                    f.write(node + ' -> ' + dest)
-
-                    for edge2 in self.edges:                        # Iterate through all edges to see if there are any other edges coming out of node
-                        node2, dest2 = edge2
-                        # If the nodes are the same AND (node, destination) pair is not the same as above AND this node has not already been created
-                        if node == node2 and edge != edge2 and edge2 not in added_nodes:
-                            f.write(',' + dest2)                    # Write the additional destination for exising node
-                            added_nodes.add(edge2)                  # add (node, destination) pair to already added set
-
-                    f.write('\n')
+        return file_path
 
     # ----------------------------------------------------------------------------------------------------------
-    # Create directed graph dictionary without writing to a file
-    def directed_graph(self):
-        dir_graph = {}
-        added_nodes = set()                                     # Set of (nodes, destination) pairs that have already been iterated through
+    def plot_graph(self, show_label:bool=False, filename:str='./temp/deBruijn.png'):
+        '''
+        Creates graph of connected nodes with corresponding kmers using matplotlib
 
-        for edge in self.edges:
-            node,dest = edge
-            if edge not in added_nodes:                         # Check if (node, destination) pair has already been writted
-                dir_graph[node] = [dest]                        # Adding node and destination node to dictionary
+        Parameter(s):
+            show_label (bool, default=False): displays the labels on the plot if True else displays no labels
+            filename (str, default=./temp/deBruijn.png)
 
-                for edge2 in self.edges:                        # Iterate through all edges to see if there are any other edges coming out of node
-                    node2, dest2 = edge2
+        Output(s):
+            A path to the saved file containing the plotted data
+        '''
 
-                    # If the nodes are the same AND (node, destination) pair is not the same as above AND this node has not already been created
-                    if node == node2 and edge != edge2 and edge2 not in added_nodes:
-                        dir_graph[node] += [dest2]              # Adding additional destination for exising node
-                        added_nodes.add(edge2)                  # add (node, destination) pair to already added set
-
-        return dir_graph
-
-    # ----------------------------------------------------------------------------------------------------------
-    # Creates graph of connected nodes with corresponding kmers using matplotlib
-    def matplot_graph(self, show_lab=False, save_fig=False, file='./temp/deBruijn.png'):
-        print("Creating Garph Image: ", file)
+        file_path = os.path.join(PATH, filename)
+        print("Creating Garph Image: ", file_path)
         
         plt.clf()
-        fig = nx.DiGraph()                                              # Initialize weighted graph
-        fig.add_edges_from(self.edges)                                  # Add edges to weighted graph
-        k = 0.5/math.sqrt(fig.order())                                  # Used for spacing in spring layout
+        fig = nx.DiGraph()                                  # Initialize weighted graph
+        fig.add_edges_from(self.edges)                      # Add edges to weighted graph
+        k = 0.5/math.sqrt(fig.order())                      # Used for spacing in spring layout
         #pos = nx.spring_layout(fig, k=k)
-        pos = nx.shell_layout(fig, scale=2)                             # Set layout to shell (circular)
+        pos = nx.shell_layout(fig, scale=2)                 # Set layout to shell (circular)
 
         options = {
             "node_color": "#A0CBE2",
             "node_size": 20,
             "edge_color": "#7d0901",
-            "with_labels": show_lab,                                    # Show kmer labels
+            "with_labels": show_label,                      # Show kmer labels
             "font_size": 5,
             "font_color": "#0a0a0a"
         }
 
-        nx.draw(fig, pos, **options)                                    # Drawing directed graph
-        plt.axis("off")                                                 # Do not show any axis
-        if(save_fig): plt.savefig(file, transparent=False ,dpi=500)     # Saving file and setting size
+        nx.draw(fig, pos, **options)                        # Drawing directed graph
+        plt.axis("off")                                     # Do not show any axis
+        plt.savefig(file_path, transparent=False ,dpi=500)  # Saving file and setting size
+
+        return file_path
 
     # ----------------------------------------------------------------------------------------------------------
-    # Master function for creating documents
-    # edge_graph: creates graph image
-    # edge_file: creates edge file used for directed graph
-    # dir_graph: creates directed edge file
-    # i: label for k-mer used (used for kmer loop)
-    def make_docs(self, edge_graph=False, edge_file=False, dir_graph=False, i='1'):
+    def make_docs(self, edge_file:bool=False, dir_graph:bool=False, plot_type:str=None, file_type:str='.txt'):
+        '''
+        Master function for creating multiple documents such as an edge file, directed edge file, 
+        and a plot of the constructed graph.
 
-        if(edge_graph): self.matplot_graph(True, False,True, './output/graph/deBruijn_' + i + '.png')
-        if(edge_file): self.create_edges_file('output/temp/edges_' + i + '.txt')
+        Parameter(s):
+            edge_graph (bool, default=False): create a plot of the graph if True else do nothing
+            edge_file (bool, default=False): create an edge file if True else do nothing
+            dir_graph (bool, default=False): create a directed edge file if True else do nothing
+        
+        Output(s):
+            A list of paths to the saved files and their corresponding data (deBruijn plot, edges file, 
+            and/or directed graph file)
+        '''
+        files = []
+
+        if(plot_type is not None): 
+            file = self.plot_graph(show_label=True, filename=f"./temp/deBruijn_{self.k}{plot_type}")
+            files.append(file)
+        if(edge_file): 
+            file = self.create_edges_file(filename=f"output/temp/edges_{self.k}{file_type}")
+            files.append(file)
 
         if(dir_graph): 
-            file = 'output/temp/spike_protein_directed_graph_' + i + '.txt'
-            self.create_directed_graph(file)
-            return file
+            file = self.create_directed_graph_file(filename=f"./temp/directed_graph_{self.k}{file_type}")
+            files.append(file)
+
+        return files
+
+    
 
 # ==============================================================================================================
-# Eulerian Cycle
-# ==============================================================================================================
-def EulerianCycle(strings, format=True):
-  ##Ignore this formatting block, it's only for a desired input
-    if format:
-        graph = [i.split(' -> ') for i in strings]
-        graph = dict(graph)
-        for (key, val) in graph.items():
-            val = val.split(',')
-            graph[key] = val
+# Aligns assembled contig with reference genome, creates text file of alignment, and plots comparison
+def align_contig(filename, kmer, logging=False):
+    ref_seg = utils.get_data('./input/sars_spike_protein_assembled.fna')    # Get data for reference sequence (Spike protien)
 
-        copy_graph = copy.deepcopy(dict(graph))
-    else:
-        copy_graph = copy.deepcopy(strings)
+    if(logging):                                                            # Inputs are from a file, write results to a file
+        data = utils.get_data(filename)                                     # Get in data from files for alignment
 
-    #We need to calculate the length of our graph so that we know when to stop the algorithm. This means we
-    #need to calculate the number of edges in our graph.
-    l = 1
-    values = []
-    for val in copy_graph.values():
-        for i in val:
-            l += 1
-            values.append(i)
-
-    #validate is set as default by true, you don't need this
-    validate = True
-    degrees = {key: [] for key in copy_graph.keys()}
-
-    #Here, we're calculating the degree of the graph to determine whether each node has even degrees.
-    for key in degrees.keys():
-        degrees[key].append(values.count(key))
-        degrees[key].append(len(copy_graph[key]))
-        degrees[key].append(degrees[key][1] - degrees[key][0])
-
-    #The final sequence is what will be our answer
-    final_sequence = []
-
-    #The cycle list will be the current cycle we are on
-    cycle = []
-
-    #Initialize a Eulerian cycle with a random node
-    cn = random.choice([key for key in copy_graph.keys()])
-
-    while len(final_sequence) != l:
-
-        #The way we're going to pass through our graph is by removing nodes as we pass over all of their respective edges.
-        #We keep on adding to the cycle as a result and the node we removed becomes our next node.
-
-        if copy_graph[cn] != []:
-            cycle.append(cn) #Add the start node to our cycle
-            next_possibles = copy_graph[cn]
-            new_cn = random.choice(next_possibles) #Using our dictionary, we find what nodes are connected to our current
-                                                   #starting node and pick a random node to walk through next.
-            #Remove the edge we've already walked through
-            copy_graph[cn].remove(new_cn)
-            cn = new_cn #our new node becomes our next starting node
-
-        #A dead end of the graph is found if the node we are on has no more edges to walk through. Thus our cycle is complete.
-        elif copy_graph[cn] == []:
-            #We add this end node at the end of our final sequence.
-            final_sequence.insert(0, cn)
-            if len(cycle) == 0: #We're checking to see if we've passed through all possible cycles here
-                # final_sequence.append(final_sequence[0])
-                break
-
-            #If there are still more cycles, we backtrack to the previous node and continue our walk from there
-            else:
-                cn = cycle[-1] #Our new starting node is the previous node -> this new node is later checked to make sure
-                               #that it has unvisited edges, otherwise this is also definitely part of our final sequence
-                               #and then we backtrack to the next previous node.
-                #To prevent reusing this node, we remove it from the current cycle
-                cycle.pop()
-
-    return final_sequence
-
-# ==============================================================================================================
-# Eulerian Path
-# ==============================================================================================================
-def EulerianPath(strings, format=True):
-    #Similar formatting for turning txt file to DeBruijn graph in python dict form
-    if format:
-        graph = [i.split(' -> ') for i in strings]
-        graph = dict(graph)
-        for (key, val) in graph.items():
-            val = val.split(',')
-            graph[key] = val
-        copy_graph = copy.deepcopy(dict(graph))
-    else:
-        copy_graph = copy.deepcopy(strings)
-
-    #Calculate the length the same way we did for the Eulerian cycle
-    l = 1
-    values = []
-    for val in copy_graph.values():
-        for i in val:
-            l += 1
-            values.append(i)
-
-    validate = True
-
-    #For a Eulerian path to be true, the end node must have a degree of 1, and it most cases the end node does
-    #not connect to any other node with an edge, hence the graph is nearly balanced.
-
-    end = [val for val in values if val not in copy_graph.keys()] #check if end node is connected to any other nodes
-
-    #In some cases, this is not always true so we can check whether there is an end node or not
-    if end == []:
-        pass
-
-    #If the condition is true, then we need to format our final dictionary such that we add a key in our dictionary
-    #where the end node is assigned an empty list. If you remember the cycle loop in the Eulerian cycle code, this
-    #empty list here will help us identify whether we have reached the end of the cycle or not.
-
-    else:
-        copy_graph[end[0]] = []
-    degrees = {key: [] for key in copy_graph.keys()}
-
-    #Regardless, we can verify our start and end nodes by checking their in-out degrees
-    for key in degrees.keys():
-        degrees[key].append(values.count(key))
-        degrees[key].append(len(copy_graph[key]))
-        degrees[key].append(degrees[key][1] - degrees[key][0])
-
-    final_sequence = []
-    cycle = []
-
-    #cn or our current start node is determined if its degree is odd (or 1 in this case) TRY
-    cn = -1
-    try:
-        cn = [key for key in degrees.keys() if degrees[key][2] == abs(1)][0]
-    except Exception:
-        pass
-    finally:
-        # test on other indexs
-        cn = list(degrees.keys())[2:3]
-        cn = str(cn[0])
-
-    #We implement the exact same loop here as in the Eulerian cycle only with a difference where
-    #we already know the starting node
-    while len(final_sequence) != l:
-        if copy_graph[cn] != []:
-            cycle.append(cn)
-            next_possibles = copy_graph[cn]
-            new_cn = random.choice(next_possibles)
-            copy_graph[cn].remove(new_cn)
-            cn = new_cn
-        elif copy_graph[cn] == []:
-            final_sequence.insert(0, cn)
-
-            #The length of our current cycle will be 0 or cycle=[] if there are no more nodes to backtrack to, therefore
-            #the current node that we are on right now is the start node since it has no more outgoing edges nor incoming
-            #ones that can allow us to backtrack from.
-
-            if len(cycle) == 0:
-                break
-            else:
-                cn = cycle[-1]
-                cycle.pop()
-
-    return final_sequence
+        a = al.alignment(ref_seg[0][0], data[0][0], -2, -1, True)           # Initialize alignment
+        a.alignment_file(kmer)
+        a.plot_compare(kmer)
+    else:                                                                   # Inputs are a string, return string
+        a = al.alignment(ref_seg[0][0], filename, -2, -1, True)             # Initialize alignment
+        return a.get_alignment()
 
 # ==============================================================================================================
 # Main Functions that run the de Bruin alogrithm
@@ -448,92 +393,6 @@ def loop_kmer(file, k_i, k_f, l_i=0, l_f=1, res_align=False, res_time=False, log
 
     if(res_time):                                                   # Write program runtime
         utils.make_csv(runtime)
-
-# ==============================================================================================================
-# Finds eulerian cycle, writes the data to a text file
-def eulerian_cycle_str(data, kmer, enter_file=False, logging=False):
-
-    cycle = None
-    if(enter_file):                                                 # Use file that was entered
-        text = []
-        print("Reading: " + data)
-        with open(data, 'r') as f:                                  # Open directed graph file
-            for line in f:
-                text.append(line.strip())                           # Add the edges and strip the newline characters
-
-        cycle = EulerianCycle(text)                                 # Find eulerian cycle
-    else:
-        cycle = EulerianCycle(data, format=False)
-
-
-    if(logging):
-        cycle_file = 'output/eulerian/eulerianCycle_' + kmer + '.txt'   # File that will be written to
-
-        with open(cycle_file, 'w') as f:                                # Write eulerian cycle to file
-            contig = cycle[0]
-            for c in cycle[1:]:                                         # Assembling a contig
-                contig += c[len(c)-1]                                   # Get last character and add it to contig
-            f.write(''.join(contig))                                    # Write assembled contig to file
-
-        return cycle_file                                               # Return file with assembled sequence
-
-    else:
-        contig = cycle[0]
-        for c in cycle[1:]:                                             # Assembling a contig
-            contig += c[len(c)-1]                                       # Get last character and add it to contig
-
-        return ''.join(contig)                                          # Return assembled contig
-
-# ==============================================================================================================
-# Finds eulerian path, writes the data to a text file
-def eulerian_path_str(data, kmer, enter_file=False, logging=False):
-
-    cycle = None
-    if(enter_file):                                                 # Use file that was entered
-        text = []
-        print("Reading: " + data)
-        with open(data, 'r') as f:                                  # Open directed graph file
-            for line in f:
-                text.append(line.strip())                           # Add the edges and strip the newline characters
-
-        cycle = EulerianCycle(text)                                 # Find eulerian cycle
-    else:
-        cycle = EulerianCycle(data, format=False)
-
-
-    if(logging):
-        cycle_file = 'output/eulerian/eulerianPath_' + kmer + '.txt'    # File that will be written to 
-
-        with open(cycle_file, 'w') as f:                                # Write eulerian cycle to file
-            contig = cycle[0]
-            for c in cycle[1:]:                                         # Assembling a contig
-                contig += c[len(c)-1]                                   # Get last character and add it to contig
-            f.write(''.join(contig))                                    # Write assembled contig to file
-
-        return cycle_file                                               # Return file with assembled sequence
-
-    else:
-        contig = cycle[0]
-        for c in cycle[1:]:                                             # Assembling a contig
-            contig += c[len(c)-1]                                       # Get last character and add it to contig
-
-        return ''.join(contig)                                          # Return assembled contig
-
-# ==============================================================================================================
-# Aligns assembled contig with reference genome, creates text file of alignment, and plots comparison
-def align_contig(filename, kmer, logging=False):
-    ref_seg = utils.get_data('./input/sars_spike_protein_assembled.fna')    # Get data for reference sequence (Spike protien)
-
-    if(logging):                                                            # Inputs are from a file, write results to a file
-        data = utils.get_data(filename)                                     # Get in data from files for alignment
-
-        a = al.alignment(ref_seg[0][0], data[0][0], -2, -1, True)           # Initialize alignment
-        a.alignment_file(kmer)
-        a.plot_compare(kmer)
-    else:                                                                   # Inputs are a string, return string
-        a = al.alignment(ref_seg[0][0], filename, -2, -1, True)             # Initialize alignment
-        return a.get_alignment()
-
 # ==============================================================================================================
 def main():
     utils.rmove()
