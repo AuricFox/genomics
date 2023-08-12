@@ -1,3 +1,14 @@
+import numpy as np
+import networkx as nx
+import alignment as al
+import matplotlib.pyplot as plt
+from typing import List
+
+import matplotlib, math, copy, random, time, os, utils
+matplotlib.use('agg')
+
+PATH = os.path.dirname(os.path.abspath(__file__))
+
 '''
 This python script assembles genetic sequences from read fragments. The de Bruijn graph breaks up the reads into
 individual codons and edges to form a graph. Then a eulerian cycle is found.
@@ -19,101 +30,147 @@ File(s):
 ./input/sars_spike_protein_reads.fastq
 '''
 
-import matplotlib.pyplot as plt
-import networkx as nx               # Plotting directed graph
-import math
-import copy
-import random
-import time
-
-import utils
-import alignment as al
-
 class De_bruijn:
-    def __init__(self, seq = [], header = []):
+    def __init__(self, sequences:List[str]=[], header:List[str]=[], k:int=3):
+        '''
+        Initializes the de Bruijn graph
+        
+        Parameter(s):
+            sequences (List[str]): a series of sequences being analyzed
+            header (List[str]): a series of heder info for the corresponding sequence
+            k (int, default=3): size of the k-mer, length of the substrings created from the main sequence
+
+        Output(s):
+            None
+        '''
         self.header = header
-        self.seq = seq
+        self.sequences = sequences
+        self.k = k
 
         self.kmers = {}
         self.edges = set()
 
     # ----------------------------------------------------------------------------------------------------------
-    def de_bruijn_graph(self, start=0, end=1, k=3, cycle=True):
+    def de_bruijn_graph(self, start=0, end=2, k=3, cycle=False):
+        '''
+        Gets the k-mers and edges from a set number of sequence reads
+        
+        Parameter(s):
+            start (int, default=0): starting index for the list of sequence reads (self.sequences)
+            end (int, default=2): ending index for the list of sequence reads (self.sequences)
+            cycle (bool, default=False): cycle back to the start of the sequence when building k-mers
+        
+        Output(s): None
+        '''
 
-        if(start < 0 or start > end or start == end):   # Cannot exceed bounds of the list self.seq
-            print("ERROR: Invalid input!")
-            return
+        # Cannot exceed bounds of the list self.sequences
+        if(start < 0 or start > end or start == end):
+            raise utils.InvalidInput(f"Invalid Input: {start} is not less than {end} or greater than 0!")
 
-        if(end > len(self.seq)):                        # End exceeds sequence list, change it to list length
-            end = len(self.seq)
+        # End exceeds sequence list, change it to list length
+        if(end > len(self.sequences)):
+            end = len(self.sequences)
 
-        seq = self.seq[start:end]                       # Get kmers from this list of sequences
-        self.kmers = self.get_kmers(seq, k, cycle)
-        self.edges = self.get_edges(self.kmers)
+        # Get kmers from this list of sequences
+        self.get_kmers(self.sequences[start:end], cycle)
+        self.get_edges()
 
     # ----------------------------------------------------------------------------------------------------------
-    # Build a list of all kmers in the provided sequences
-    # k: kmer size
-    # cycle: sequence is cyclic or not
-    def get_kmers(self, seq, k=3, cycle=False):
-        kmers = {}
+    def get_kmers(self, sequences:List[str], cycle=False):
+        '''
+        Builds a list of all kmers (sub-strings) in the provided sequences
 
-        for s in seq:   # Iterate thru sequences with progress bar
-            #print("Sequence: ", s)
+        Parameter(s):
+            sequences (str): a list of sequences being broken up into individual k-mers/sub-strings
+            cycle (bool, defualt=False): sequence is cyclic or not
 
-            for i in range(0, len(s)):              # Iterate thru a sequence to find kmers
-                kmer = s[i:i + k]
+        Output(s): None
+        '''
+
+        for sequence in sequences:
+
+            for i in range(0, len(sequence)):                   # Iterate thru a sequence to find kmers
+                kmer = sequence[i:i + self.k]
 
                 length = len(kmer)
-                if cycle:                           # Get kmer for cyclic sequences
-                    if len(kmer) != k:
-                        kmer += s[:(k - length)]    # Cyclic kmer (ex. ACCGATCG, cyclic 3-mer = CGA and GAC)
+                if cycle:                                       # Get kmer for cyclic sequences
+                    if len(kmer) != self.k:
+                        kmer += sequence[:(self.k - length)]    # Cyclic kmer (ex. ACCGATCG, cyclic 3-mer = CGA and GAC)
 
-                else:                               # Skip for non-cyclic sequences
-                    if len(kmer) != k:
+                else:                                           # Skip for non-cyclic sequences
+                    if len(kmer) != self.k:
                         continue
 
-                if kmer in kmers:                   # Add to kmer count (kmer is already found)
-                    kmers[kmer] += 1
-                else:                               # Add kmer to dictionary (kmer is new)
-                    kmers[kmer] = 1
+                if kmer in self.kmers:                          # Add to kmer count (kmer is already found)
+                    self.kmers[kmer] += 1
+                else:                                           # Add kmer to dictionary (kmer is new)
+                    self.kmers[kmer] = 1
+
+    # ----------------------------------------------------------------------------------------------------------
+    def get_edges(self):
+        '''
+        Finds all the connecting edges of the k-mers for the de Bruijn garph. Populate the kmer_dict 
+        with k-1 mers as keys and lists of corresponding kmers as values. Example, kmer = ACTG, k1 = ACT, 
+        and k2 = CTG. If k1 or k2 is not in the kmer dictionary, they are added.
         
-        return kmers
+        Parameter(s): None
+        
+        Output(s): None
+        '''
+
+        kmer_dict = {}  # Create a dictionary to store k-1 mers and their corresponding kmers
+
+        # Populate the kmer_dict with k-1 mers and corresponding kmers
+        for kmer in self.kmers:
+            k1 = kmer[:-1]  # k1 is assigned the k-1 mer of the current kmer (excluding the last character).
+            k2 = kmer[1:]   # k2 is assigned the k-1 mer of the current kmer (excluding the first character)
+
+            if k1 not in kmer_dict:         # k1 is not in the dict, initialize it
+                kmer_dict[k1] = []
+            kmer_dict[k1].append(kmer)      # Add the kmer to k1's list
+
+            if k2 not in kmer_dict:         # k2 is not in the dict, initialize it
+                kmer_dict[k2] = []
+            kmer_dict[k2].append(kmer)      # Add the kmers to k2's list
+
+        # Create edges based on the kmer_dict
+        for key, kmers in kmer_dict.items():                    # Iterate thru each item in the dict
+            if len(kmers) > 1:                                  # Ignore key's with no edges
+                # Add edges without repeating them
+                for i in range(len(kmers)):
+                    for j in range(i + 1, len(kmers)):
+                        self.edges.add((kmers[i], kmers[j]))
 
     # ----------------------------------------------------------------------------------------------------------
-    # Finds the edges of the kmers
-    def get_edges(self, kmers):
-        edges = set()
+    def create_edges_file(self, filename:str='./temp/edges.txt'):
+        '''
+        Create edges.txt file for creation of spike_protein_directed_graph.txt
+        
+        Parameter(s):
+            filename (str, default=./temp/edges.txt): file that stores the edge data
 
-        for k1 in kmers:
-            for k2 in kmers:
-                if k1 != k2:                                # Iterate thru all non-equal kmers (k1 != k2)
+        Output(s):
+            A path to the saved file containing the edge data
+        '''
 
-                    if k1[1:] == k2[:-1]:                   # k-1 mers are the same (ex. k1=ACGT, k2=CGTA, CGT == CGT)
-                        edges.add((k1[:-1], k2[:-1]))       # Add edge
+        file_path = os.path.join(PATH, filename)
+        print("Creating Edge File: ", file_path)
 
-                    if k1[:-1] == k2[1:]:                   # k-1 mers are the same (ex. k1=CGTA, k2=ACGT, CGT == CGT)
-                        edges.add((k2[:-1], k1[:-1]))       # Add edge
-
-        return edges
-
-    # ----------------------------------------------------------------------------------------------------------
-    # Create edges.txt file for creation of spike_protein_directed_graph.txt
-    def create_edges_file(self, file='output/temp/edges.txt'):
-        print("Creating Edge File: ", file)
-
-        with open(file, 'w') as f:
+        with open(file_path, 'w') as f:
             for edge in self.edges:
                 x1, x2 = edge
-                f.write(x1 + '->' + x2 + '\n')
-        f.close()
+                f.write(f"{x1}->{x2}\n")
+
+        return file_path
 
     # ----------------------------------------------------------------------------------------------------------
     # Writes edge data to a text file
-    def create_directed_graph(self, file='output/temp/spike_protein_directed_graph.txt'):
-        print("Creating Directed Graph File: ", file)
+    def create_directed_graph(self, filename='./temp/spike_protein_directed_graph.txt'):
 
-        with open(file, "w") as f:
+        file_path = os.path.join(PATH, filename)
+        print("Creating Directed Graph File: ", file_path)
+
+        with open(file_path, "w") as f:
             added_nodes = set()                                     # Set of (nodes, destination) pairs that have already been iterated through
 
             for edge in self.edges:
@@ -129,7 +186,6 @@ class De_bruijn:
                             added_nodes.add(edge2)                  # add (node, destination) pair to already added set
 
                     f.write('\n')
-        f.close()
 
     # ----------------------------------------------------------------------------------------------------------
     # Create directed graph dictionary without writing to a file
@@ -154,7 +210,7 @@ class De_bruijn:
 
     # ----------------------------------------------------------------------------------------------------------
     # Creates graph of connected nodes with corresponding kmers using matplotlib
-    def matplot_graph(self, show_lab=False, show_fig=True, save_fig=False, file='./output/graph/deBruijn.png'):
+    def matplot_graph(self, show_lab=False, save_fig=False, file='./temp/deBruijn.png'):
         print("Creating Garph Image: ", file)
         
         plt.clf()
@@ -175,7 +231,6 @@ class De_bruijn:
 
         nx.draw(fig, pos, **options)                                    # Drawing directed graph
         plt.axis("off")                                                 # Do not show any axis
-        if(show_fig): plt.show()                                        # Toggel show
         if(save_fig): plt.savefig(file, transparent=False ,dpi=500)     # Saving file and setting size
 
     # ----------------------------------------------------------------------------------------------------------
