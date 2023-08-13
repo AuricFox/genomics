@@ -299,7 +299,7 @@ def runtime_csv(data, header:List[str]=[] ,filename:str='./temp/runtime.csv'):
         filename (str, default=./temp/runtime.csv): file path where the data will be saved
     
     Output(s):
-        A file with the filename containing the runtime data
+        A path to the file with the runtime data
     '''
     file_path = os.path.join(PATH, filename)            # Creating saved file path
 
@@ -311,6 +311,8 @@ def runtime_csv(data, header:List[str]=[] ,filename:str='./temp/runtime.csv'):
             cfile.writerow(header)
 
         cfile.writerows(data)                           # Wrights codon or amino acid data to csv
+    
+    return file_path
 
 # ========================================================================================================================================
 # Error Handling

@@ -53,6 +53,8 @@ class De_bruijn:
         self.contigs = []           # Stores the ordered sequence of contigs for assembly
         self.final_sequence = ''    # The final assembled sequence
 
+        self.de_bruijn_graph()
+
     # ----------------------------------------------------------------------------------------------------------
     def de_bruijn_graph(self, start:int=0, end:int=-1, cycle:bool=False):
         '''
@@ -66,13 +68,13 @@ class De_bruijn:
         Output(s): None
         '''
 
+        # End exceeds sequence list, change it to list length
+        if(end > len(self.sequences) or end == -1):
+            end = len(self.sequences)
+
         # Cannot exceed bounds of the list self.sequences
         if(start < 0 or start > end or start == end):
             raise utils.InvalidInput(f"Invalid Input: {start} is not less than {end} or greater than 0!")
-
-        # End exceeds sequence list, change it to list length
-        if(end > len(self.sequences)):
-            end = len(self.sequences)
 
         # Get kmers from this list of sequences
         self.get_kmers(self.sequences[start:end], cycle)
@@ -177,7 +179,7 @@ class De_bruijn:
         Output(s):
             An ordered list of edges (str) ready to be assembled into a complete sequence
         '''
-
+        print(self.dir_graph)
         copy_graph = copy.deepcopy(self.dir_graph)
 
         num_edges = 1
@@ -193,6 +195,7 @@ class De_bruijn:
 
         # Run until all the edges have been accounted for
         while len(self.contigs) != num_edges:
+            print(f"Current Node: {current_node}")
 
             # Current node has out going edges and is not empty
             if copy_graph[current_node] != []:
@@ -419,12 +422,16 @@ def loop_kmer(data, k_i:int=3, k_f:int=3, l_i:int=0, l_f:int=2, align:str=None, 
     
 
     if(record_runtime):                             # Write program runtime
-        utils.make_csv(runtime)
+        file = utils.make_csv(runtime)
+        response["files"].append(file)
+
+    return response
+
 # ==============================================================================================================
 def main():
-    utils.rmove()
-    file = "./input/sars_spike_protein_reads.fastq"
-    loop_kmer(file, k_i=4, k_f=4, l_i=0, l_f=1, res_align=True, res_time=False, logging=False)
+    data = utils.get_data(filename="./input/assembly_test.fastq")
+
+    graph = De_bruijn(sequences=data[0], header=data[1], k=3)
     
 
 if __name__ == "__main__":
