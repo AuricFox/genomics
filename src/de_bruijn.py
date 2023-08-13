@@ -118,28 +118,31 @@ class De_bruijn:
     def get_edges(self):
         '''
         Finds all the connecting edges of the k-mers for the de Bruijn garph. Populate the kmer_dict 
-        with k-1 mers as keys and lists of corresponding kmers as values. Example, kmer = ACTG, prefix = ACT, 
-        and suffix = CTG. If prefix or suffix is not in the kmer dictionary, they are added.
+        with k-1 mers as keys and lists of corresponding prefixs as values. Example, kmer = ACTG, prefix = ACT, 
+        and suffix = CTG. The edge is then added if the prefix is in the suffix dictionary.
         
         Parameter(s): None
         
         Output(s): None
         '''
 
-        kmer_suffixes = {}  # Dictionary to store kmers with the same suffix
+        kmer_suffixes = {}                  # Dictionary to store kmers with the same suffix
 
+        # Group k-mers based on their suffix
         for kmer in self.kmers:
-            prefix = kmer[:-1]
-            suffix = kmer[1:]
+            prefix = kmer[:-1]              # excluding the last character
+            suffix = kmer[1:]               # excluding the first character
 
             if suffix in kmer_suffixes:
                 kmer_suffixes[suffix].append(prefix)
             else:
                 kmer_suffixes[suffix] = [prefix]
 
+        # Loop thru all the k-mers based on their prefix
         for kmer in self.kmers:
             prefix = kmer[:-1]
 
+            # If the prefix is in the dictionary, add the edge
             if prefix in kmer_suffixes:
                 for suffix in kmer_suffixes[prefix]:
                     self.edges.add((prefix, suffix))
@@ -190,7 +193,6 @@ class De_bruijn:
 
         # Run until all the edges have been accounted for
         while len(self.contigs) != num_edges:
-            print(f"Current Node: {current_node}")
 
             # Current node has out going edges and is not empty
             if copy_graph[current_node] != []:
@@ -365,11 +367,11 @@ class De_bruijn:
         return file
 
 # ==============================================================================================================
-
 def loop_kmer(data, k_i:int=3, k_f:int=3, l_i:int=0, l_f:int=2, align:str=None, record_runtime:bool=False, get_files:bool=False):
     '''
     Test Function that runs through multiple k-mers. Loops thru a k-mer range, builds a set of kmers and edges
-    
+    NOTE: Used for testing!
+
     Parameter(s):
         data (List[List[str]]): a list composed of a list of sequences and a list of header info
         k_i (int, default=3): starting k-mer size
@@ -415,7 +417,6 @@ def loop_kmer(data, k_i:int=3, k_f:int=3, l_i:int=0, l_f:int=2, align:str=None, 
 
             response["files"].append(file)
     
-
     if(record_runtime):                             # Write program runtime
         file = utils.make_csv(runtime)
         response["files"].append(file)
@@ -426,7 +427,7 @@ def loop_kmer(data, k_i:int=3, k_f:int=3, l_i:int=0, l_f:int=2, align:str=None, 
 def main():
     data = utils.get_data(filename="./input/assembly_test.fastq")
 
-    graph = De_bruijn(sequences=data[0], header=data[1], k=4)
+    graph = De_bruijn(sequences=data[0], header=data[1], k=11)
     
 
 if __name__ == "__main__":
