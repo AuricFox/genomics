@@ -118,36 +118,31 @@ class De_bruijn:
     def get_edges(self):
         '''
         Finds all the connecting edges of the k-mers for the de Bruijn garph. Populate the kmer_dict 
-        with k-1 mers as keys and lists of corresponding kmers as values. Example, kmer = ACTG, k1 = ACT, 
-        and k2 = CTG. If k1 or k2 is not in the kmer dictionary, they are added.
+        with k-1 mers as keys and lists of corresponding kmers as values. Example, kmer = ACTG, prefix = ACT, 
+        and suffix = CTG. If prefix or suffix is not in the kmer dictionary, they are added.
         
         Parameter(s): None
         
         Output(s): None
         '''
 
-        kmer_dict = {}  # Create a dictionary to store k-1 mers and their corresponding kmers
+        kmer_suffixes = {}  # Dictionary to store kmers with the same suffix
 
-        # Populate the kmer_dict with k-1 mers and corresponding kmers
         for kmer in self.kmers:
-            k1 = kmer[:-1]  # k1 is assigned the k-1 mer of the current kmer (excluding the last character).
-            k2 = kmer[1:]   # k2 is assigned the k-1 mer of the current kmer (excluding the first character)
+            prefix = kmer[:-1]
+            suffix = kmer[1:]
 
-            if k1 not in kmer_dict:         # k1 is not in the dict, initialize it
-                kmer_dict[k1] = []
-            kmer_dict[k1].append(kmer)      # Add the kmer to k1's list
+            if suffix in kmer_suffixes:
+                kmer_suffixes[suffix].append(prefix)
+            else:
+                kmer_suffixes[suffix] = [prefix]
 
-            if k2 not in kmer_dict:         # k2 is not in the dict, initialize it
-                kmer_dict[k2] = []
-            kmer_dict[k2].append(kmer)      # Add the kmers to k2's list
+        for kmer in self.kmers:
+            prefix = kmer[:-1]
 
-        # Create edges based on the kmer_dict
-        for key, kmers in kmer_dict.items():                    # Iterate thru each item in the dict
-            if len(kmers) > 1:                                  # Ignore key's with no edges
-                # Add edges without repeating them
-                for i in range(len(kmers)):
-                    for j in range(i + 1, len(kmers)):
-                        self.edges.add((kmers[i], kmers[j]))
+            if prefix in kmer_suffixes:
+                for suffix in kmer_suffixes[prefix]:
+                    self.edges.add((prefix, suffix))
 
     # ----------------------------------------------------------------------------------------------------------
     def get_directed_graph(self):
@@ -179,7 +174,7 @@ class De_bruijn:
         Output(s):
             An ordered list of edges (str) ready to be assembled into a complete sequence
         '''
-        print(self.dir_graph)
+        
         copy_graph = copy.deepcopy(self.dir_graph)
 
         num_edges = 1
@@ -431,7 +426,7 @@ def loop_kmer(data, k_i:int=3, k_f:int=3, l_i:int=0, l_f:int=2, align:str=None, 
 def main():
     data = utils.get_data(filename="./input/assembly_test.fastq")
 
-    graph = De_bruijn(sequences=data[0], header=data[1], k=3)
+    graph = De_bruijn(sequences=data[0], header=data[1], k=4)
     
 
 if __name__ == "__main__":
