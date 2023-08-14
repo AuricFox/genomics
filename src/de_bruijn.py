@@ -56,7 +56,7 @@ class De_bruijn:
         self.de_bruijn_graph()
 
     # ----------------------------------------------------------------------------------------------------------
-    def de_bruijn_graph(self, start:int=0, end:int=-1, cycle:bool=False):
+    def de_bruijn_graph(self, start:int=0, end:int=-1, cycle:bool=True):
         '''
         Gets the k-mers and edges from a set number of sequence reads
         
@@ -84,7 +84,7 @@ class De_bruijn:
         self.get_assembled_str()
 
     # ----------------------------------------------------------------------------------------------------------
-    def get_kmers(self, sequences:List[str], cycle=False):
+    def get_kmers(self, sequences:List[str], cycle=True):
         '''
         Builds a list of all kmers (sub-strings) in the provided sequences
 
@@ -158,7 +158,7 @@ class De_bruijn:
         '''
 
         for edge in self.edges:
-            node, dest = edge
+            node, dest = edge   # set(node, destination)
 
             if node not in self.dir_graph:
                 self.dir_graph[node] = []
@@ -193,6 +193,12 @@ class De_bruijn:
 
         # Run until all the edges have been accounted for
         while len(self.contigs) != num_edges:
+
+            if current_node not in copy_graph:
+                print(f"Node not found: {current_node}")
+                current_node = cycle[-1]
+                cycle.pop()
+                continue
 
             # Current node has out going edges and is not empty
             if copy_graph[current_node] != []:
@@ -428,7 +434,9 @@ def main():
     data = utils.get_data(filename="./input/assembly_test.fastq")
 
     graph = De_bruijn(sequences=data[0], header=data[1], k=11)
-    
+    #graph.create_edges_file()
+    #graph.create_directed_graph_file()
+    print(graph.final_sequence)
 
 if __name__ == "__main__":
     main()
