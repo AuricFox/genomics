@@ -438,7 +438,7 @@ def main():
     #graph = De_bruijn(sequences=data[0], header=['Testing'], k=11)
     #print(graph.final_sequence)
 
-    # Testing Word: pneumonoultramicroscopicsilicovolcanoconiosis
+    word = 'pneumonoultramicroscopicsilicovolcanoconiosis'
     word_fragments = [
     "pneumo", "onoulu", "ultram", "micros", "scopic",
     "csilic", "covolc", "canoco", "oniosi", "pneumo",
@@ -448,8 +448,9 @@ def main():
     "canoco", "oniosi", "pneumo", "onoulu", "ultram"
     ]
 
-    word_graph = De_bruijn(sequences=word_fragments, header=['Testing Words'], k=4)
+    word_graph = De_bruijn(sequences=[word], header=['Testing Word'], k=6)
     print(word_graph.contigs)
+    print(word_graph.final_sequence)
 
 if __name__ == "__main__":
     main()
