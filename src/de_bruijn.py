@@ -46,6 +46,7 @@ class De_bruijn:
         self.header = header
         self.sequences = sequences
         self.k = k
+        self.cut = 1                # Number of chars removed to form a prefix/suffix
 
         self.kmers = {}             # Stores all the possible k-mer combinations from the input sequences
         self.edges = set()          # Stores all the possible edges connecting the k-mers
@@ -130,8 +131,8 @@ class De_bruijn:
 
         # Group k-mers based on their suffix
         for kmer in self.kmers:
-            prefix = kmer[:-1]              # excluding the last character
-            suffix = kmer[1:]               # excluding the first character
+            prefix = kmer[:-self.cut]              # excluding the last character
+            suffix = kmer[self.cut:]               # excluding the first character
 
             if suffix in kmer_suffixes:
                 kmer_suffixes[suffix].append(prefix)
@@ -140,7 +141,7 @@ class De_bruijn:
 
         # Loop thru all the k-mers based on their prefix
         for kmer in self.kmers:
-            prefix = kmer[:-1]
+            prefix = kmer[:-self.cut]
 
             # If the prefix is in the dictionary, add the edge
             if prefix in kmer_suffixes:
@@ -229,9 +230,10 @@ class De_bruijn:
         Output(s): None
         '''
 
-        self.final_sequence = self.contigs[0]                   # Start with first contig
-        for contig in self.contigs[1:]:                         # Loop thru the remaining contigs
-            self.final_sequence += contig[len(contig) - 1]      # Append the last letter to the final sequence
+        self.final_sequence = self.contigs[0]           # Start with first contig
+        for contig in self.contigs[1:]:                 # Loop thru the remaining contigs
+            num_chars = len(contig) - self.cut
+            self.final_sequence += contig[num_chars:]   # Append the last few letter(s) to the final sequence
 
     # ----------------------------------------------------------------------------------------------------------
     def create_edges_file(self, filename:str='./temp/edges.txt'):
@@ -431,12 +433,23 @@ def loop_kmer(data, k_i:int=3, k_f:int=3, l_i:int=0, l_f:int=2, align:str=None, 
 
 # ==============================================================================================================
 def main():
-    data = utils.get_data(filename="./input/assembly_test.fastq")
+    # Testing File
+    #data = utils.get_data(filename="./input/assembly_test.fastq")
+    #graph = De_bruijn(sequences=data[0], header=['Testing'], k=11)
+    #print(graph.final_sequence)
 
-    graph = De_bruijn(sequences=data[0], header=data[1], k=11)
-    #graph.create_edges_file()
-    #graph.create_directed_graph_file()
-    print(graph.final_sequence)
+    # Testing Word: pneumonoultramicroscopicsilicovolcanoconiosis
+    word_fragments = [
+    "pneumo", "onoulu", "ultram", "micros", "scopic",
+    "csilic", "covolc", "canoco", "oniosi", "pneumo",
+    "onoulu", "ultram", "micros", "scopic", "csilic",
+    "covolc", "canoco", "oniosi", "pneumo", "onoulu",
+    "ultram", "micros", "scopic", "csilic", "covolc",
+    "canoco", "oniosi", "pneumo", "onoulu", "ultram"
+    ]
+
+    word_graph = De_bruijn(sequences=word_fragments, header=['Testing Words'], k=4)
+    print(word_graph.contigs)
 
 if __name__ == "__main__":
     main()
