@@ -33,6 +33,8 @@ class Node:
         distance (float, default=None): evolutionary distance between species/nodes.
         parent (Node, default=None): parent node.
         children (List[Node], default=None): nodes of existing children.
+
+    Output(s): None
     '''
     def __init__(self, name:str=None, distance:float=None, parent:'Node'=None, children:List['Node']=None):
         self.name = name
@@ -433,19 +435,36 @@ class Node:
 # Building The Phylogeny Tree
 # ==============================================================================================================
 class Ptree:
-    def __init__(self, data, header):
-        self.data = data                    # Dictionary containing joined nodes and distances
+    '''
+    Stores an instance of a phylogeny tree.
+
+    Parameter(s):
+        data (dict): dictionary containing joined nodes and distances
+        header (List[str]): list of header info for labels
+
+    Output(s): None
+    '''
+    def __init__(self, data:dict, header:List[str]):
+        self.data = data
         self.tree = None                    # Tree data structure
         self.header = {}
 
-        for i in range(len(header) + 1):    # Create dictionary for edge labels
+        # Create dictionary for edge labels (exclude root)
+        for i in range(len(header) + 1):
             self.header[header[i-1]] = str(i)
 
         self.init_tree()
 
     # ----------------------------------------------------------------------------------------------------------
-    # Initializes construction of the tree
     def init_tree(self):
+        '''
+        Initializes construction of the phylogeny tree and calls build_tree that recursively adds nodes to the tree.
+
+        Parameter(s): None
+
+        Output(s): None
+        '''
+
         node = self.data['root']
         self.tree = Node(str(node))                   # Set root node
 
@@ -462,14 +481,21 @@ class Ptree:
         child3 = Node(str(keys[2]), self.data[node][keys[2]], parent=self.tree)
         self.tree.extend([child1, child2, child3])  # Add Children to tree (root)
 
-        self.help_tree(keys[0])                     # Build off child 1
-        self.help_tree(keys[1])                     # Build off child 2
-        self.help_tree(keys[2])                     # Build off child 3
-        #print(self.tree)
+        self.build_tree(keys[0])                     # Build off child 1
+        self.build_tree(keys[1])                     # Build off child 2
+        self.build_tree(keys[2])                     # Build off child 3
 
     # ----------------------------------------------------------------------------------------------------------
-    # Builds the tree recusively
-    def help_tree(self, node):
+    def build_tree(self, node:'Node'):
+        '''
+        Recursively builds the phylogeny tree by adding nodes to the branches.
+        
+        Parameter(s)
+            node (Node): current node being added to the tree
+            
+        Output(s): None
+        '''
+        
         if node in self.data:           # Is node in the dictionary
             keys = []                   # List of keys for connected nodes
             for k in self.data[node]:   # Get all the keys (should be 2)
@@ -479,15 +505,13 @@ class Ptree:
                 print("ERROR: INCORRECT NUMBER OF CHILDREN!")
                 return
 
-            #print("Adding: ", keys)
-            #print(self.tree)
             # Children of the input node
-            child1 = Node(str(keys[0]), self.data[node][keys[0]])     # Creating child 1
-            child2 = Node(str(keys[1]), self.data[node][keys[1]])     # Creating child 2
+            child1 = Node(str(keys[0]), self.data[node][keys[0]])   # Creating child 1
+            child2 = Node(str(keys[1]), self.data[node][keys[1]])   # Creating child 2
             self.tree.find(str(node)).extend([child1,child2])       # Find parent and add children
 
-            self.help_tree(keys[0])                                 # Build off child 1
-            self.help_tree(keys[1])                                 # Build off child 2
+            self.build_tree(keys[0])                                # Build off child 1
+            self.build_tree(keys[1])                                # Build off child 2
 
         return
 
@@ -497,29 +521,56 @@ class Ptree:
         self.tree.write(filename)
 
     # ----------------------------------------------------------------------------------------------------------
-    # Writes edge data to output file
-    def write_edges(self, filename="./temp/edges.txt"):
+    def write_edges(self, filename:str="./temp/edges.txt"):
+        '''
+        Writes the edges of the phylogeny tree to an output file.
+
+        Parameter(s):
+            filename (str): name of the file that the edges are to be written to
+
+        Output(s):
+            A file containing the edges of the phylogeny tree.
+        '''
+
         with open(filename, 'w', newline='') as file:
 
             for x in self.tree.preorder():
-                if(x.distance == None): continue              # Skip root node
+                if(x.distance == None): continue            # Skip root node
 
                 name = x.name
                 if(name in self.header):
                     name = self.header[x.name]              # Convert to index
 
-                input =  f"{x.parent.name}\t{name}\t{str(x.distance)}\n"
-                file.write(input)
+                line =  f"{x.parent.name}\t{name}\t{str(x.distance)}\n"
+                file.write(line)
 
     # ----------------------------------------------------------------------------------------------------------
-    # Runs R script to creates pdf of a tree
-    def create_tree(self, filename="./temp/tree.pdf"):
+    def create_tree(self, filename:str="./temp/tree.pdf"):
+        '''
+        Runs R script to create a pdf of the phylogeny tree.
+
+        Parameter(s):
+            filename (str): name of the file that the phylogeny tree is to be saved to
+
+        Output(s):
+            A file containing a figure of the phylogeny tree.
+        '''
+
         input = f"Rscript hw3-plot-edges.r ./output/edges.txt hw3-tip-labels.txt {filename}"
         os.system(input)
 
     # ----------------------------------------------------------------------------------------------------------
-    # Runs R script to creates pdf of a newick tree
-    def creat_newick(self, filename="./temp/tree-newick.pdf"):
+    def creat_newick(self, filename:str="./temp/tree-newick.pdf"):
+        '''
+        Runs R script to create a pdf of the newick version of a phylogeny tree.
+
+        Parameter(s):
+            filename (str): name of the file that the phylogeny tree is to be saved to
+
+        Output(s):
+            A file containing a figure of the newick tree.
+        '''
+
         input = f"Rscript hw3-plot-newick.r ./output/tree.tre hw3-tip-labels.txt {filename}"
         os.system(input)
 
@@ -540,26 +591,49 @@ class Ptree:
 # Building The Phylogeny Data
 # ==============================================================================================================
 class Phylogeny:
-    def __init__(self, seq = [], header = []):
-        self.seq = seq                  # List of taxa sequences
-        self.header = header            # Correspoding markers for sequences
+    '''
+    Stores an instance of the taxa sequences phylogeny and calculates the evolutionary distances between them.
+
+    Parameter(s):
+        sequences (List[str]): list of taxa sequences being evaluated
+        header (List[str]): list of header info for labeling taxa
+
+    Output(s): None
+    '''
+    def __init__(self, sequences:List[str], header:List[str]):
+        self.sequences = sequences
+        self.header = header
         self.dmatrix = None             # Distance matrix
         self.edges = {}                 # Edges of phylogenic tree
         self.tree = None                # Nodes of phylogenic tree
 
-        self.build_Dmatrix()            # Build distance matrix
+        self.nmatrix = None             # Distance matrix used for joining neighbors
+        self.nheader = None             # Header list used for joining neighbors
+
+        self.build_distance_matrix()    # Build distance matrix
+        self.neighbor_joining()         # Connect neighboring sequences
 
     # ----------------------------------------------------------------------------------------------------------
-    # Calculates % dissimilarity between two sequences
-    def gen_distance(self, seq1, seq2):
+    def calc_distance(self, seq1, seq2):
+        '''
+        Calculates the percent dissimilarity between two sequences by dividing the number of mismatches 
+        by the total number of bases.
+
+        Parameter(s):
+            seq1 (str): first sequence being compared
+            seq2 (str): second sequence being compared
+
+        Output(s)
+            A float representing the percentage of dissimilarity between the two sequences.
+        '''
+        
         match = 0
         mismatch = 0
 
         if(len(seq1) == 0 or len(seq2) == 0):           # Sequences cannot be null
-            print("ERROR: NULL STRING!")
-            return
-        if(len(seq1) != len(seq2)):
-            print("ERROR: lengths are not equal!")      # Lengths of comparing sequences are not equal
+            raise utils.InvalidInput("ERROR: NULL STRING!")
+        if(len(seq1) != len(seq2)):                     # Lengths of comparing sequences are not equal
+            raise utils.InvalidInput("ERROR: lengths are not equal!")
 
         total = len(seq1)                               # Total number of bases
         for (i,j) in zip(seq1,seq2):
@@ -571,32 +645,45 @@ class Phylogeny:
         return (mismatch/total)                         # Return % dissimilarity
 
     # ----------------------------------------------------------------------------------------------------------
-    # Builds distance matrix of the input sequences
-    # Input must be a nxn matrix
-    # Since the matrix is a reflection along the diagonal, only half of it is iterated thru
-    # and the values are reflected to their corresponding coordinates [i,j] = [j,i]
-    def build_Dmatrix(self):
-        size = len(self.seq)                                            # Size of n x n distance matrix
+    def build_distance_matrix(self):
+        '''
+        Builds the distance matrix of the using the input sequences. The input sequences must have equal length so 
+        a nxn matrix can be created. Since the matrix is a reflection along the diagonal, only half of it is iterated 
+        through and the values are reflected to their corresponding coordinates [i,j] = [j,i].
+
+        Parameter(s): None
+
+        Output(s): None
+        '''
+
+        size = len(self.sequences)                                      # Size of n x n distance matrix
         self.dmatrix = np.array([[0.0]*size for i in range(size)])      # Initialize distance matrix
 
         for i in range(size):                                           # Sequence 1
             for j in range(i, size):                                    # Sequence 2 (Compare)
                 if(i == j): continue
-                dis = self.gen_distance(self.seq[i],self.seq[j])        # Getting % dissimilarity between sequences
+                distance = self.calc_distance(self.sequences[i],self.sequences[j])        # Getting % dissimilarity between sequences
                 #print(i , ", ", j, ", ", dis)
-                self.dmatrix[i][j] = self.dmatrix[j][i] = dis           # Setting % dissimilarity in distance matrix
+                self.dmatrix[i][j] = self.dmatrix[j][i] = distance      # Setting % dissimilarity in distance matrix
 
     # ----------------------------------------------------------------------------------------------------------
-    # Calculates the Q matrix used for determining which neighbors to join
-    # Input must be a nxn matrix
-    # Since the matrix is a reflection along the diagonal, only half of it is iterated thru
-    # and the values are reflected to their corresponding coordinates [i,j] = [j,i]
-    def q_matrix(self, m):
-        if(m.shape[0] != m.shape[1]):                                           # Invalid matrix demensions
-            print("ERROR: NOT A N X N MATRIX\n", "Matrix: ", m.shape[0], " X ", m.shape[1])
-            return
+    def q_matrix(self):
+        '''
+        Calculates the Q matrix used for determining which neighbors to join. The input sequences must have equal length so 
+        a nxn matrix can be created. Since the matrix is a reflection along the diagonal, only half of it is iterated 
+        through and the values are reflected to their corresponding coordinates [i,j] = [j,i].
 
-        size = m.shape[1]
+        Parameter(s): None
+
+        Output(s): None
+        '''
+        # Invalid matrix demensions
+        if(self.nmatrix.shape[0] != self.nmatrix.shape[1]):
+            raise utils.InvalidInput(
+                f"ERROR: NOT A N X N MATRIX!\nMatrix Shape: {self.nmatrix.shape[0]} X {self.nmatrix.shape[1]}"
+                )
+
+        size = self.nmatrix.shape[1]
         qmatrix = np.array([[0.0]*size for i in range(size)])               # Initialize Q matrix
 
         for i in range(0, size):                                            # Iterate thru rows
@@ -605,105 +692,113 @@ class Phylogeny:
 
                 a_sum = 0.0
                 for x in range(size):                                       # Sum the values in a
-                    a_sum += m[x][j]
+                    a_sum += self.nmatrix[x][j]
 
                 b_sum = 0.0
                 for y in range(size):                                       # Sum the values in b
-                    b_sum += m[i][y]
+                    b_sum += self.nmatrix[i][y]
 
-                qmatrix[j][i] = (m[i][j])*(size - 2) - a_sum - b_sum        # Calculating Q values
-                qmatrix[i][j] = (m[i][j])*(size - 2) - a_sum - b_sum        # Calculating Q values
+                qmatrix[j][i] = (self.nmatrix[i][j])*(size - 2) - a_sum - b_sum # Calculating Q values
+                qmatrix[i][j] = (self.nmatrix[i][j])*(size - 2) - a_sum - b_sum # Calculating Q values
 
         return qmatrix
 
     # ----------------------------------------------------------------------------------------------------------
-    # Calculates distances from each node
-    # Takes a dmatrix and two index values
-    # Returns calculated distance from a to u
-    def get_distance(self, m, a, b):
+    def get_distance(self, a:int, b:int):
+        '''
+        Calculates distances from each node in the neighbor distance matrix.
 
-        if(a >= m.shape[0] or b >= m.shape[0]):
-            print("ERROR: INPUT OUT OF RANGE OF MATRIX!")
-            return
+        Parameter(s):
+            a (int): index location for first set of distances
+            b (int): index location for second set of distances
 
-        sum_a = sum(m[a][q] for q in range(m.shape[0]))         # Summing distances in a
-        sum_b = sum(m[b][q] for q in range(m.shape[0]))         # Summing distances in b
-        diff = sum_a - sum_b                                    # Computing difference between a and b
-        s = 2 * (m.shape[0] - 2)
-        distance = (0.5)*(m[a][b]) + (diff / s)                 # Calculating distance from a to u
-        #print("A: ", a, ", ", sum_a, " B: ", b, ", ", sum_b, )
-        #print("Diff: ", diff, " S: ", s)
-        #print("Distance: ", distance, '\n')
+        Output(s):
+            The
+        '''
+
+        if(a >= self.nmatrix.shape[0] or b >= self.nmatrix.shape[0]):
+            raise utils.InvalidInput("ERROR: INPUT OUT OF RANGE OF MATRIX!")
+
+        sum_a = sum(self.nmatrix[a][q] for q in range(self.nmatrix.shape[0]))   # Summing distances in a
+        sum_b = sum(self.nmatrix[b][q] for q in range(self.nmatrix.shape[0]))   # Summing distances in b
+        diff = sum_a - sum_b                                                    # Computing difference between a and b
+        
+        s = 2 * (self.nmatrix.shape[0] - 2)
+        distance = (0.5)*(self.nmatrix[a][b]) + (diff / s)                      # Calculating distance from a to u
 
         return distance
 
     # ----------------------------------------------------------------------------------------------------------
     # Joins neighboring sequences
     # Returns a tuple containing (new dmatrix, new list of header info, edge A, edge B)
-    def join_neighbor(self, m, h, node):
+    def join_neighbor(self, node):
 
-        if(m.shape[0] != m.shape[1]):
+        if(self.nmatrix.shape[0] != self.nmatrix.shape[1]):
             print("ERROR: MATRIX MUST BE N X N!")
             return
 
-        qm = self.q_matrix(m)                               # Build Q matrix
-        min = np.amin(qm)                                   # Min value
-        loc = np.where(qm == min)                           # Find mins
+        qm = self.q_matrix(self.nmatrix)                # Build Q matrix
+        min = np.amin(qm)                               # Min value
+        loc = np.where(qm == min)                       # Find mins
 
         #print('\n', loc)
         #print(m,'\n\n',qm,'\n')
 
-        a, b = loc[0][0], loc[0][1]                         # Index location of first min value
-        #print(m, "\n\n", qm)
-        #print(h[a], ', ', h[b])
-        d_au = self.get_distance(m, a, b)                   # Calculating distance from a to u
-        d_bu = m[a][b] - d_au                               # Calculating distance from b to u
+        a, b = loc[0][0], loc[0][1]                     # Index location of first min value
+        d_au = self.get_distance(a, b)                  # Calculating distance from a to u
+        d_bu = self.nmatrix[a][b] - d_au                # Calculating distance from b to u
         #print("Min: ", qm[a][b], " d_ab: ", m[a][b], " d_au: ", d_au, " d_bu: ", d_bu, '\n')
 
         u = []
-        for i in range(m.shape[0]):
+        for i in range(self.nmatrix.shape[0]):
             if(i == a): continue
-            d_u = (0.5)*(m[a][i] + m[i][b] - m[a][b])       # Calaculating distances of each taxa to u
+            # Calaculating distances of each taxa to u
+            d_u = (0.5)*(self.nmatrix[a][i] + self.nmatrix[i][b] - self.nmatrix[a][b])
             u.append(d_u)
 
-        m = np.delete(m, [a], axis=0)                       # Deleting row a
-        m = np.delete(m, [a], axis=1)                       # Deleting column a
+        self.nmatrix = np.delete(self.nmatrix, [a], axis=0)                 # Deleting row a
+        self.nmatrix = np.delete(self.nmatrix, [a], axis=1)                 # Deleting column a
         #print("Trimming: \n", m, "\n")
 
-        m[b-1, 0:m.shape[0]] = u                            # Adding u distances to row (b moved 1)
-        m[0:m.shape[0], b-1] = u                            # Adding u distances to column (b moved 1)
+        self.nmatrix[b-1, 0:self.nmatrix.shape[0]] = u                      # Adding u distances to row (b moved 1)
+        self.nmatrix[0:self.nmatrix.shape[0], b-1] = u                      # Adding u distances to column (b moved 1)
         #print("Adding new distances: ", u, "\n", m)
 
-        self.edges[node] = {h[a]: d_au, h[b]: d_bu}         # Branch from a to u
-        h[b] = node                                         # Add new node to list
-        h.pop(a)                                            # Remove extra label
-
-        return (m, h)                         # Return new dmatrix
+        self.edges[node] = {self.nheader[a]: d_au, self.nheader[b]: d_bu}   # Branch from a to u
+        self.nheader[b] = node                                              # Add new node to list
+        self.nheader.pop(a)                                                 # Remove extra label
 
     # ----------------------------------------------------------------------------------------------------------
     # Joins all the neighboring taxa together
     # Builds list of branche edges
     def neighbor_joining(self):
-        m = self.dmatrix.copy()
-        h = self.header.copy()                              # taxa lables
-        node = len(self.header) + 1                         # Joining node label
 
-        while(m.shape[0] > 3):                              # Iterate thru taxa until there are only two nodes left
-            data = self.join_neighbor(m, h, node)           # Join a neighboring taxa
-            m = data[0]                                     # Updating matrix
-            h = data[1]                                     # Updating header
-            node += 1                                       # Updating new node label
+        if self.dmatrix is None:
+            self.build_distance_matrix()
 
-            #print(m, '\n', data[2:4], '\n\n')
+        
+        self.nmatrix = self.dmatrix.copy()
+        self.nheader = self.header.copy()
+        node = len(self.header) + 1             # Joining node label
+
+        while(self.nmatrix.shape[0] > 3):       # Iterate thru taxa until there are only two nodes left
+            data = self.join_neighbor(node)     # Join a neighboring taxa
+            self.nmatrix = data[0]              # Updating matrix
+            self.nheader = data[1]              # Updating header
+            node += 1                           # Updating new node label
+
+            #print(f"Distance Matrix:\n{dmatrix}\nJoining: {data[2:4]}\n")
 
         #print(self.q_matrix(m))
-        d_vw = self.get_distance(m, 0, 1)                   # Distance from v to w
-        d_wd = m[0][1] - d_vw                               # Distance from d to w
-        d_we = m[0][2] - d_vw                               # Distance from e to w
+        d_vw = self.get_distance(0, 1)          # Distance from v to w
+        d_wd = self.nmatrix[0][1] - d_vw        # Distance from d to w
+        d_we = self.nmatrix[0][2] - d_vw        # Distance from e to w
 
-        self.edges[node] = {h[0]:d_vw, h[1]:d_wd, h[2]:d_we}# Add last three nodes
-        self.edges['root'] = node                           # Track root node
-        #print("d_vw: ", d_vw, " d_wd: ", d_wd, " d_we: ", d_we)
+        # Add last three nodes
+        self.edges[node] = {self.nheader[0]:d_vw, self.nheader[1]:d_wd, self.nheader[2]:d_we}
+        self.edges['root'] = node               # Track root node
+
+        #print(f"Distance v-w: {d_vw}\nDistance w-d: {d_wd}\nDistance w-e: {d_we})
 
     # ----------------------------------------------------------------------------------------------------------
     # Prints out values for debugging
