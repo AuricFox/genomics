@@ -11,9 +11,6 @@ Output:
 2) edges.txt: A tab delimited. Each row describes an edge in the tree.
 3) tree.txt: NEWICK format with all edge distances and with only tips named. For example, (A:0.1,B:0.2,(C:0.3,D:0.4):0.5)
 
-NOTE: Node class is an adaption of the TreeNode class from scikit-bio.
-https://github.com/biocore/scikit-bio/blob/0.2.3/skbio/tree/_tree.py#L53
-
 '''
 import sys, os, utils
 import numpy as np
@@ -22,7 +19,9 @@ from collections import defaultdict
 np.set_printoptions(threshold=sys.maxsize, precision=10, linewidth=np.inf)
 
 # ==============================================================================================================
-# Tree Nodes
+# Node Class
+# NOTE: Node class is an adaption of the TreeNode class from scikit-bio.
+# https://github.com/biocore/scikit-bio/blob/0.2.3/skbio/tree/_tree.py#L53
 # ==============================================================================================================
 class Node:
     '''
@@ -675,7 +674,8 @@ class Phylogeny:
 
         Parameter(s): None
 
-        Output(s): None
+        Output(s):
+            A Q matrix used for connecting neighboring taxa.
         '''
         # Invalid matrix demensions
         if(self.nmatrix.shape[0] != self.nmatrix.shape[1]):
@@ -684,22 +684,23 @@ class Phylogeny:
                 )
 
         size = self.nmatrix.shape[1]
-        qmatrix = np.array([[0.0]*size for i in range(size)])               # Initialize Q matrix
+        qmatrix = np.array([[0.0]*size for i in range(size)])   # Initialize Q matrix
 
-        for i in range(0, size):                                            # Iterate thru rows
-            for j in range(i+1, size):                                      # Iterate thru cols
-                if(i == j): continue                                        # Skip diagonal elements
+        for i in range(0, size):                                # Iterate thru rows
+            for j in range(i+1, size):                          # Iterate thru cols
+                if(i == j): continue                            # Skip diagonal elements
 
                 a_sum = 0.0
-                for x in range(size):                                       # Sum the values in a
+                for x in range(size):                           # Sum the values in a
                     a_sum += self.nmatrix[x][j]
 
                 b_sum = 0.0
-                for y in range(size):                                       # Sum the values in b
+                for y in range(size):                           # Sum the values in b
                     b_sum += self.nmatrix[i][y]
 
-                qmatrix[j][i] = (self.nmatrix[i][j])*(size - 2) - a_sum - b_sum # Calculating Q values
-                qmatrix[i][j] = (self.nmatrix[i][j])*(size - 2) - a_sum - b_sum # Calculating Q values
+                # Calculating Q values
+                value = (self.nmatrix[i][j])*(size - 2) - a_sum - b_sum
+                qmatrix[j][i], qmatrix[i][j] = value, value
 
         return qmatrix
 
@@ -713,7 +714,7 @@ class Phylogeny:
             b (int): index location for second set of distances
 
         Output(s):
-            The
+            The evolutionary distance between two taxa.
         '''
 
         if(a >= self.nmatrix.shape[0] or b >= self.nmatrix.shape[0]):
@@ -729,25 +730,30 @@ class Phylogeny:
         return distance
 
     # ----------------------------------------------------------------------------------------------------------
-    # Joins neighboring sequences
-    # Returns a tuple containing (new dmatrix, new list of header info, edge A, edge B)
     def join_neighbor(self, node):
+        '''
+        Joins neighboring sequences based on evolutionary distance. Updates a cached distance matrix and creates 
+        a branch between the most related taxa. Used as a helper function for neighbor_joining.
+
+        Parameter(s): None
+
+        Output(s): 
+            None, manipulates the class variables nmatrix, nheader, and edges.
+        '''
 
         if(self.nmatrix.shape[0] != self.nmatrix.shape[1]):
-            print("ERROR: MATRIX MUST BE N X N!")
-            return
+            raise utils.InvalidInput(
+                f"ERROR: MATRIX MUST BE N X N! Matix shape is {self.nmatrix.shape[0]} X {self.nmatrix.shape[1]}."
+            )
 
-        qm = self.q_matrix(self.nmatrix)                # Build Q matrix
-        min = np.amin(qm)                               # Min value
-        loc = np.where(qm == min)                       # Find mins
+        qmatrix = self.q_matrix()               # Build Q matrix
+        min = np.amin(qmatrix)                  # Min value
+        loc = np.where(qmatrix == min)          # Find mins
 
-        #print('\n', loc)
-        #print(m,'\n\n',qm,'\n')
-
-        a, b = loc[0][0], loc[0][1]                     # Index location of first min value
-        d_au = self.get_distance(a, b)                  # Calculating distance from a to u
-        d_bu = self.nmatrix[a][b] - d_au                # Calculating distance from b to u
-        #print("Min: ", qm[a][b], " d_ab: ", m[a][b], " d_au: ", d_au, " d_bu: ", d_bu, '\n')
+        a, b = loc[0][0], loc[0][1]             # Index location of first min value
+        d_au = self.get_distance(a, b)          # Calculating distance from a to u
+        d_bu = self.nmatrix[a][b] - d_au        # Calculating distance from b to u
+        print(f"Min: {qmatrix[a][b]} d_ab: {self.nmatrix[a][b]} d_au: {d_au} d_bu: {d_bu}\n")
 
         u = []
         for i in range(self.nmatrix.shape[0]):
@@ -758,24 +764,29 @@ class Phylogeny:
 
         self.nmatrix = np.delete(self.nmatrix, [a], axis=0)                 # Deleting row a
         self.nmatrix = np.delete(self.nmatrix, [a], axis=1)                 # Deleting column a
-        #print("Trimming: \n", m, "\n")
 
         self.nmatrix[b-1, 0:self.nmatrix.shape[0]] = u                      # Adding u distances to row (b moved 1)
         self.nmatrix[0:self.nmatrix.shape[0], b-1] = u                      # Adding u distances to column (b moved 1)
-        #print("Adding new distances: ", u, "\n", m)
 
         self.edges[node] = {self.nheader[a]: d_au, self.nheader[b]: d_bu}   # Branch from a to u
         self.nheader[b] = node                                              # Add new node to list
         self.nheader.pop(a)                                                 # Remove extra label
 
     # ----------------------------------------------------------------------------------------------------------
-    # Joins all the neighboring taxa together
     # Builds list of branche edges
     def neighbor_joining(self):
+        '''
+        Joins all the neighboring taxa together based on the calculated evolutionary distance. Stores the results 
+        in self.edges used for creating the phylogeny tree.
+
+        Parameter(s): None
+
+        Output(s): 
+            None, results are stored in self.edges for tree construction.
+        '''
 
         if self.dmatrix is None:
             self.build_distance_matrix()
-
         
         self.nmatrix = self.dmatrix.copy()
         self.nheader = self.header.copy()
@@ -787,9 +798,6 @@ class Phylogeny:
             self.nheader = data[1]              # Updating header
             node += 1                           # Updating new node label
 
-            #print(f"Distance Matrix:\n{dmatrix}\nJoining: {data[2:4]}\n")
-
-        #print(self.q_matrix(m))
         d_vw = self.get_distance(0, 1)          # Distance from v to w
         d_wd = self.nmatrix[0][1] - d_vw        # Distance from d to w
         d_we = self.nmatrix[0][2] - d_vw        # Distance from e to w
@@ -798,47 +806,51 @@ class Phylogeny:
         self.edges[node] = {self.nheader[0]:d_vw, self.nheader[1]:d_wd, self.nheader[2]:d_we}
         self.edges['root'] = node               # Track root node
 
-        #print(f"Distance v-w: {d_vw}\nDistance w-d: {d_wd}\nDistance w-e: {d_we})
+    # ----------------------------------------------------------------------------------------------------------
+    # Write distance matrix to a text file
+    def write_dmatrix(self, filename="./temp/genetic-distances.txt"):
+
+        with open(filename, 'w', newline='') as file:
+            file.write('\t'.join(self.header) + '\n')               # Write column names from header
+
+            for x in range(len(self.header)):                       # Iterate thru rows in the distance matrix
+                s = '\t'.join([str(i) for i in self.dmatrix[x]])    # Join the row data together
+                file.write(self.header[x] + '\t' + s + '\n')        # Write the header + data for each corresponding row
 
     # ----------------------------------------------------------------------------------------------------------
-    # Prints out values for debugging
-    def debug(self):
-        #print(self.header, '\n\n', self.dmatrix, '\n\n')
-        print(self.edges)
+    def __str__(self):
+        '''
+        Overloads the string operator to display class data.
+        
+        Parameter(s): None
+        
+        Output(s):
+            A string composed of the header info, initial distance matrix, and tree edges (neighbors).
+        '''
+        return f"Header:\n{self.header}\n\nDistance Matrix:\n{self.dmatrix}\n\nEdges:\n{self.edges}"
 
 # ==============================================================================================================
 # Utility Functions
 # ==============================================================================================================
 # Retreives data from the fna file and returns a tuple containing a list of sequences and headers
-def get_data(filename):
-    file = open(filename, 'r')
+def get_data(filename:str):
+    
     seq_data = []
     header_data = []
 
-    for line in file:                                   # Read each line in file
-        line = line.strip()                             # Strip newline characters
+    with open(filename, 'r') as file:
+        for line in file:                                   # Read each line in file
+            line = line.strip()                             # Strip newline characters
 
-        if(line == ""):                                 # Empty line
-            # print("Not text")
-            continue
-        elif(line[0] == ">"):                           # Header information
-            header_data.append(line[1:])
-        else:                                           # Genetic sequence
-            seq_data.append(line)
+            if(line == ""):                                 # Empty line
+                # print("Not text")
+                continue
+            elif(line[0] == ">"):                           # Header information
+                header_data.append(line[1:])
+            else:                                           # Genetic sequence
+                seq_data.append(line)
 
-    file.close()
     return (seq_data, header_data)
-
-# ==============================================================================================================
-# Write distance matrix to a text file
-def write_dmatrix(data, filename="./output/genetic-distances.txt"):
-
-    with open(filename, 'w', newline='') as file:
-        file.write('\t'.join(data.header) + '\n')               # Write column names from header
-
-        for x in range(len(data.header)):                       # Iterate thru rows in the distance matrix
-            s = '\t'.join([str(i) for i in data.dmatrix[x]])    # Join the row data together
-            file.write(data.header[x] + '\t' + s + '\n')        # Write the header + data for each corresponding row
 
 # ==============================================================================================================
 # Write tree matrix to a text file
@@ -847,10 +859,5 @@ def write_data(data, header, filename="./output/edges.txt"):
     tr.write_edges()                # Writing edges to file
     tr.write_tree()                 # Writing newick tree to file
 
-# ==============================================================================================================
-def main():
-    return
-
 # ================================================================================================================================================
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": pass
