@@ -90,7 +90,7 @@ class Node:
         return node
     
     # ----------------------------------------------------------------------------------------------------------
-    def invalidate_caches(self, attr=True):
+    def invalidate_caches(self, attr:bool=True):
         
         if not self.is_root():
             self.root().invalidate_caches()
@@ -252,7 +252,7 @@ class Node:
         return False
     
     # ----------------------------------------------------------------------------------------------------------
-    def traverse(self, self_before=True, self_after=False, include_self=True):
+    def traverse(self, self_before:bool=True, self_after:bool=False, include_self:bool=True):
         '''
         Iterates over descendants and returns them.
         
@@ -276,7 +276,7 @@ class Node:
                 return self.tips(include_self=include_self)
 
     # ----------------------------------------------------------------------------------------------------------
-    def preorder(self, include_self=True):
+    def preorder(self, include_self:bool=True):
         '''
         Performs preorder iteration over the tree.
         
@@ -296,7 +296,7 @@ class Node:
                 stack.extend(curr.children[::-1])
 
     # ----------------------------------------------------------------------------------------------------------
-    def postorder(self, include_self=True):
+    def postorder(self, include_self:bool=True):
         '''
         Performs postorder iteration over tree.
         
@@ -340,7 +340,7 @@ class Node:
                 child_index_stack[-1] += 1
 
     # ----------------------------------------------------------------------------------------------------------
-    def pre_and_postorder(self, include_self=True):
+    def pre_and_postorder(self, include_self:bool=True):
         '''
         Performs iteration over tree, visiting node before and after.
         
@@ -401,7 +401,7 @@ class Node:
         return not self.children
     
     # ----------------------------------------------------------------------------------------------------------
-    def tips(self, include_self=False):
+    def tips(self, include_self:bool=False):
         '''
         Iterates over tips descended from self.
 
@@ -416,7 +416,7 @@ class Node:
                 yield node
 
     # ----------------------------------------------------------------------------------------------------------
-    def non_tips(self, include_self=False):
+    def non_tips(self, include_self:bool=False):
         '''
         Iterates over nontips descended from self.
 
@@ -433,7 +433,7 @@ class Node:
 # ==============================================================================================================
 # Building The Phylogeny Tree
 # ==============================================================================================================
-class Ptree:
+class Phylogeny_Tree:
     '''
     Stores an instance of a phylogeny tree.
 
@@ -516,7 +516,7 @@ class Ptree:
 
     # ----------------------------------------------------------------------------------------------------------
     # Writes tree data to output file
-    def write_tree(self, filename="./temp/tree.tre"):
+    def write_tree(self, filename:str="./temp/tree.tre"):
         self.tree.write(filename)
 
     # ----------------------------------------------------------------------------------------------------------
@@ -544,9 +544,9 @@ class Ptree:
                 file.write(line)
 
     # ----------------------------------------------------------------------------------------------------------
-    def create_tree(self, filename:str="./temp/tree.pdf"):
+    def draw_ptree(self, filename:str="./temp/tree.pdf"):
         '''
-        Runs R script to create a pdf of the phylogeny tree.
+        Creates a figure of a phylogenetic tree and saves it to a file.
 
         Parameter(s):
             filename (str): name of the file that the phylogeny tree is to be saved to
@@ -556,21 +556,6 @@ class Ptree:
         '''
 
         input = f"Rscript hw3-plot-edges.r ./output/edges.txt hw3-tip-labels.txt {filename}"
-        os.system(input)
-
-    # ----------------------------------------------------------------------------------------------------------
-    def creat_newick(self, filename:str="./temp/tree-newick.pdf"):
-        '''
-        Runs R script to create a pdf of the newick version of a phylogeny tree.
-
-        Parameter(s):
-            filename (str): name of the file that the phylogeny tree is to be saved to
-
-        Output(s):
-            A file containing a figure of the newick tree.
-        '''
-
-        input = f"Rscript hw3-plot-newick.r ./output/tree.tre hw3-tip-labels.txt {filename}"
         os.system(input)
 
     # ----------------------------------------------------------------------------------------------------------
@@ -584,7 +569,7 @@ class Ptree:
             A formatted string comprised of the tree data
         '''
 
-        return f"Data:\n{self.data}\nTree:\n{self.tree}"
+        return f"Data:\n{self.data}\nTree:\n{self.tree.traverse()}"
 
 # ==============================================================================================================
 # Building The Phylogeny Data
@@ -753,7 +738,8 @@ class Phylogeny:
         a, b = loc[0][0], loc[0][1]             # Index location of first min value
         d_au = self.get_distance(a, b)          # Calculating distance from a to u
         d_bu = self.nmatrix[a][b] - d_au        # Calculating distance from b to u
-        print(f"Min: {qmatrix[a][b]} d_ab: {self.nmatrix[a][b]} d_au: {d_au} d_bu: {d_bu}\n")
+
+        #print(f"Min: {qmatrix[a][b]} d_ab: {self.nmatrix[a][b]} d_au: {d_au} d_bu: {d_bu}\n")
 
         u = []
         for i in range(self.nmatrix.shape[0]):
@@ -793,9 +779,7 @@ class Phylogeny:
         node = len(self.header) + 1             # Joining node label
 
         while(self.nmatrix.shape[0] > 3):       # Iterate thru taxa until there are only two nodes left
-            data = self.join_neighbor(node)     # Join a neighboring taxa
-            self.nmatrix = data[0]              # Updating matrix
-            self.nheader = data[1]              # Updating header
+            self.join_neighbor(node)     # Join a neighboring taxa
             node += 1                           # Updating new node label
 
         d_vw = self.get_distance(0, 1)          # Distance from v to w
@@ -808,7 +792,7 @@ class Phylogeny:
 
     # ----------------------------------------------------------------------------------------------------------
     # Write distance matrix to a text file
-    def write_dmatrix(self, filename="./temp/genetic-distances.txt"):
+    def write_distance_matrix(self, filename="./temp/genetic-distances.txt"):
 
         with open(filename, 'w', newline='') as file:
             file.write('\t'.join(self.header) + '\n')               # Write column names from header
@@ -817,6 +801,12 @@ class Phylogeny:
                 s = '\t'.join([str(i) for i in self.dmatrix[x]])    # Join the row data together
                 file.write(self.header[x] + '\t' + s + '\n')        # Write the header + data for each corresponding row
 
+    # ----------------------------------------------------------------------------------------------------------
+    def create_tree(self, filename="./output/edges.txt"):
+        ptree = Phylogeny_Tree(self.edges, self.header)        # Initializing phylogeny tree
+        print(ptree)
+        #ptree.write_edges()                # Writing edges to file
+        #ptree.write_tree()                 # Writing newick tree to file
     # ----------------------------------------------------------------------------------------------------------
     def __str__(self):
         '''
@@ -852,12 +842,9 @@ def get_data(filename:str):
 
     return (seq_data, header_data)
 
-# ==============================================================================================================
-# Write tree matrix to a text file
-def write_data(data, header, filename="./output/edges.txt"):
-    tr = Ptree(data, header)        # Initializing tree
-    tr.write_edges()                # Writing edges to file
-    tr.write_tree()                 # Writing newick tree to file
-
 # ================================================================================================================================================
-if __name__ == "__main__": pass
+if __name__ == "__main__":
+    data = utils.get_data("./input/phylogeny_test.fna")
+
+    phyl = Phylogeny(data[0], data[1])
+    phyl.create_tree()
