@@ -14,7 +14,9 @@ Output:
 '''
 import sys, os, utils
 import numpy as np
+from Bio import Phylo
 from typing import List
+from io import StringIO
 from collections import defaultdict
 np.set_printoptions(threshold=sys.maxsize, precision=10, linewidth=np.inf)
 
@@ -294,7 +296,7 @@ class Node:
                 yield curr
             if curr.children:
                 stack.extend(curr.children[::-1])
-
+    
     # ----------------------------------------------------------------------------------------------------------
     def postorder(self, include_self:bool=True):
         '''
@@ -515,9 +517,32 @@ class Phylogeny_Tree:
         return
 
     # ----------------------------------------------------------------------------------------------------------
-    # Writes tree data to output file
-    def write_tree(self, filename:str="./temp/tree.tre"):
-        self.tree.write(filename)
+    def newick_tree(self):
+        '''
+        Builds the Newick string used for creating the phylogeny tree figure.
+        
+        Parameter(s):
+            None, uses the egdes stored in class data attribute.
+            
+        Output(s):
+            A Newick formatted string.
+        '''
+
+        def build_newick(node_id):
+            # Node is a taxa species and not an identifier
+            if node_id not in self.data:
+                return node_id
+            # Node is an identifier
+            else:
+                children = []
+                for child_id, branch_length in self.data[node_id].items():
+                    child_newick = build_newick(child_id)
+                    children.append(f"{child_newick}:{branch_length}")
+
+                return f"({','.join(children)})"
+
+        root_newick = build_newick(self.data["root"])
+        return f"{root_newick};"
 
     # ----------------------------------------------------------------------------------------------------------
     def write_edges(self, filename:str="./temp/edges.txt"):
@@ -569,7 +594,7 @@ class Phylogeny_Tree:
             A formatted string comprised of the tree data
         '''
 
-        return f"Data:\n{self.data}\nTree:\n{self.tree.traverse()}"
+        return f"Data:\n{self.data}\nTree:\n{self.newick_tree()}"
 
 # ==============================================================================================================
 # Building The Phylogeny Data
@@ -804,7 +829,8 @@ class Phylogeny:
     # ----------------------------------------------------------------------------------------------------------
     def create_tree(self, filename="./output/edges.txt"):
         ptree = Phylogeny_Tree(self.edges, self.header)        # Initializing phylogeny tree
-        print(ptree)
+        tree = Phylo.read(StringIO(ptree.newick_tree()),"newick")
+        Phylo.draw(tree)
         #ptree.write_edges()                # Writing edges to file
         #ptree.write_tree()                 # Writing newick tree to file
     # ----------------------------------------------------------------------------------------------------------
