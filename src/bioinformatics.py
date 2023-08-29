@@ -7,6 +7,7 @@ import sequence as sq
 import alignment as al
 import de_bruijn as db
 import variance as vr
+import phylogeny as phy
 import utils
 
 PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp")
@@ -108,7 +109,7 @@ def get_alignment_data(
         ignore:bool=False, 
         file_type:str='txt'):
     '''
-    Extracts the header and sequence data from the input file and counts the totals in the sequence
+    Extracts the header and sequence data from the input file and counts the totals in the sequence.
     
     Parameter(s):
         file1 (str): path to the file containing the first sequence data
@@ -188,7 +189,7 @@ def get_variance_data(
         numV:int=6,
         file_type:str='txt'):
     '''
-    Calculates the variance between the sequences and plots the data
+    Calculates the variance between the sequences and plots the data.
     
     Parameter(s):
         file (str): path to the file containing the sequence data
@@ -200,7 +201,7 @@ def get_variance_data(
         file_type (str, default=txt): type of file(s) to be returned in the zip file
     
     Output(s):
-        zipPth (str): a path to a zip file containing the ploted data
+        zipPth (str): a path to a zip file containing the ploted data.
     '''
 
     response = {}
@@ -234,6 +235,41 @@ def get_variance_data(
 
         # Create zip file for export
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/variance.zip')
+
+    except Exception as e:
+        response['error'] = str(e)
+
+    finally:
+        if 'zip_file' in response:
+            # Delete individual files that are no longer needed
+            utils.remove_files(files=files)
+
+    return response
+
+# ==============================================================================================================
+def get_phylogeny_data(file:str):
+    '''
+    Joins neighboring sequences (taxa) together to form a phylogeny tree.
+    
+    Parameter(s):
+        file (str): path to the file containing the sequence data.
+    
+    Output(s):
+        zipPth (str): a path to a zip file containing the phylogeny tree figure, edge data, and distance matrix.
+    '''
+
+    response = {}
+    files = []
+
+    try:
+
+        seq = utils.get_data(os.path.join(PATH, file))
+        data = phy.Phylogeny(sequences=seq[0], header=seq[1])
+
+        files = data.get_files()
+
+        # Create zip file for export
+        response['zip_file'] = utils.create_zip(files=files, zipname='./temp/phylogeny.zip')
 
     except Exception as e:
         response['error'] = str(e)
