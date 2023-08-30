@@ -217,7 +217,43 @@ def sequence_variance():
         if 'zip_file' in data:
             response = send_file(data['zip_file'], as_attachment=True) 
         else:
-            print(f"Error: {data['error']}")
+            flash(f"{data['error']}", 'error')
+            response = redirect(request.referrer)
+    
+    except Exception as e:
+        flash(f'An Error Occured: {str(e)}', 'error')
+        response = redirect(request.referrer)
+
+    finally:
+        try:
+            utils.remove_files([file_path])
+        except:
+            print(f'Error Removing File(s): {str(e)}')
+
+    return response
+
+# ====================================================================
+# Sequence Phylogeny Function(s)
+# ====================================================================
+@app.route("/sequence_phylogeny", methods=["POST", "GET"])
+def sequence_phylogeny():
+
+    try:
+
+        file = request.files['file']
+        file_path = utils.create_file(file)
+
+        if file_path is None:
+            flash(f'{file.filename} is an Invalid File or FileType', 'error')
+            return redirect(request.referrer)
+        
+        # Creating phylogeny data
+        data = bio.get_phylogeny_data(file=file_path)
+
+        # Return zip file if found else return error message
+        if 'zip_file' in data:
+            response = send_file(data['zip_file'], as_attachment=True) 
+        else:
             flash(f"{data['error']}", 'error')
             response = redirect(request.referrer)
     

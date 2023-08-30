@@ -48,6 +48,8 @@ class Phylogeny_Tree:
         for i in range(len(header) + 1):
             self.labels[header[i-1]] = str(i)
 
+        self.newick_tree()
+
     # ----------------------------------------------------------------------------------------------------------
     def newick_tree(self):
         '''
@@ -57,7 +59,7 @@ class Phylogeny_Tree:
             None, uses the egdes stored in class data attribute.
             
         Output(s):
-            A Newick formatted string.
+            None, builds class attribute tree using a Newick formatted string.
         '''
 
         def build_newick(parent):
@@ -73,8 +75,7 @@ class Phylogeny_Tree:
 
                 return f"({','.join(children)})"
 
-        root_newick = build_newick(self.edges["root"])
-        return f"{root_newick};"
+        self.tree = build_newick(self.edges["root"])
 
     # ----------------------------------------------------------------------------------------------------------
     def write_edges(self, filename:str="./temp/edges.txt"):
@@ -106,6 +107,7 @@ class Phylogeny_Tree:
         data = preorder_traversal(self.edges["root"])
 
         with open(filename, 'w', newline='') as file:
+            print(f"Writing Edge Data to: {filename}")
             for line in data:
                 file.write(line)
 
@@ -122,6 +124,7 @@ class Phylogeny_Tree:
         Output(s):
             A file containing a figure of the phylogeny tree.
         '''
+        print(f"Saving Plotted Tree to: {filename}")
         tree = Phylo.read(StringIO(self.tree), "newick")
 
         plt.figure(figsize=(10,8), dpi=100)
@@ -143,7 +146,7 @@ class Phylogeny_Tree:
             A formatted string comprised of the tree data
         '''
 
-        return f"Data:\n{self.data}\nTree:\n{self.newick_tree()}"
+        return f"Data:\n{self.edges}\nTree:\n{self.tree}"
 
 # ==============================================================================================================
 # Building The Phylogeny Data
@@ -383,24 +386,40 @@ class Phylogeny(Phylogeny_Tree):
     
         if self.dmatrix is None:
             raise ValueError("Distance matrix is not defined.")
-
-        with open(filename, 'w', newline='') as file:
+        
+        with open(filename, 'w') as file:
+            print(f"Writing Distance Matrix to: {filename}")
             file.write('\t'.join(self.header) + '\n')               # Write column names from header
 
             for x in range(len(self.header)):                       # Iterate thru rows in the distance matrix
                 s = '\t'.join([str(i) for i in self.dmatrix[x]])    # Join the row data together
                 file.write(f"{self.header[x]}\t{s}\n")              # Write the header + data for each corresponding row
-
+        
         return filename
 
     # ----------------------------------------------------------------------------------------------------------
-    def get_files(self):
-        files = []
+    def get_files(self, 
+            matrix_file:str="./temp/genetic-distances.txt",
+            edge_file:str="./temp/edges.txt",
+            tree_file:str="./temp/tree.pdf"
+        ):
+        '''
+        Get all the phylogeny files used for constructing the tree.
 
-        files.append(self.write_distance_matrix())
-        files.append(self.write_edges())
-        #files.append(self.plot_ptree())
-       
+        Parameter(s):
+            matrix_file (str, default=./temp/genetic-distances.txt): file name where the distance matrix data is stored
+            edge_file (str, default=./temp/edges.txt): file name where the edge data is stored
+            tree_file (str, default=./temp/tree.pdf): file name where the plotted tree figure is stored
+
+        Output(s):
+            A list of files containing the distance matrix, tree edges, and plotted phylogeny tree.
+        '''
+        files = []
+    
+        files.append(self.write_distance_matrix(filename=matrix_file))
+        files.append(self.write_edges(filename=edge_file))
+        files.append(self.plot_ptree(filename=tree_file))
+    
         return files
     
     # ----------------------------------------------------------------------------------------------------------
@@ -445,7 +464,7 @@ def get_data(filename:str):
 
 # ================================================================================================================================================
 if __name__ == "__main__":
-    data = utils.get_data("./input/phylogeny_test.fna")
+    data = utils.get_data("./input/phylogeny_test2.fna")
 
     phyl = Phylogeny(data[0], data[1])
     phyl.get_files()

@@ -260,13 +260,17 @@ def get_phylogeny_data(file:str):
 
     response = {}
     files = []
-
+    
     try:
-
         seq = utils.get_data(os.path.join(PATH, file))
         data = phy.Phylogeny(sequences=seq[0], header=seq[1])
-
-        files = data.get_files()
+        
+        # Append the working file path to each file returned
+        files = data.get_files(
+            matrix_file=os.path.join(PATH, "genetic-distances.txt"),
+            edge_file=os.path.join(PATH, "edges.txt"),
+            tree_file=os.path.join(PATH, "tree.pdf")
+        )
 
         # Create zip file for export
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/phylogeny.zip')
@@ -284,10 +288,8 @@ def get_phylogeny_data(file:str):
 # ==============================================================================================================
 def main():
     #sequence_data = get_sequence_data(file='testing.fna', codon='codon', amino='amino')
-    variance_data = get_variance_data(file='../input/sequences.fna', plot=True, smooth=True, vRegion=True)
-
-    print(variance_data)
-
+    #variance_data = get_variance_data(file='../input/sequences.fna', plot=True, smooth=True, vRegion=True)
+    phylogeny_deta = get_phylogeny_data(file='../input/phylogeny_test.fna')
 
 if __name__ == "__main__":
     main()
