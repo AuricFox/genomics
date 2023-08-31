@@ -7,7 +7,6 @@ from typing import List
 import matplotlib, math, copy, random, time, os, utils
 matplotlib.use('agg')
 
-PATH = os.path.dirname(os.path.abspath(__file__))
 
 '''
 This python script assembles genetic sequences from read fragments. The de Bruijn graph breaks up the reads into
@@ -247,15 +246,14 @@ class De_bruijn:
             A path to the saved file containing the edge data
         '''
 
-        file_path = os.path.join(PATH, filename)
-        print("Creating Edge File: ", file_path)
+        with open(filename, 'w') as f:
+            print("Creating Edge File: ", filename)
 
-        with open(file_path, 'w') as f:
             for edge in self.edges:
                 x1, x2 = edge
                 f.write(f"{x1}->{x2}\n")
 
-        return file_path
+        return filename
 
     # ----------------------------------------------------------------------------------------------------------
     def create_directed_graph_file(self, filename='./temp/directed_graph.txt'):
@@ -269,15 +267,14 @@ class De_bruijn:
             A path to the saved file containing nodes and their corresponding list of destinations.
         '''
 
-        file_path = os.path.join(PATH, filename)
-        print("Creating Directed Graph File: ", file_path)
-
         # Write the directed graph data to the file
-        with open(file_path, "w") as f:
+        with open(filename, "w") as f:
+            print("Creating Directed Graph File: ", filename)
+
             for node, destinations in self.dir_graph.items():
                 f.write(node + ' -> ' + ','.join(destinations) + '\n')
 
-        return file_path
+        return filename
 
     # ----------------------------------------------------------------------------------------------------------
     def plot_graph(self, show_label:bool=False, filename:str='./temp/deBruijn.png'):
@@ -291,9 +288,7 @@ class De_bruijn:
         Output(s):
             A path to the saved file containing the plotted data
         '''
-
-        file_path = os.path.join(PATH, filename)
-        print("Creating Garph Image: ", file_path)
+        print("Creating Garph Image: ", filename)
         
         plt.clf()
         fig = nx.DiGraph()                                  # Initialize weighted graph
@@ -313,49 +308,53 @@ class De_bruijn:
 
         nx.draw(fig, pos, **options)                        # Drawing directed graph
         plt.axis("off")                                     # Do not show any axis
-        plt.savefig(file_path, transparent=False ,dpi=500)  # Saving file and setting size
+        plt.savefig(filename, transparent=False ,dpi=500)  # Saving file and setting size
 
-        return file_path
+        return filename
 
     # ----------------------------------------------------------------------------------------------------------
-    def make_docs(self, edge_file:bool=False, dir_graph:bool=False, plot_type:str=None, file_type:str='.txt'):
+    def make_docs(self, edge_file:str=None, dir_graph_file:str=None, plot_file:str=None):
         '''
         Master function for creating multiple documents such as an edge file, directed edge file, 
         and a plot of the constructed graph.
 
         Parameter(s):
-            edge_graph (bool, default=False): create a plot of the graph if True else do nothing
-            edge_file (bool, default=False): create an edge file if True else do nothing
-            dir_graph (bool, default=False): create a directed edge file if True else do nothing
+            edge_file (str, default=None): writes the edges of the graph to a file if not None
+            dir_graph_file (str, default=None): writes the directed edges to a file if not None
+            plot_file (str, default=None): saves the plotted De Bruijn graph figure to a file if not None
         
         Output(s):
             A list of paths to the saved files and their corresponding data (deBruijn plot, edges file, 
-            and/or directed graph file)
+            and/or directed graph file).
         '''
         files = []
 
-        if(plot_type is not None): 
-            file = self.plot_graph(show_label=True, filename=f"./temp/deBruijn_{self.k}{plot_type}")
-            files.append(file)
-        if(edge_file): 
-            file = self.create_edges_file(filename=f"output/temp/edges_{self.k}{file_type}")
+        # Write the graph edges to a file
+        if(edge_file is not None): 
+            file = self.create_edges_file(filename=edge_file)
             files.append(file)
 
-        if(dir_graph): 
-            file = self.create_directed_graph_file(filename=f"./temp/directed_graph_{self.k}{file_type}")
+        # Write the directed graph edges to a file
+        if(dir_graph_file is not None): 
+            file = self.create_directed_graph_file(filename=dir_graph_file)
+            files.append(file)
+
+        # Save the plotted graph figure
+        if(plot_file is not None): 
+            file = self.plot_graph(show_label=True, filename=plot_file)
             files.append(file)
 
         return files
 
     # ----------------------------------------------------------------------------------------------------------
-    def align_sequence(self, ref_data, k:int=3, file_type:str='.png'):
+    def align_sequence(self, ref_data, filename:str="assembled_alignment.pdf"):
         '''
         Aligns assembled contig with reference genome, creates text file of alignment, and plots comparison. Used 
         for testing.
 
         Parameter(s):
             ref_data (List[List[str]]): a list composed of a list of sequences and a list of header info
-            k (int, default=3): size of the k-mer or sub-string
+            filename (str, defualt=assembled_alignment.pdf): name of the file where the alignment results are to be stored
 
         Output(s):
             A path to the file where the alignment comparison plot is saved
@@ -370,7 +369,7 @@ class De_bruijn:
             ignore=True
         )
 
-        file = a.plot_compare(filename=f"assembled_{k}_alignment{file_type}")
+        file = a.plot_compare(filename=filename)
 
         return file
 
@@ -397,8 +396,7 @@ def loop_kmer(data, k_i:int=3, k_f:int=3, l_i:int=0, l_f:int=2, align:str=None, 
     num_reads = l_f - l_i                           # Number of reads being assembled
 
     if align is not None:
-        file_path = os.path.join(PATH, align)
-        ref_sequence = utils.get_data(file_path)
+        ref_sequence = utils.get_data(align)
 
     for i in range(k_i, k_f):                       # Loop thru k-mer range
         start_time = time.time()

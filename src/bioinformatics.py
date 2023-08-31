@@ -286,6 +286,65 @@ def get_phylogeny_data(file:str):
     return response
 
 # ==============================================================================================================
+def get_assembled_data(seq_file:str, ref_file:str=None):
+    '''
+    Uses a series of sequence fragments (reads) to build contigs which are then assembles together to create a 
+    complete genome.
+    
+    Parameter(s):
+        seq_file (str): path to the file containing the sequence fragments needing assembly
+        ref_file (str, default=None): path to the file containing the reference sequence used for evaluating the 
+            accuracy of the assembled sequence
+    
+    Output(s):
+        A path to a zip file containing the assembled sequence files edges.txt, directed_edges.txt, de_bruijn_graph.pdf, 
+        sequence_alignment.txt, and/or alignment_plot.pdf.
+    '''
+
+    response = {}
+    files = []
+    
+    try:
+        seq = utils.get_data(os.path.join(PATH, seq_file))
+        data = db.De_bruijn(sequences=seq[0], header=seq[1])
+        
+        # Append the working file path to each file returned
+        files = data.make_docs(
+            edge_file=os.path.join(PATH, "edges.txt"),
+            dir_graph_file=os.path.join(PATH, "directed_edges.txt"),
+            plot_file=os.path.join(PATH, "de_bruijn_graph.pdf")
+        )
+
+        # See how the assembled sequence aligns with the known genome
+        if ref_file is not None:
+            ref = utils.get_data(os.path.join(PATH, ref_file))
+
+            alignment = al.Alignment(               # Initialize alignment
+                ref=ref[0][0], 
+                seq=data.final_sequence, 
+                gap_pen=-2,
+                match_point=1,
+                match_pen=-1, 
+                ignore=True
+            )
+
+            files.append(alignment.alignment_file(filename=os.path.join(PATH, "sequence_alignment.txt")))
+            files.append(alignment.plot_compare(filename=os.path.join(PATH, "alignment_plot.pdf")))
+
+        # Create zip file for export
+        response['zip_file'] = utils.create_zip(files=files, zipname='./temp/assembled_sequence.zip')
+
+    except Exception as e:
+        response['error'] = str(e)
+
+    finally:
+        if 'zip_file' in response:
+            # Delete individual files that are no longer needed
+            utils.remove_files(files=files)
+
+    return response
+
+# ==============================================================================================================
 def main():
     #sequence_data = get_sequence_data(file='testing.fna', codon='codon', amino='amino')
     #variance_data = get_variance_data(file='../input/sequences.fna', plot=True, smooth=True, vRegion=True)

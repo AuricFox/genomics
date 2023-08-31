@@ -12,7 +12,7 @@ Output:
 3) tree.txt: NEWICK format with all edge distances and with only tips named. For example, (A:0.1,B:0.2,(C:0.3,D:0.4):0.5)
 
 '''
-import sys, os, utils, tree_node
+import sys, os, utils
 import numpy as np
 from Bio import Phylo
 from typing import List
@@ -22,7 +22,7 @@ np.set_printoptions(threshold=sys.maxsize, precision=10, linewidth=np.inf)
 import matplotlib
 import matplotlib.pyplot as plt
 
-#matplotlib.use('agg')
+matplotlib.use('agg')
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -438,29 +438,6 @@ class Phylogeny(Phylogeny_Tree):
             f"Edges:\n{self.edges}\n\n"
             f"Newick Tree:\n{self.tree}"
         )
-
-# ==============================================================================================================
-# Utility Functions
-# ==============================================================================================================
-# Retreives data from the fna file and returns a tuple containing a list of sequences and headers
-def get_data(filename:str):
-    
-    seq_data = []
-    header_data = []
-
-    with open(filename, 'r') as file:
-        for line in file:                                   # Read each line in file
-            line = line.strip()                             # Strip newline characters
-
-            if(line == ""):                                 # Empty line
-                # print("Not text")
-                continue
-            elif(line[0] == ">"):                           # Header information
-                header_data.append(line[1:])
-            else:                                           # Genetic sequence
-                seq_data.append(line)
-
-    return (seq_data, header_data)
 
 # ================================================================================================================================================
 if __name__ == "__main__":

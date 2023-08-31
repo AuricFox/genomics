@@ -270,6 +270,57 @@ def sequence_phylogeny():
     return response
 
 # ====================================================================
+# Sequence De Bruijn Function(s)
+# ====================================================================
+@app.route("/sequence_assembly", methods=["POST", "GET"])
+def sequence_assembly():
+
+    try:
+        files = []
+
+        seq_file = request.files['seq_file']
+        seq_path = utils.create_file(seq_file)
+        files.append(seq_path)
+
+        ref_file = request.files['ref_file']
+        # User wants an alignment check
+        if ref_file is not None:
+            ref_path = utils.create_file(ref_file)
+            files.append(ref_path)
+
+            # Make sure reference file is legit
+            if ref_path is None:
+                flash(f'{ref_file.filename} is an Invalid File or FileType', 'error')
+                return redirect(request.referrer)
+        
+
+        if seq_path is None:
+            flash(f'{seq_file.filename} is an Invalid File or FileType', 'error')
+            return redirect(request.referrer)
+        
+        # Creating phylogeny data
+        data = bio.get_assembled_data(seq_file=seq_path, ref_file=ref_path)
+
+        # Return zip file if found else return error message
+        if 'zip_file' in data:
+            response = send_file(data['zip_file'], as_attachment=True) 
+        else:
+            flash(f"{data['error']}", 'error')
+            response = redirect(request.referrer)
+    
+    except Exception as e:
+        flash(f'An Error Occured: {str(e)}', 'error')
+        response = redirect(request.referrer)
+
+    finally:
+        try:
+            utils.remove_files(files=files)
+        except:
+            print(f'Error Removing File(s): {str(e)}')
+
+    return response
+
+# ====================================================================
 # Run Main
 # ====================================================================
 if __name__ == "__main__":
