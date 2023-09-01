@@ -286,7 +286,7 @@ def get_phylogeny_data(file:str):
     return response
 
 # ==============================================================================================================
-def get_assembled_data(seq_file:str, ref_file:str=None):
+def get_assembled_data(seq_file:str, ref_file:str=None, k:int=3, cut:int=1):
     '''
     Uses a series of sequence fragments (reads) to build contigs which are then assembles together to create a 
     complete genome.
@@ -294,7 +294,9 @@ def get_assembled_data(seq_file:str, ref_file:str=None):
     Parameter(s):
         seq_file (str): path to the file containing the sequence fragments needing assembly
         ref_file (str, default=None): path to the file containing the reference sequence used for evaluating the 
-            accuracy of the assembled sequence
+            accuracy of the assembled sequence.
+        k (int, default=3): size of the k-mer or substring
+        cut (int, default=1): size of the prefix/suffix of the k-mer
     
     Output(s):
         A path to a zip file containing the assembled sequence files edges.txt, directed_edges.txt, de_bruijn_graph.pdf, 
@@ -306,7 +308,7 @@ def get_assembled_data(seq_file:str, ref_file:str=None):
     
     try:
         seq = utils.get_data(os.path.join(PATH, seq_file))
-        data = db.De_bruijn(sequences=seq[0], header=seq[1])
+        data = db.De_bruijn(sequences=seq[0], header=seq[1], k=k, cut=cut)
         
         # Append the working file path to each file returned
         files = data.make_docs(

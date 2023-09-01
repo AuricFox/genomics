@@ -68,8 +68,9 @@ def sequence_analysis():
         k = request.form.get('n-mer', type=int)
         file_type = request.form.get('file_type', type=str)
 
-        file = request.files["file"]                    # Get user's submitted file
-        file_path = utils.create_file(file)                   # Get temp file path
+        # File that contains the sequence data being analyzed
+        file = request.files["file"]
+        file_path = utils.create_file(file)
 
         if file_path is None:                           # Incorrect file was submitted
             flash(f'{file.filename} is an Invalid File or FileType', 'error')
@@ -110,6 +111,7 @@ def sequence_analysis():
 def sequence_alingment():
 
     try:
+        # User inputs that regulate the alignment
         match_point = request.form.get('match_point', type=int)
         match_penalty = request.form.get('match_penalty', type=int)
         gap_penalty = request.form.get('gap_penalty', type=int)
@@ -129,6 +131,7 @@ def sequence_alingment():
         
         file_type = request.form.get('file_type', type=str)
 
+        # Files that contain the sequences being aligned
         file1 = request.files['file1']
         file2 = request.files['file2']
         file_path1 = utils.create_file(file1)
@@ -167,7 +170,7 @@ def sequence_alingment():
     finally:
         try:
             utils.remove_files([file_path1, file_path2])
-        except:
+        except Exception as e:
             print(f'Error Removing File(s): {str(e)}')
 
     return response
@@ -179,6 +182,7 @@ def sequence_alingment():
 def sequence_variance():
 
     try:
+        # User inputs used for determining which files are returned
         plot = True if request.form.get('plot', type=str) is not None else False
         smooth = True if request.form.get('smooth', type=str) is not None else False
         vRegion = True if request.form.get('vRegion', type=str) is not None else False
@@ -195,6 +199,7 @@ def sequence_variance():
         
         file_type = request.form.get('file_type', type=str)
 
+        # File containing the series of sequences used for calculating variance
         file = request.files['file']
         file_path = utils.create_file(file)
 
@@ -202,7 +207,7 @@ def sequence_variance():
             flash(f'{file.filename} is an Invalid File or FileType', 'error')
             return redirect(request.referrer)
         
-        # Creating alignment data
+        # Creating variance data
         data = bio.get_variance_data(
             file=file_path,
             plot=plot,
@@ -227,7 +232,7 @@ def sequence_variance():
     finally:
         try:
             utils.remove_files([file_path])
-        except:
+        except Exception as e:
             print(f'Error Removing File(s): {str(e)}')
 
     return response
@@ -239,7 +244,7 @@ def sequence_variance():
 def sequence_phylogeny():
 
     try:
-
+        # File that contains the series of sequences used for creating phylogeny tree
         file = request.files['file']
         file_path = utils.create_file(file)
 
@@ -264,7 +269,7 @@ def sequence_phylogeny():
     finally:
         try:
             utils.remove_files([file_path])
-        except:
+        except Exception as e:
             print(f'Error Removing File(s): {str(e)}')
 
     return response
@@ -274,17 +279,24 @@ def sequence_phylogeny():
 # ====================================================================
 @app.route("/sequence_assembly", methods=["POST", "GET"])
 def sequence_assembly():
+    files = []
 
     try:
-        files = []
-
+        # File that contains the main sequence fragments
         seq_file = request.files['seq_file']
         seq_path = utils.create_file(seq_file)
         files.append(seq_path)
 
+        if seq_path is None:
+            flash(f'{seq_file.filename} is an Invalid File or FileType', 'error')
+            return redirect(request.referrer)
+
+        # File that contains the reference genome for checking accuracy
         ref_file = request.files['ref_file']
+        ref_path = None
+
         # User wants an alignment check
-        if ref_file is not None:
+        if ref_file:
             ref_path = utils.create_file(ref_file)
             files.append(ref_path)
 
@@ -293,12 +305,7 @@ def sequence_assembly():
                 flash(f'{ref_file.filename} is an Invalid File or FileType', 'error')
                 return redirect(request.referrer)
         
-
-        if seq_path is None:
-            flash(f'{seq_file.filename} is an Invalid File or FileType', 'error')
-            return redirect(request.referrer)
-        
-        # Creating phylogeny data
+        # Creating assembled data
         data = bio.get_assembled_data(seq_file=seq_path, ref_file=ref_path)
 
         # Return zip file if found else return error message
@@ -315,7 +322,7 @@ def sequence_assembly():
     finally:
         try:
             utils.remove_files(files=files)
-        except:
+        except Exception as e:
             print(f'Error Removing File(s): {str(e)}')
 
     return response

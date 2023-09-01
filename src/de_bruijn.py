@@ -30,7 +30,7 @@ File(s):
 '''
 
 class De_bruijn:
-    def __init__(self, sequences:List[str]=[], header:List[str]=[], k:int=3):
+    def __init__(self, sequences:List[str]=[], header:List[str]=[], k:int=3, cut:int=1):
         '''
         Initializes the de Bruijn graph
         
@@ -38,14 +38,19 @@ class De_bruijn:
             sequences (List[str]): a series of sequences being analyzed
             header (List[str]): a series of heder info for the corresponding sequence
             k (int, default=3): size of the k-mer, length of the substrings created from the main sequence
+            cut (int, default=1): size of the prefix and suffix of the k-mer
 
         Output(s):
             None
         '''
+        
+        if cut > k:
+            raise utils.InvalidInput(f"The prefix/suffix size cannot exceed the size of the k-mer: Cut={cut}, K={k}")
+        
         self.header = header
         self.sequences = sequences
         self.k = k
-        self.cut = 1                # Number of chars removed to form a prefix/suffix
+        self.cut = cut              # Number of chars removed to form a prefix/suffix
 
         self.kmers = {}             # Stores all the possible k-mer combinations from the input sequences
         self.edges = set()          # Stores all the possible edges connecting the k-mers
