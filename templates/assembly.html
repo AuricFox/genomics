@@ -4,16 +4,31 @@
 
 {% block content %}
 <form action="/sequence_assembly" method="POST" id="assembly-form" enctype="multipart/form-data" class="forms">
+
+    <div class="info">
+        Assembly Parameter(s):
+    </div>
+    <div class="input-group-col">
+        <div class="form-group">
+            <label for="k_size">K-mer Size</label>
+            <input type="number" name="k_size" value="3" min="3" max="100" id="k_size">
+        </div>
+        <div class="form-group">
+            <label for="p_size">Prefix Size</label>
+            <input type="number" name="p_size" value="1" min="1" max="99" id="p_size">
+        </div>
+    </div>
+
     <div class="info">
         Input File(s):
     </div>
     <div class="input-group-col">
         <div class="form-group">
-            <label for="seq_file">Sequence File:</label>
+            <label for="seq_file">Sequence File</label>
             <input type="file" name="seq_file" required>
         </div>
         <div class="form-group">
-            <label for="ref_file">Reference File:</label>
+            <label for="ref_file">Reference File</label>
             <input type="file" name="ref_file">
         </div>
     </div>

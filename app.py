@@ -282,6 +282,18 @@ def sequence_assembly():
     files = []
 
     try:
+        # User inputs for determining how substrings are processed in the graph
+        k = request.form.get('k_size', type=int)
+        cut = request.form.get('p_size', type=int)
+
+        if k < 3 or k > 100:
+            flash(f"The k-mer size must be between 3 and 100: K-mer size is {k}!")
+            return redirect(request.referrer)
+        if cut < 1 or cut > 99:
+            flash(f"The size of the prefix/suffix must be between 1 and 99: size is {cut}!")
+            return redirect(request.referrer)
+
+
         # File that contains the main sequence fragments
         seq_file = request.files['seq_file']
         seq_path = utils.create_file(seq_file)
@@ -306,7 +318,7 @@ def sequence_assembly():
                 return redirect(request.referrer)
         
         # Creating assembled data
-        data = bio.get_assembled_data(seq_file=seq_path, ref_file=ref_path)
+        data = bio.get_assembled_data(seq_file=seq_path, ref_file=ref_path, k=k, cut=cut)
 
         # Return zip file if found else return error message
         if 'zip_file' in data:
