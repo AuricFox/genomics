@@ -55,7 +55,7 @@ def get_sequence_data(
         # Counting amino acids
         if amino:
             seq = sq.Amino_Acid(sequences=sequences[0], header="Amino Acids")
-            data['amino acids'] = seq.amino_acid
+            data['amino_acids'] = seq.amino_acid
         # Counting k-mers
         if kmer:
             seq = sq.Kmer(sequences=sequences[0], header="K-mers", k=k)
