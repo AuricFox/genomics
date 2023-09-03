@@ -72,9 +72,9 @@ tree.pdf
 
 This server is run using the FLASK framework used in Python, But an envirnment must first be setup.
 
-STEP 1: cd into working directory that contains your project
-STEP 2: Install env module: `pip install virtualenv`
-STEP 3: Create virtual environment: `virtualenv env`
+STEP 1: cd into working directory that contains your project  
+STEP 2: Install env module: `pip install virtualenv`  
+STEP 3: Create virtual environment: `virtualenv env`  
 STEP 4: Activate env:  
 ```
 C: .\env\Scripts\activate       # Windows
@@ -98,7 +98,7 @@ C: .\env\Scripts\activate       # Windows
 C: source env/bin/activate      # Mac
 ```
 
-Execute server program: `(env) python server.py`
+Execute server program: `(env) python server.py`  
 Deactivate Environment: `(env) deactivate`  
 
 NOTE: Restart the server if any changes are made to any of the files.
