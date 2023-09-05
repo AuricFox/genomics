@@ -23,6 +23,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 matplotlib.use('agg')
+logger = utils.logger
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -88,31 +89,40 @@ class Phylogeny_Tree:
         Output(s):
             A file containing the edges of the phylogeny tree.
         '''
-        print(f"Writing phylogeny edges to: {filename}")
 
-        def preorder_traversal(parent):
-            result = []
+        try:
+            logger.info(f"Writing phylogeny edges to: {filename}")
 
-            if parent in self.edges:
-                # Iterate thru both children (two or less)
-                for child, distance in self.edges[parent].items():
-                    if child in self.labels:
-                        child = self.labels[child]
+            def preorder_traversal(parent):
+                result = []
 
-                    result.append((f"{parent}\t{child}\t{distance}\n"))
-                    result.extend(preorder_traversal(child))
+                if parent in self.edges:
+                    # Iterate thru both children (two or less)
+                    for child, distance in self.edges[parent].items():
+                        if child in self.labels:
+                            child = self.labels[child]
 
-            return result
+                        result.append((f"{parent}\t{child}\t{distance}\n"))
+                        result.extend(preorder_traversal(child))
 
-        # Get preorder list of the edges so they can be printed
-        data = preorder_traversal(self.edges["root"])
+                return result
 
-        with open(filename, 'w', newline='') as file:
-            print(f"Writing Edge Data to: {filename}")
-            for line in data:
-                file.write(line)
+            # Get preorder list of the edges so they can be printed
+            data = preorder_traversal(self.edges["root"])
 
-        return filename
+            with open(filename, 'w', newline='') as file:
+                print(f"Writing Edge Data to: {filename}")
+                for line in data:
+                    file.write(line)
+
+            return filename
+        
+        except FileNotFoundError as e:
+            logger.error(f"File not found error when writing phylogeny edges to {filename}: {str(e)}")
+        except PermissionError as e:
+            logger.error(f"Permission error when writing phylogeny edges to {filename}: {str(e)}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred when writing phylogeny edges to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def plot_ptree(self, filename:str="./temp/tree.pdf"):
@@ -125,17 +135,26 @@ class Phylogeny_Tree:
         Output(s):
             A file containing a figure of the phylogeny tree.
         '''
-        print(f"Saving plotted phylogeny tree to: {filename}")
 
-        tree = Phylo.read(StringIO(self.tree), "newick")
+        try:
+            logger.info(f"Saving plotted phylogeny tree to: {filename}")
 
-        plt.figure(figsize=(10,8), dpi=100)
-        Phylo.draw(tree, do_show=False)
-        plt.savefig(filename)
+            tree = Phylo.read(StringIO(self.tree), "newick")
 
-        plt.close()
+            plt.figure(figsize=(10,8), dpi=100)
+            Phylo.draw(tree, do_show=False)
+            plt.savefig(filename)
 
-        return filename
+            plt.close()
+
+            return filename
+        
+        except FileNotFoundError as e:
+            logger.error(f"File not found error when saving phylogeny tree figure to {filename}: {str(e)}")
+        except PermissionError as e:
+            logger.error(f"Permission error when saving phylogeny tree figure to {filename}: {str(e)}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred when saving phylogeny tree figure to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def __str__(self):
@@ -382,23 +401,32 @@ class Phylogeny(Phylogeny_Tree):
         Output(s):
             A path to the file containing the distance matrix data.            
         '''
-        print(f"Writing phylogeny distance matrix to: {filename}")
 
-        if not self.header:
-            raise ValueError("Header is not defined.")
-    
-        if self.dmatrix is None:
-            raise ValueError("Distance matrix is not defined.")
-        
-        with open(filename, 'w') as file:
-            print(f"Writing Distance Matrix to: {filename}")
-            file.write('\t'.join(self.header) + '\n')               # Write column names from header
+        try:
+            logger.info(f"Writing phylogeny distance matrix to: {filename}")
 
-            for x in range(len(self.header)):                       # Iterate thru rows in the distance matrix
-                s = '\t'.join([str(i) for i in self.dmatrix[x]])    # Join the row data together
-                file.write(f"{self.header[x]}\t{s}\n")              # Write the header + data for each corresponding row
+            if not self.header:
+                raise ValueError("Header is not defined.")
+
+            if self.dmatrix is None:
+                raise ValueError("Distance matrix is not defined.")
+
+            with open(filename, 'w') as file:
+                print(f"Writing Distance Matrix to: {filename}")
+                file.write('\t'.join(self.header) + '\n')               # Write column names from header
+
+                for x in range(len(self.header)):                       # Iterate thru rows in the distance matrix
+                    s = '\t'.join([str(i) for i in self.dmatrix[x]])    # Join the row data together
+                    file.write(f"{self.header[x]}\t{s}\n")              # Write the header + data for each corresponding row
+
+            return filename
         
-        return filename
+        except FileNotFoundError as e:
+            logger.error(f"File not found error when writing phylogeny distance matrix to {filename}: {str(e)}")
+        except PermissionError as e:
+            logger.error(f"Permission error when writing phylogeny distance matrix to {filename}: {str(e)}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred when writing phylogeny distance matrix to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def get_files(self, 

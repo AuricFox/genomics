@@ -4,8 +4,10 @@ import alignment as al
 import matplotlib.pyplot as plt
 from typing import List
 
-import matplotlib, math, copy, random, time, os, utils
+import matplotlib, math, copy, random, time, utils
 matplotlib.use('agg')
+
+logger = utils.logger
 
 
 '''
@@ -45,6 +47,7 @@ class De_bruijn:
         '''
         
         if cut > k:
+            logger.error(f"The prefix/suffix size cannot exceed the size of the k-mer: Cut={cut}, K={k}")
             raise utils.InvalidInput(f"The prefix/suffix size cannot exceed the size of the k-mer: Cut={cut}, K={k}")
         
         self.header = header
@@ -75,10 +78,12 @@ class De_bruijn:
 
         # End exceeds sequence list, change it to list length
         if(end > len(self.sequences) or end == -1):
+            logger.warning(f"The ending index exceeds the length of the sequence: {len(self.sequence)}, end: {end}")
             end = len(self.sequences)
 
         # Cannot exceed bounds of the list self.sequences
         if(start < 0 or start > end or start == end):
+            logger.error(f"Invalid Input: {start} is not less than {end} or greater than 0!")
             raise utils.InvalidInput(f"Invalid Input: {start} is not less than {end} or greater than 0!")
 
         # Get kmers from this list of sequences
@@ -250,16 +255,25 @@ class De_bruijn:
         Output(s):
             A path to the saved file containing the edge data
         '''
-        print(f"Writing De Bruijn edges to: {filename}")
 
-        with open(filename, 'w') as f:
-            print("Creating Edge File: ", filename)
+        try:
+            logger.info(f"Writing de Bruijn edges to: {filename}")
 
-            for edge in self.edges:
-                x1, x2 = edge
-                f.write(f"{x1}->{x2}\n")
+            with open(filename, 'w') as f:
+                print("Creating Edge File: ", filename)
 
-        return filename
+                for edge in self.edges:
+                    x1, x2 = edge
+                    f.write(f"{x1}->{x2}\n")
+
+            return filename
+        
+        except FileNotFoundError as e:
+            logger.error(f"File not found error when writing de Bruijn edges to {filename}: {str(e)}")
+        except PermissionError as e:
+            logger.error(f"Permission error when writing de Bruijn edges to {filename}: {str(e)}")
+        except Exception as e:
+            logger.error(f"An error occurred when writing de Bruijn edges to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def create_directed_graph_file(self, filename='./temp/directed_graph.txt'):
@@ -272,16 +286,25 @@ class De_bruijn:
         Output(s):
             A path to the saved file containing nodes and their corresponding list of destinations.
         '''
-        print(f"Writing De Bruijn directed edges to: {filename}")
 
-        # Write the directed graph data to the file
-        with open(filename, "w") as f:
-            print("Creating Directed Graph File: ", filename)
+        try:
+            logger.info(f"Writing de Bruijn directed edges to: {filename}")
 
-            for node, destinations in self.dir_graph.items():
-                f.write(node + ' -> ' + ','.join(destinations) + '\n')
+            # Write the directed graph data to the file
+            with open(filename, "w") as f:
+                print("Creating Directed Graph File: ", filename)
 
-        return filename
+                for node, destinations in self.dir_graph.items():
+                    f.write(node + ' -> ' + ','.join(destinations) + '\n')
+
+            return filename
+        
+        except FileNotFoundError as e:
+            logger.error(f"File not found error when writing de Bruijn directed edges to {filename}: {str(e)}")
+        except PermissionError as e:
+            logger.error(f"Permission error when writing de Bruijn directed edges to {filename}: {str(e)}")
+        except Exception as e:
+            logger.error(f"An error occured when writing de Bruijn directed edges to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def plot_graph(self, show_label:bool=False, filename:str='./temp/deBruijn.png'):
@@ -295,29 +318,38 @@ class De_bruijn:
         Output(s):
             A path to the saved file containing the plotted data
         '''
-        print(f"Saving de Bruijn garph figure to: {filename}")
         
-        plt.clf()
-        fig = nx.DiGraph()                                  # Initialize weighted graph
-        fig.add_edges_from(self.edges)                      # Add edges to weighted graph
-        k = 0.5/math.sqrt(fig.order())                      # Used for spacing in spring layout
-        #pos = nx.spring_layout(fig, k=k)
-        pos = nx.shell_layout(fig, scale=2)                 # Set layout to shell (circular)
+        try:
+            logger.info(f"Saving de Bruijn garph figure to: {filename}")
 
-        options = {
-            "node_color": "#A0CBE2",
-            "node_size": 20,
-            "edge_color": "#7d0901",
-            "with_labels": show_label,                      # Show kmer labels
-            "font_size": 5,
-            "font_color": "#0a0a0a"
-        }
+            plt.clf()
+            fig = nx.DiGraph()                                  # Initialize weighted graph
+            fig.add_edges_from(self.edges)                      # Add edges to weighted graph
+            k = 0.5/math.sqrt(fig.order())                      # Used for spacing in spring layout
+            #pos = nx.spring_layout(fig, k=k)
+            pos = nx.shell_layout(fig, scale=2)                 # Set layout to shell (circular)
 
-        nx.draw(fig, pos, **options)                        # Drawing directed graph
-        plt.axis("off")                                     # Do not show any axis
-        plt.savefig(filename, transparent=False ,dpi=500)  # Saving file and setting size
+            options = {
+                "node_color": "#A0CBE2",
+                "node_size": 20,
+                "edge_color": "#7d0901",
+                "with_labels": show_label,                      # Show kmer labels
+                "font_size": 5,
+                "font_color": "#0a0a0a"
+            }
 
-        return filename
+            nx.draw(fig, pos, **options)                        # Drawing directed graph
+            plt.axis("off")                                     # Do not show any axis
+            plt.savefig(filename, transparent=False ,dpi=500)  # Saving file and setting size
+
+            return filename
+        
+        except FileNotFoundError as e:
+            logger.error(f"File not found error when saving de Bruijn graph figure to {filename}: {str(e)}")
+        except PermissionError as e:
+            logger.error(f"Permission error when saving de Bruijn graph figure to {filename}: {str(e)}")
+        except Exception as e:
+            logger.error(f"An error occurred when saving de Bruijn graph figure to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def make_docs(self, edge_file:str=None, dir_graph_file:str=None, plot_file:str=None):

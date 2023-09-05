@@ -1,10 +1,10 @@
-import os
+import os, matplotlib, utils
 import numpy as np
 from typing import List
-import matplotlib
 import matplotlib.pyplot as plt
 
 matplotlib.use('agg')
+logger = utils.logger
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -88,28 +88,37 @@ class Variance:
         Output(s):
             A plot figure of the variance data is saved to a file. Returns the file path.
         '''
-        print(f"Saving plotted figure to: {filename}")
-        
-        figure = plt.figure()
 
-        # Plot smooth data
-        if smooth:
-            y = self.moving_avg()
-            x = [i+1 for i in range(len(y))]                # X axis, nucleotide base positions
-            plt.title('Raw Data w/Smoothing')
-        # Plot raw data
-        else:
-            y = self.variance
-            x = [i+1 for i in range(len(y))]                # X axis, nucleotide base positions
-            plt.title('Raw Data w/No Smoothing')
+        try:
+            logger.info(f"Saving plotted variance figure to: {filename}")
 
-        plt.plot(x, y)
-        plt.xlabel('Position in the 16S rRNA gene')
-        plt.ylabel('Pct Conserved')
-  
-        figure.savefig(filename)
-        return filename
+            figure = plt.figure()
+
+            # Plot smooth data
+            if smooth:
+                y = self.moving_avg()
+                x = [i+1 for i in range(len(y))]                # X axis, nucleotide base positions
+                plt.title('Raw Data w/Smoothing')
+            # Plot raw data
+            else:
+                y = self.variance
+                x = [i+1 for i in range(len(y))]                # X axis, nucleotide base positions
+                plt.title('Raw Data w/No Smoothing')
+
+            plt.plot(x, y)
+            plt.xlabel('Position in the 16S rRNA gene')
+            plt.ylabel('Pct Conserved')
     
+            figure.savefig(filename)
+            return filename
+        
+        except FileNotFoundError as e:
+            logger.error(f"File not found error when saving variance figure to {filename}: {str(e)}")
+        except PermissionError as e:
+            logger.error(f"Permission error when saving variance figure to {filename}: {str(e)}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred when saving variance figure to {filename}: {str(e)}")
+
     # ==============================================================================================================
     def moving_avg(self, size:int=60):
         '''
@@ -150,48 +159,57 @@ class Variance:
         Output(s):
             A plot figure of the variance data with v regions/peaks is saved to a file. Returns the file path.
         '''
-        print(f"Saving plotted figure with v regions to: {filename}")
-       
-        figure = plt.figure()
 
-        y_1 = np.array(self.moving_avg())                               # Variability y
-        x = np.array([i+1 for i in range(len(y_1))])                    # X axis, nucleotide base positions
+        try:
+            logger.info(f"Saving plotted variance figure with v regions to: {filename}")
 
-        line = 0.0                                                      # Intersection line used for identifying v regions
-        intersect = []                                                  # Intersection points
+            figure = plt.figure()
 
-        while(line <= 1.0):
-            y_2 = np.array([line]*len(y_1))                                             # Intersecting y
-            intersect = np.argwhere(np.diff(np.sign(y_1 - y_2))).flatten()              # Get intersection points
-            intersect = np.insert(intersect, [0,len(intersect)], [0,len(self.variance)])# Add start(0) and end(1,514) points
+            y_1 = np.array(self.moving_avg())                               # Variability y
+            x = np.array([i+1 for i in range(len(y_1))])                    # X axis, nucleotide base positions
 
-            if(len(intersect) >= numV*2):                                               # Check for the number of v regions
-                check = True
+            line = 0.0                                                      # Intersection line used for identifying v regions
+            intersect = []                                                  # Intersection points
 
-                for i in range(0, numV*2, 2):                                           # Iterate thru intersecting points
-                    #print(f'I: {intersect[i+1]}, J: {intersect[i]}, Total: {intersect[i+1] - intersect[i]}')
-                    if(intersect[i+1] - intersect[i] < spacing): check = False          # Check spacing between points (fails if too low)
-                
-                if(check == True): break                                                # Intersecting points looks good
+            while(line <= 1.0):
+                y_2 = np.array([line]*len(y_1))                                             # Intersecting y
+                intersect = np.argwhere(np.diff(np.sign(y_1 - y_2))).flatten()              # Get intersection points
+                intersect = np.insert(intersect, [0,len(intersect)], [0,len(self.variance)])# Add start(0) and end(1,514) points
 
-            line += 0.001                                               # Move the intersecting line
+                if(len(intersect) >= numV*2):                                               # Check for the number of v regions
+                    check = True
 
-        self.intersect = intersect
-        plt.plot(x, y_1, color='black')
-        #plt.plot(x, y_2)
+                    for i in range(0, numV*2, 2):                                           # Iterate thru intersecting points
+                        #print(f'I: {intersect[i+1]}, J: {intersect[i]}, Total: {intersect[i+1] - intersect[i]}')
+                        if(intersect[i+1] - intersect[i] < spacing): check = False          # Check spacing between points (fails if too low)
 
-        for i in range(0, len(intersect), 2):
-            x1 = intersect[i]
-            x2 = intersect[i+1]
-            #print(f'X1: {x1}, X2: {x2}')
-            plt.plot([x1,x2],[line,line], color='red')
+                    if(check == True): break                                                # Intersecting points looks good
 
-        plt.xlabel('Position in the 16S rRNA gene')
-        plt.ylabel('Pct Conserved')
-        plt.title('Smoothed Data w/Intersection line')
+                line += 0.001                                               # Move the intersecting line
+
+            self.intersect = intersect
+            plt.plot(x, y_1, color='black')
+            #plt.plot(x, y_2)
+
+            for i in range(0, len(intersect), 2):
+                x1 = intersect[i]
+                x2 = intersect[i+1]
+                #print(f'X1: {x1}, X2: {x2}')
+                plt.plot([x1,x2],[line,line], color='red')
+
+            plt.xlabel('Position in the 16S rRNA gene')
+            plt.ylabel('Pct Conserved')
+            plt.title('Smoothed Data w/Intersection line')
+
+            figure.savefig(filename)
+            return filename
         
-        figure.savefig(filename)
-        return filename
+        except FileNotFoundError as e:
+            logger.error(f"File not found error when saving variance figure with v regions to {filename}: {str(e)}")
+        except PermissionError as e:
+            logger.error(f"Permission error when saving variance figure with v regions to {filename}: {str(e)}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred when saving variance figure with v regions to {filename}: {str(e)}")
 
     # ==============================================================================================================
     def save_plot(self, smooth:bool, spacing:int=30, numV:int=6, plotFile:str=None, regionFile:str=None):

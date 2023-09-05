@@ -1,8 +1,9 @@
 import numpy as np
-import matplotlib
+import matplotlib, utils
 import matplotlib.pyplot as plt
 
 matplotlib.use('agg')
+logger = utils.logger
 
 '''
    REFERENCE SEQUENCE
@@ -312,15 +313,23 @@ class Alignment:
             A path to a saved file containing the alignment data.
         '''
 
-        with open(filename, 'w') as f:
-            print(f"Writting alignment data to: {filename}")
+        try:
+            with open(filename, 'w') as f:
+                logger.info(f"Writting alignment data to: {filename}")
 
-            f.write(f"{self.results['score']}\n"
-                    f"{self.results['reference']}\n"
-                    f"{self.results['visual']}\n"
-                    f"{self.results['sequence']}\n")
-            
-        return filename
+                f.write(f"{self.results['score']}\n"
+                        f"{self.results['reference']}\n"
+                        f"{self.results['visual']}\n"
+                        f"{self.results['sequence']}\n")
+
+            return filename
+        
+        except FileNotFoundError as e:
+            logger.error(f"File not found error when writing alignment data to {filename}: {str(e)}")
+        except PermissionError as e:
+            logger.error(f"Permission error when writing alignment data to {filename}: {str(e)}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred when writing alignment data to {filename}: {str(e)}")
            
     # ----------------------------------------------------------------------------------------------------------------------
     def plot_compare(self, filename:str='./temp/alignment_plot.jpg'):
@@ -334,23 +343,32 @@ class Alignment:
             returns a plotted figure as a window display if display is true, and ouputs a saved
                 file if filename is not None. If both are false then nothing is returned
         '''
-        print(f"Saving alignment figure to: {filename}")
+        
+        try:
+            logger.info(f"Saving alignment figure to: {filename}")
 
-        plt.clf()                                                           # Clear figure
-        count = 0
-        for c in range(len(self.results['visual'])):                        # Plot only matches
-            if(self.results['visual'][c] == '|'):
-                plt.plot(c, c, '.', color='#570503')
-                count += 1
+            plt.clf()                                                           # Clear figure
+            count = 0
+            for c in range(len(self.results['visual'])):                        # Plot only matches
+                if(self.results['visual'][c] == '|'):
+                    plt.plot(c, c, '.', color='#570503')
+                    count += 1
 
-        percent = (count/len(self.seq)) * 100
-        plt.title('Comparing Assembled Contig(s) With Spike Protein ({:.2f}% Match)'.format(percent))
-        plt.xlabel('Assembled SARS Spike Protein ')
-        plt.ylabel('Our Assembled Contig(s)')
+            percent = (count/len(self.seq)) * 100
+            plt.title('Comparing Assembled Contig(s) With Spike Protein ({:.2f}% Match)'.format(percent))
+            plt.xlabel('Assembled SARS Spike Protein ')
+            plt.ylabel('Our Assembled Contig(s)')
 
-        plt.savefig(filename, dpi=500)
+            plt.savefig(filename, dpi=500)
 
-        return filename
+            return filename
+        
+        except FileNotFoundError as e:
+            logger.error(f"File not found error when saving the alignment plot to {filename}: {str(e)}")
+        except PermissionError as e:
+            logger.error(f"Permission error when saving the alignment plot to {filename}: {str(e)}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred when saving the alignment plot to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------------------
     def __str__(self):

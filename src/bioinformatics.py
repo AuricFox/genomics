@@ -1,14 +1,14 @@
 # GUI terminal
 # Runs main program that calls other scripts
 
-import sys
-import os
+import os, utils
 import sequence as sq
 import alignment as al
 import de_bruijn as db
 import variance as vr
 import phylogeny as phy
-import utils
+
+logger = utils.logger
 
 PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp")
 
@@ -42,10 +42,12 @@ def get_sequence_data(
     files = []
 
     try:
+        logger.info(f"Analyzing sequence data from:\n{file}")
         sequences = utils.get_data(os.path.join(PATH, file))
         data = {}
 
         if k < 1:
+            logger.error(f"k Must Be Greater Than 0: k = {k}")
             raise utils.InvalidInput(f"k Must Be Greater Than 0: k = {k}")
 
         # Counting codons
@@ -63,6 +65,7 @@ def get_sequence_data(
 
         # data can not be empty when written to a file
         if data == {}:
+            logger.error(f"No Type Selected (Codon, Amino Acid, or K-mer)!")
             raise utils.InvalidInput(f"No Type Selected (Codon, Amino Acid, or K-mer)!")
 
         # Create a text file for each sequence type
@@ -84,12 +87,14 @@ def get_sequence_data(
 
         # File type is not supported and can not be written to
         else:
+            logger.error(f"Invalid File Type {file_type}")
             raise utils.InvalidFile(f"Invalid File Type {file_type}")
 
         # Zipping the collection of files
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/sequence.zip')
 
     except Exception as e:
+        logger.error(f"An error occured in sequence analysis: {str(e)}")
         response['error'] = str(e)
 
     finally:
@@ -129,12 +134,16 @@ def get_alignment_data(
     files = []
 
     try:
+        logger.info(f"Aligning sequences from:\n{file1}\n{file2}")
 
         if gap_pen > -1:
+            logger.error(f"The Gap Penalty Must Be Less Than 0: Penalty = {gap_pen}")
             raise utils.InvalidInput(f"The Gap Penalty Must Be Less Than 0: Penalty = {gap_pen}")
         if match_point < 1:
+            logger.error(f"The Match Point(s) Must Be Greater Than 0: Point = {match_point}")
             raise utils.InvalidInput(f"The Match Point(s) Must Be Greater Than 0: Point = {match_point}")
         if match_pen > -1:
+            logger.error(f"The Mis-Match Penalty Must Be Less Than 0: Penalty = {match_pen}")
             raise utils.InvalidInput(f"The Mis-Match Penalty Must Be Less Than 0: Penalty = {match_pen}")
         
         seq1 = utils.get_data(os.path.join(PATH, file1))
@@ -166,12 +175,14 @@ def get_alignment_data(
         
         # File type is not supported and can not be written to
         else:
-            raise utils.InvalidFile(f"Invalid File Type {file_type}")
+            logger.error(f"{file_type} file type is not supported for sequence alignment!")
+            raise utils.InvalidFile(f"{file_type} file type is not supported for sequence alignment!")
 
         # Zipping the collection of files
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/alignment.zip')
 
     except Exception as e:
+        logger.error(f"An error occurred in sequence alignment: {str(e)}")
         response['error'] = str(e)
     finally:
         if 'zip_file' in response:
@@ -209,19 +220,23 @@ def get_variance_data(
     file_types = ['pdf', 'png', 'jpg']
 
     try:
+        logger.info(f"Getter variance data from:\n{file}")
+
         if file_type in file_types:
             file1 = os.path.join(PATH, f'plot.{file_type}')
             file2 = os.path.join(PATH,f'v_regions_plot.{file_type}')
         # File type is not supported and can not be written to
         else:
-            raise utils.InvalidFile(f"Invalid File Type {file_type}")
+            logger.error(f"{file_type} file type is not supported for sequence variance!")
+            raise utils.InvalidFile(f"{file_type} file type is not supported for sequence variance!")
 
         seq = utils.get_data(os.path.join(PATH, file))
         data = vr.Variance(sequences=seq[0], header=seq[1])
 
         # No plot tyes have been selected so no files will be created
         if not plot and not smooth and not vRegion:
-            raise utils.InvalidInput(f"No Plot Type Selected!")
+            logger.error(f"No plot type selected for sequence variance!")
+            raise utils.InvalidInput(f"No plot type selected for sequence variance!")
 
         # Plot smooth/raw data and save to a file
         if plot or smooth:
@@ -237,6 +252,7 @@ def get_variance_data(
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/variance.zip')
 
     except Exception as e:
+        logger.error(f"An error occurred in sequence variance: {str(e)}")
         response['error'] = str(e)
 
     finally:
@@ -262,6 +278,8 @@ def get_phylogeny_data(file:str):
     files = []
     
     try:
+        logger.info(f"Getting sequence phylogeny from:\n{file}")
+
         seq = utils.get_data(os.path.join(PATH, file))
         data = phy.Phylogeny(sequences=seq[0], header=seq[1])
         
@@ -276,6 +294,7 @@ def get_phylogeny_data(file:str):
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/phylogeny.zip')
 
     except Exception as e:
+        logger.error(f"An error occurred in sequence phylogeny: {str(e)}")
         response['error'] = str(e)
 
     finally:
@@ -307,6 +326,8 @@ def get_assembled_data(seq_file:str, ref_file:str=None, k:int=3, cut:int=1):
     files = []
     
     try:
+        logger.info(f"Assembling sequence data from:\n{seq_file}\nAligning assembled data with:\n{ref_file}")
+
         seq = utils.get_data(os.path.join(PATH, seq_file))
         data = db.De_bruijn(sequences=seq[0], header=seq[1], k=k, cut=cut)
         
@@ -338,6 +359,7 @@ def get_assembled_data(seq_file:str, ref_file:str=None, k:int=3, cut:int=1):
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/assembled_sequence.zip')
 
     except Exception as e:
+        logger.error(f"An error occurred in sequence assembly: {str(e)}")
         response['error'] = str(e)
 
     finally:
