@@ -136,7 +136,7 @@ def get_alignment_data(
             raise utils.InvalidInput(f"The Match Point(s) Must Be Greater Than 0: Point = {match_point}")
         if match_pen > -1:
             raise utils.InvalidInput(f"The Mis-Match Penalty Must Be Less Than 0: Penalty = {match_pen}")
-
+        
         seq1 = utils.get_data(os.path.join(PATH, file1))
         seq2 = utils.get_data(os.path.join(PATH, file2))
 
@@ -319,6 +319,7 @@ def get_assembled_data(seq_file:str, ref_file:str=None, k:int=3, cut:int=1):
 
         # See how the assembled sequence aligns with the known genome
         if ref_file is not None:
+            
             ref = utils.get_data(os.path.join(PATH, ref_file))
 
             alignment = al.Alignment(               # Initialize alignment
@@ -329,10 +330,10 @@ def get_assembled_data(seq_file:str, ref_file:str=None, k:int=3, cut:int=1):
                 match_pen=-1, 
                 ignore=True
             )
-
+            
             files.append(alignment.alignment_file(filename=os.path.join(PATH, "sequence_alignment.txt")))
             files.append(alignment.plot_compare(filename=os.path.join(PATH, "alignment_plot.pdf")))
-
+        
         # Create zip file for export
         response['zip_file'] = utils.create_zip(files=files, zipname='./temp/assembled_sequence.zip')
 
@@ -349,8 +350,9 @@ def get_assembled_data(seq_file:str, ref_file:str=None, k:int=3, cut:int=1):
 # ==============================================================================================================
 def main():
     #sequence_data = get_sequence_data(file='testing.fna', codon='codon', amino='amino')
+    alignment_data = get_alignment_data(file1='../input/moderna_mrna.fna', file2='../input/sars_spike_protein.fna')
     #variance_data = get_variance_data(file='../input/sequences.fna', plot=True, smooth=True, vRegion=True)
-    phylogeny_deta = get_phylogeny_data(file='../input/phylogeny_test.fna')
+    #phylogeny_deta = get_phylogeny_data(file='../input/phylogeny_test.fna')
 
 if __name__ == "__main__":
     main()

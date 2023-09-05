@@ -88,6 +88,7 @@ class Phylogeny_Tree:
         Output(s):
             A file containing the edges of the phylogeny tree.
         '''
+        print(f"Writing phylogeny edges to: {filename}")
 
         def preorder_traversal(parent):
             result = []
@@ -124,7 +125,8 @@ class Phylogeny_Tree:
         Output(s):
             A file containing a figure of the phylogeny tree.
         '''
-        print(f"Saving Plotted Tree to: {filename}")
+        print(f"Saving plotted phylogeny tree to: {filename}")
+
         tree = Phylo.read(StringIO(self.tree), "newick")
 
         plt.figure(figsize=(10,8), dpi=100)
@@ -380,6 +382,7 @@ class Phylogeny(Phylogeny_Tree):
         Output(s):
             A path to the file containing the distance matrix data.            
         '''
+        print(f"Writing phylogeny distance matrix to: {filename}")
 
         if not self.header:
             raise ValueError("Header is not defined.")

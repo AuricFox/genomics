@@ -54,6 +54,8 @@ File(s) Returned:
 de_bruijn_graph.pdf
 directed_edges.txt
 edges.txt
+alignment_plot.pdf
+sequence_alignment.txt
 ```
 
 ## Phylogeny

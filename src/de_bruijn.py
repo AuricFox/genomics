@@ -250,6 +250,7 @@ class De_bruijn:
         Output(s):
             A path to the saved file containing the edge data
         '''
+        print(f"Writing De Bruijn edges to: {filename}")
 
         with open(filename, 'w') as f:
             print("Creating Edge File: ", filename)
@@ -271,6 +272,7 @@ class De_bruijn:
         Output(s):
             A path to the saved file containing nodes and their corresponding list of destinations.
         '''
+        print(f"Writing De Bruijn directed edges to: {filename}")
 
         # Write the directed graph data to the file
         with open(filename, "w") as f:
@@ -293,7 +295,7 @@ class De_bruijn:
         Output(s):
             A path to the saved file containing the plotted data
         '''
-        print("Creating Garph Image: ", filename)
+        print(f"Saving de Bruijn garph figure to: {filename}")
         
         plt.clf()
         fig = nx.DiGraph()                                  # Initialize weighted graph

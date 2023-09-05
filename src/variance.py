@@ -88,6 +88,7 @@ class Variance:
         Output(s):
             A plot figure of the variance data is saved to a file. Returns the file path.
         '''
+        print(f"Saving plotted figure to: {filename}")
         
         figure = plt.figure()
 
@@ -149,6 +150,7 @@ class Variance:
         Output(s):
             A plot figure of the variance data with v regions/peaks is saved to a file. Returns the file path.
         '''
+        print(f"Saving plotted figure with v regions to: {filename}")
        
         figure = plt.figure()
 

@@ -309,15 +309,19 @@ class Alignment:
             filename (str, default=./output/alignment.txt): the name of a file where the alignment data will be saved
         
         Output(s):
-            A file with the saved alignment data
+            A path to a saved file containing the alignment data.
         '''
 
         with open(filename, 'w') as f:
-            f.write(str( self.results['score']) + '\n')
-            f.write(self.results['reference'] + '\n')
-            f.write(self.results['visual'] + '\n')
-            f.write(self.results['sequence'] + '\n')
-    
+            print(f"Writting alignment data to: {filename}")
+
+            f.write(f"{self.results['score']}\n"
+                    f"{self.results['reference']}\n"
+                    f"{self.results['visual']}\n"
+                    f"{self.results['sequence']}\n")
+            
+        return filename
+           
     # ----------------------------------------------------------------------------------------------------------------------
     def plot_compare(self, filename:str='./temp/alignment_plot.jpg'):
         '''
@@ -330,6 +334,7 @@ class Alignment:
             returns a plotted figure as a window display if display is true, and ouputs a saved
                 file if filename is not None. If both are false then nothing is returned
         '''
+        print(f"Saving alignment figure to: {filename}")
 
         plt.clf()                                                           # Clear figure
         count = 0
@@ -379,7 +384,6 @@ def main():
     print(b.results)
     #print(b.s)
     #print(b.n)
-    b.print_alignment()
     #b.print_matrices()
 
 if __name__ == "__main__":

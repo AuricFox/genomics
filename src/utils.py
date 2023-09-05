@@ -1,4 +1,4 @@
-import os, sys, re, mimetypes, json, csv, zipfile
+import os, re, mimetypes, json, csv, zipfile
 from typing import List
 
 PATH = os.path.dirname(os.path.abspath(__file__))
@@ -123,6 +123,7 @@ def merge_files(file1:str, file2:str, file3:str):
     Output(s):
         file3 (str): a file containing the data from file1 and file2
     '''
+    print(f"Merging files:\n{file1}\n{file2}\nMerge Destination:\n{file3}")
 
     try:
         with open(file1, 'r') as f1, open(file2, 'r') as f2:
@@ -160,11 +161,11 @@ def create_zip(files:List[str], zipname:str='./temp/output.zip'):
     Output(s):
         file_path (str): the path to the saved zip file or None if no files to process
     '''
+    file_path = os.path.join(PATH, zipname)             # Creating saved file path
+    print(f"Zipped Files:\n{files}\nZipped Destination:\n{file_path}")
 
     if len(files) == 0:                                 # No files to process
         return None
-    
-    file_path = os.path.join(PATH, zipname)             # Creating saved file path
 
     with zipfile.ZipFile(file_path, "w") as zipf:
         for file in files:
@@ -187,6 +188,7 @@ def remove_file(filename:str):
     file_path = os.path.join(path, filename)                    # Creating saved file path
 
     try:
+        print(f"Removing file: {file_path}")
         os.remove(file_path)                                    # File is no longer needed
     except OSError as e:
         print(f'Error while removing file {filename}: {e}')
@@ -203,11 +205,11 @@ def remove_files(files:List[str]):
     '''
 
     for file in files:
-        print(f"Removing file {file}")
 
         file_path = os.path.join(PATH, file)                    # Creating saved file path
 
         try:
+            print(f"Removing file: {file_path}")
             os.remove(file_path)                                # File is no longer needed
         except OSError as e:
             print(f'Error while removing file {file}: {e}')
@@ -227,8 +229,9 @@ def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
     Output(s):
         A file with the user input filename containing the dictionary data
     '''
-
+    
     file_path = os.path.join(PATH, filename)             # Creating saved file path
+    print(f"Writing data to txt file: {file_path}")
 
     with open(file_path, 'w', newline='') as file:
         if header != []:
@@ -254,6 +257,7 @@ def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
     '''
 
     file_path = os.path.join(PATH, filename)
+    print(f"Writing data to csv file: {file_path}")
 
     with open(file_path, 'w', newline='') as file:
         cfile = csv.writer(file)
@@ -280,6 +284,7 @@ def make_json(data:dict, filename:str='./temp/output.json'):
     '''
 
     file_path = os.path.join(PATH, filename)
+    print(f"Writing data to json file: {file_path}")
 
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
@@ -289,7 +294,7 @@ def make_json(data:dict, filename:str='./temp/output.json'):
 # ========================================================================================================================================
 # Function(s) used for testing
 # ========================================================================================================================================
-def runtime_csv(data, header:List[str]=[] ,filename:str='./temp/runtime.csv'):
+def runtime_csv(data, header:List[str]=[], filename:str='./temp/runtime.csv'):
     '''
     Create csv file with compiled runtimes
     
@@ -302,6 +307,7 @@ def runtime_csv(data, header:List[str]=[] ,filename:str='./temp/runtime.csv'):
         A path to the file with the runtime data
     '''
     file_path = os.path.join(PATH, filename)            # Creating saved file path
+    print(f"Writing runtime data to csv file: {file_path}")
 
     with open(file_path, 'w', newline='') as file:
         cfile = csv.writer(file)

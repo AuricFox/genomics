@@ -308,7 +308,7 @@ def sequence_assembly():
         ref_path = None
 
         # User wants an alignment check
-        if ref_file:
+        if ref_file is not None:
             ref_path = utils.create_file(ref_file)
             files.append(ref_path)
 
