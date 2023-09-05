@@ -1,7 +1,15 @@
-import os, re, mimetypes, json, csv, zipfile
+import os, re, mimetypes, json, csv, zipfile, logging
 from typing import List
 
 PATH = os.path.dirname(os.path.abspath(__file__))
+
+logging.basicConfig(
+    filename=os.path.join(PATH, 'app.log'),
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s]: %(message)s'
+)
+
+logger = logging.getLogger(__name__)
 
 # ========================================================================================================================================
 # Functions used for processing files
@@ -33,11 +41,11 @@ def create_file(file):
 
     # Check if the file's MIME type or extension is allowed
     if file_mime_type is not None and file_mime_type not in allowed_mime_types:
-        print(f'{file.filename} MIME type is not supported! MIME type: {file_mime_type}')
+        logging.error(f'{file.filename} MIME type is not supported! MIME type: {file_mime_type}')
         return None
 
     if file_extension not in allowed_extensions:
-        print(f'{file.filename} extension is not supported! Extension: {file_extension}')
+        logging.error(f'{file.filename} extension is not supported! Extension: {file_extension}')
         return None
     
     path = os.path.join(PATH, "temp")                           # Path where file will be saved
@@ -52,7 +60,7 @@ def create_file(file):
         new_file_path = os.path.join(path, f'{sanitized_name}_{counter}{file_extension}')
         counter += 1
     
-    print(f"Creating file: {new_file_path}")
+    logging.info(f"Creating file: {new_file_path}")
     file.save(new_file_path)
 
     return new_file_path
@@ -75,7 +83,7 @@ def get_data(filename:str):
 
     # Handle fna files (data every two lines)
     if(mime == 'fna'):
-        print(f"Reading FNA file: {filename}")
+        logging.info(f"Reading FNA file: {filename}")
 
         with open(filename) as f:
             for head, seq in zip(f,f):                      # Get header and sequence info
@@ -85,7 +93,7 @@ def get_data(filename:str):
 
     # Handle fastq files (data every four lines)
     elif(mime == 'fastq'):
-        print(f"Reading FASTQ file: {filename}")
+        logging.info(f"Reading FASTQ file: {filename}")
 
         with open(filename) as f:
             for head, seq, p, score in zip(f,f,f,f):        # Get four line at a time (Header, sequence, plus thingy, score)
@@ -95,7 +103,7 @@ def get_data(filename:str):
 
     # Handle text files
     elif(mime == 'txt'):
-        print(f"Reading text file {filename}")
+        logging.info(f"Reading text file {filename}")
 
         with open(filename) as f:
             for seq in f:                                   # Read each line
@@ -104,8 +112,7 @@ def get_data(filename:str):
 
             headers.append('Assembled data')            # No headers should be in the file so add this one
     else:
-        print("ERROR: Invalid File Type!")
-        print(f"Only fna, fastq, or txt types! The entered file type is {mime}")
+        logging.error(f"ERROR: Invalid File Type! Only fna, fastq, or txt types! The entered file type is {mime}")
         return
 
     return (sequences, headers)
@@ -123,9 +130,10 @@ def merge_files(file1:str, file2:str, file3:str):
     Output(s):
         file3 (str): a file containing the data from file1 and file2
     '''
-    print(f"Merging files:\n{file1}\n{file2}\nMerge Destination:\n{file3}")
 
     try:
+        logging.info(f"Merging files:\n{file1}\n{file2}\nMerge Destination:\n{file3}")
+
         with open(file1, 'r') as f1, open(file2, 'r') as f2:
             reader1 = csv.reader(f1)
             reader2 = csv.reader(f2)
@@ -143,11 +151,11 @@ def merge_files(file1:str, file2:str, file3:str):
             with open(file3, 'w', newline='') as output_file:
                 writer = csv.writer(output_file)
                 writer.writerows(data)
-        print("Files merged successfully.")
+        
     except FileNotFoundError:
-        print("File not found. Please check the input filenames.")
+        logging.error("File not found. Please check the input filenames.")
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
+        logging.error(f"An error occurred: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def create_zip(files:List[str], zipname:str='./temp/output.zip'):
@@ -161,17 +169,21 @@ def create_zip(files:List[str], zipname:str='./temp/output.zip'):
     Output(s):
         file_path (str): the path to the saved zip file or None if no files to process
     '''
-    file_path = os.path.join(PATH, zipname)             # Creating saved file path
-    print(f"Zipped Files:\n{files}\nZipped Destination:\n{file_path}")
+    try:
+        file_path = os.path.join(PATH, zipname)             # Creating saved file path
+    
+        if len(files) == 0:                                 # No files to process
+            return None
+    
+        with zipfile.ZipFile(file_path, "w") as zipf:
+            for file in files:
+                zipf.write(file, os.path.basename(file))
 
-    if len(files) == 0:                                 # No files to process
-        return None
-
-    with zipfile.ZipFile(file_path, "w") as zipf:
-        for file in files:
-            zipf.write(file, os.path.basename(file))
-
-    return file_path
+        logging.info(f"Zipped Files:\n{files}\nZipped Destination:\n{file_path}")
+        return file_path
+    
+    except Exception as e:
+        logging.error(f"Failed to zip files: {files}: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def remove_file(filename:str):
@@ -184,14 +196,14 @@ def remove_file(filename:str):
     Output(s): None
     '''
 
-    path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file is saved
-    file_path = os.path.join(path, filename)                    # Creating saved file path
-
     try:
-        print(f"Removing file: {file_path}")
-        os.remove(file_path)                                    # File is no longer needed
+        path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file is saved
+        file_path = os.path.join(path, filename)                    # Creating saved file path
+        os.remove(file_path)                                        # File is no longer needed
+        logging.info(f"Successfully removed file: {file_path}")
+
     except OSError as e:
-        print(f'Error while removing file {filename}: {e}')
+        logging.error(f'Error while removing file {filename}: {str(e)}')
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def remove_files(files:List[str]):
@@ -206,13 +218,13 @@ def remove_files(files:List[str]):
 
     for file in files:
 
-        file_path = os.path.join(PATH, file)                    # Creating saved file path
-
         try:
-            print(f"Removing file: {file_path}")
+            file_path = os.path.join(PATH, file)                # Creating saved file path
             os.remove(file_path)                                # File is no longer needed
+            logging.info(f"Successfully removed file: {file_path}")
+
         except OSError as e:
-            print(f'Error while removing file {file}: {e}')
+            logging.error(f'Error while removing file {file}: {str(e)}')
 
 # ========================================================================================================================================
 # Function(s) used for creating txt, csv, and Json file
@@ -229,18 +241,21 @@ def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
     Output(s):
         A file with the user input filename containing the dictionary data
     '''
+    try:
+        file_path = os.path.join(PATH, filename)             # Creating saved file path
     
-    file_path = os.path.join(PATH, filename)             # Creating saved file path
-    print(f"Writing data to txt file: {file_path}")
+        with open(file_path, 'w', newline='') as file:
+            if header != []:
+                file.write('\t'.join(header) + '\n')
+    
+            for key,value in data.items():
+                file.write(f'{key}\t{value}\n')
 
-    with open(file_path, 'w', newline='') as file:
-        if header != []:
-            file.write('\t'.join(header) + '\n')
-
-        for key,value in data.items():
-            file.write(f'{key}\t{value}\n')
-
-    return file_path
+        logging.info(f"Successfully saved data to txt file: {file_path}")
+        return file_path
+    
+    except Exception as e:
+        logging.error(f"Failed to save data to txt file: {file_path}: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
@@ -256,19 +271,24 @@ def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
         A file with the user input filename containing the dictionary data
     '''
 
-    file_path = os.path.join(PATH, filename)
-    print(f"Writing data to csv file: {file_path}")
+    try:
+        file_path = os.path.join(PATH, filename)
+        print(f"Writing data to csv file: {file_path}")
 
-    with open(file_path, 'w', newline='') as file:
-        cfile = csv.writer(file)
+        with open(file_path, 'w', newline='') as file:
+            cfile = csv.writer(file)
 
-        if header != []:
-            cfile.writerow(header)
+            if header != []:
+                cfile.writerow(header)
 
-        for key,value in data.items():
-            cfile.writerow([key, value])
+            for key,value in data.items():
+                cfile.writerow([key, value])
 
-    return file_path
+        logging.info(f"Successfully saved data to csv file: {file_path}")
+        return file_path
+    
+    except Exception as e:
+        logging.error(f"Failed to save data to csv file: {file_path}: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def make_json(data:dict, filename:str='./temp/output.json'):
@@ -282,14 +302,18 @@ def make_json(data:dict, filename:str='./temp/output.json'):
     Output(s):
         A file with the user input filename containing the dictionary data
     '''
+    try:
+        file_path = os.path.join(PATH, filename)
 
-    file_path = os.path.join(PATH, filename)
-    print(f"Writing data to json file: {file_path}")
+        with open(file_path, 'w') as file:
+            json.dump(data, file, indent=4)
 
-    with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4)
+        logging.info(f"Successfully saved data to JSON file: {file_path}")
+        return file_path
+    
+    except Exception as e:
+        logging.error(f"Failed to save data to JSON file: {file_path}: {str(e)}")
 
-    return file_path
 
 # ========================================================================================================================================
 # Function(s) used for testing
@@ -306,19 +330,24 @@ def runtime_csv(data, header:List[str]=[], filename:str='./temp/runtime.csv'):
     Output(s):
         A path to the file with the runtime data
     '''
-    file_path = os.path.join(PATH, filename)            # Creating saved file path
-    print(f"Writing runtime data to csv file: {file_path}")
 
-    with open(file_path, 'w', newline='') as file:
-        cfile = csv.writer(file)
+    try:
+        file_path = os.path.join(PATH, filename)            # Creating saved file path
 
-        # Add header if it is not empty
-        if header != []:
-            cfile.writerow(header)
+        with open(file_path, 'w', newline='') as file:
+            cfile = csv.writer(file)
 
-        cfile.writerows(data)                           # Wrights codon or amino acid data to csv
+            # Add header if it is not empty
+            if header != []:
+                cfile.writerow(header)
+
+            cfile.writerows(data)                           # Wrights codon or amino acid data to csv
+
+        print(f"Successfully saved runtime data to csv file: {file_path}")
+        return file_path
     
-    return file_path
+    except Exception as e:
+        logging.error(f"Failed to save runtime data to csv file: {file_path}: {str(e)}")
 
 # ========================================================================================================================================
 # Error Handling
