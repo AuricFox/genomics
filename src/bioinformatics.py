@@ -42,7 +42,7 @@ def get_sequence_data(
     files = []
 
     try:
-        logger.info(f"Analyzing sequence data from:\n{file}")
+        logger.info(f"Analyzing sequence data from: {file}")
         sequences = utils.get_data(os.path.join(PATH, file))
         data = {}
 
@@ -134,7 +134,7 @@ def get_alignment_data(
     files = []
 
     try:
-        logger.info(f"Aligning sequences from:\n{file1}\n{file2}")
+        logger.info(f"Aligning sequences from: {file1}, {file2}")
 
         if gap_pen > -1:
             logger.error(f"The Gap Penalty Must Be Less Than 0: Penalty = {gap_pen}")
@@ -220,7 +220,7 @@ def get_variance_data(
     file_types = ['pdf', 'png', 'jpg']
 
     try:
-        logger.info(f"Getter variance data from:\n{file}")
+        logger.info(f"Getter variance data from: {file}")
 
         if file_type in file_types:
             file1 = os.path.join(PATH, f'plot.{file_type}')
@@ -278,7 +278,7 @@ def get_phylogeny_data(file:str):
     files = []
     
     try:
-        logger.info(f"Getting sequence phylogeny from:\n{file}")
+        logger.info(f"Getting sequence phylogeny from: {file}")
 
         seq = utils.get_data(os.path.join(PATH, file))
         data = phy.Phylogeny(sequences=seq[0], header=seq[1])
@@ -326,7 +326,7 @@ def get_assembled_data(seq_file:str, ref_file:str=None, k:int=3, cut:int=1):
     files = []
     
     try:
-        logger.info(f"Assembling sequence data from:\n{seq_file}\nAligning assembled data with:\n{ref_file}")
+        logger.info(f"Assembling sequence data from: {seq_file}\nAligning assembled data with: {ref_file}")
 
         seq = utils.get_data(os.path.join(PATH, seq_file))
         data = db.De_bruijn(sequences=seq[0], header=seq[1], k=k, cut=cut)

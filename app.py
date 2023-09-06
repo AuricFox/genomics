@@ -7,6 +7,7 @@ sys.path.append('./src/')
 import utils
 import bioinformatics as bio
 
+logger = utils.logger
 app = Flask(__name__, static_folder='static')
 app.secret_key = 'my_super_secret_totaly_unbreakable_key'
 
@@ -100,7 +101,7 @@ def sequence_analysis():
         try:
             os.remove(file_path)
         except Exception as e:
-            print(f'Error removing file: {str(e)}')
+            logger.error(f'Error removing file: {str(e)}')
     
     return response
 
@@ -171,7 +172,7 @@ def sequence_alingment():
         try:
             utils.remove_files([file_path1, file_path2])
         except Exception as e:
-            print(f'Error Removing File(s): {str(e)}')
+            logger.error(f'Error Removing File(s): {str(e)}')
 
     return response
 
@@ -233,7 +234,7 @@ def sequence_variance():
         try:
             utils.remove_files([file_path])
         except Exception as e:
-            print(f'Error Removing File(s): {str(e)}')
+            logger.error(f'Error Removing File(s): {str(e)}')
 
     return response
 
@@ -270,7 +271,7 @@ def sequence_phylogeny():
         try:
             utils.remove_files([file_path])
         except Exception as e:
-            print(f'Error Removing File(s): {str(e)}')
+            logger.error(f'Error Removing File(s): {str(e)}')
 
     return response
 
@@ -335,7 +336,7 @@ def sequence_assembly():
         try:
             utils.remove_files(files=files)
         except Exception as e:
-            print(f'Error Removing File(s): {str(e)}')
+            logger.error(f'Error Removing File(s): {str(e)}')
 
     return response
 

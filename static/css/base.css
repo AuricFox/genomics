@@ -166,21 +166,6 @@ body {
     margin-left: 15px;
 }
 
-.form-group input[type="number"]{
-    padding: 2px;
-    font-size: large;
-}
-
-.form-group input[type="checkbox"],
-.form-group input[type="radio"] {
-    margin-right: 10px;
-    margin-left: 5px;
-}
-
-.form-group input[type="file"] {
-    color: #f0f0f0;
-}
-
 .form-group label {
     padding: 5px 10px;
     border: 1px solid #ccc;
@@ -190,11 +175,109 @@ body {
 }
 
 .form-group label:hover {
-    background: rgba(0, 0, 200, 0.8);
+    background: rgb(56, 56, 255);
     transition: background-color 0.4s ease;
 }
 
-/* Style the submit button */
+.center {
+    display: flex;
+    justify-content: center;
+}
+
+.info {
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+/* ---------- Checkbox input ---------- */
+
+input[type="checkbox"] {
+    display: none;
+}
+
+.checkbox-button {
+    color: #fff;
+    cursor: pointer;
+}
+
+.checkbox-label {
+    display: inline-block;
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 127, 0.3);
+    cursor: pointer;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.checkbox-label:has(input[type="checkbox"]:checked) {
+    background-color: rgb(56, 56, 255);
+}
+
+.checkbox-label:hover {
+    background: rgb(56, 56, 255);
+    transition: background-color 0.4s ease;
+}
+
+.checkbox-label:active {
+    background-color: #3498db;
+    color: #fff;
+}
+
+/* ---------- radio input ---------- */
+
+.radio-group-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.radio-group-col .form-group label{
+        display: block;
+        padding: 10px 20px;
+        cursor: pointer;
+        text-align: center;    
+}
+
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.radio-group .form-group {
+    flex-basis: calc(33.33% - 10px)
+}
+
+.radio-group .form-group label{
+    width: 100%;
+    display: inline-block;
+    text-align: center;
+}
+
+input[type="radio"] {
+    display: none;
+}
+
+.form-group:has(input[type="radio"]:checked) label{
+    background-color: rgb(56, 56, 255);
+}
+
+/* ---------- Number input ---------- */
+
+.form-group input[type="number"] {
+    padding: 2px;
+    font-size: large;
+}
+
+/* ---------- File input ---------- */
+
+.form-group input[type="file"] {
+    color: #f0f0f0;
+}
+
+/* ---------- Submit Button ---------- */
+
 .form-group input[type="submit"] {
     padding: 10px 20px;
     background-color: #4CAF50;
@@ -207,14 +290,4 @@ body {
 
 .form-group input[type="submit"]:hover {
     background-color: #45a049;
-}
-
-.center {
-    display: flex;
-    justify-content: center;
-}
-
-.info {
-    margin-bottom: 10px;
-    font-size: 20px;
 }

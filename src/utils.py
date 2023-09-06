@@ -4,8 +4,8 @@ from typing import List
 PATH = os.path.dirname(os.path.abspath(__file__))
 
 logging.basicConfig(
-    filename=os.path.join(PATH, 'app.log'),
-    level=logging.DEBUG,
+    filename=os.path.join(PATH, './output/app.log'),
+    level=logging.INFO,
     format='%(asctime)s [%(levelname)s]: %(message)s'
 )
 
@@ -132,7 +132,7 @@ def merge_files(file1:str, file2:str, file3:str):
     '''
 
     try:
-        logging.info(f"Merging files:\n{file1}\n{file2}\nMerge Destination:\n{file3}")
+        logging.info(f"Merging files: {file1}, {file2}\nMerge Destination:{file3}")
 
         with open(file1, 'r') as f1, open(file2, 'r') as f2:
             reader1 = csv.reader(f1)
@@ -179,7 +179,7 @@ def create_zip(files:List[str], zipname:str='./temp/output.zip'):
             for file in files:
                 zipf.write(file, os.path.basename(file))
 
-        logging.info(f"Zipped Files:\n{files}\nZipped Destination:\n{file_path}")
+        logging.info(f"Zipped Files: {files}\nZipped Destination: {file_path}")
         return file_path
     
     except Exception as e:
@@ -273,7 +273,6 @@ def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
 
     try:
         file_path = os.path.join(PATH, filename)
-        print(f"Writing data to csv file: {file_path}")
 
         with open(file_path, 'w', newline='') as file:
             cfile = csv.writer(file)
@@ -343,7 +342,7 @@ def runtime_csv(data, header:List[str]=[], filename:str='./temp/runtime.csv'):
 
             cfile.writerows(data)                           # Wrights codon or amino acid data to csv
 
-        print(f"Successfully saved runtime data to csv file: {file_path}")
+        logger.info(f"Successfully saved runtime data to csv file: {file_path}")
         return file_path
     
     except Exception as e:

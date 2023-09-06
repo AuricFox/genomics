@@ -9,19 +9,19 @@
             <div class="info">
                 Sequence Type(s):
             </div>
-            <div class="input-group-row">
-                <div class="form-group">
-                    <label for="codon">Count Codons</label>
+            <div class="input-group-col">
+                <label class="checkbox-label">
                     <input type="checkbox" name="codon" value="codon" id="codon" checked>
-                </div>
-                <div class="form-group">
-                    <label for="amino">Count Amino Acids</label>
+                    <span class="checkbox-button">Count Codons</span>
+                </label>
+                <label class="checkbox-label">
                     <input type="checkbox" name="amino" value="amino" id="amino">
-                </div>
-                <div class="form-group">
-                    <label for="kmer">Count k-mers</label>
+                    <span class="checkbox-button">Count Amino Acids</span>
+                </label>
+                <label class="checkbox-label">
                     <input type="checkbox" name="kmer" value="kmer" id="kmer">
-                </div>
+                    <span class="checkbox-button">Count K-mers</span>
+                </label>
             </div>
 
             <div class="form-group">
@@ -33,7 +33,7 @@
         <div class="info">
             Type of File Returned:
         </div>
-        <div class="input-group-row">
+        <div class="radio-group">
             <div class="form-group">
                 <label for="txt">Text</label>
                 <input type="radio" id="txt" name="file_type" value="txt" checked>

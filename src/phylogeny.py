@@ -111,7 +111,6 @@ class Phylogeny_Tree:
             data = preorder_traversal(self.edges["root"])
 
             with open(filename, 'w', newline='') as file:
-                print(f"Writing Edge Data to: {filename}")
                 for line in data:
                     file.write(line)
 
@@ -412,7 +411,6 @@ class Phylogeny(Phylogeny_Tree):
                 raise ValueError("Distance matrix is not defined.")
 
             with open(filename, 'w') as file:
-                print(f"Writing Distance Matrix to: {filename}")
                 file.write('\t'.join(self.header) + '\n')               # Write column names from header
 
                 for x in range(len(self.header)):                       # Iterate thru rows in the distance matrix

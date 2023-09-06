@@ -11,19 +11,19 @@
             <div class="info">
                 Plot Type(s):
             </div>
-            <div class="input-group-row">
-                <div class="form-group">
-                    <label for="plot">Get Plot Without V-Regions</label>
+            <div class="input-group-col">
+                <label class="checkbox-label">
                     <input type="checkbox" name="plot" value="true" id="plot">
-                </div>
-                <div class="form-group">
-                    <label for="smooth">Smooth Plot Data</label>
+                    <span class="checkbox-button">Get Plot Without V-Regions</span>
+                </label>
+                <label class="checkbox-label">
                     <input type="checkbox" name="smooth" value="true" id="smooth">
-                </div>
-                <div class="form-group">
-                    <label for="vRegion">Get Plot With V-Regions</label>
+                    <span class="checkbox-button">Smooth Plot Data</span>
+                </label>
+                <label class="checkbox-label">
                     <input type="checkbox" name="vRegion" value="true" id="vRegion">
-                </div>
+                    <span class="checkbox-button">Get Plot With V-Regions</span>
+                </label>
             </div>
 
             <div class="info">
@@ -44,7 +44,7 @@
         <div class="info">
             Type of File Returned:
         </div>
-        <div class="input-group-row">
+        <div class="radio-group">
             <div class="form-group">
                 <label for="pdf">PDF</label>
                 <input type="radio" id="pdf" name="file_type" value="pdf" checked>
