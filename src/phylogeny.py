@@ -197,7 +197,7 @@ class Phylogeny(Phylogeny_Tree):
         super().__init__(self.edges, self.header)
 
     # ----------------------------------------------------------------------------------------------------------
-    def calc_distance(self, seq1, seq2):
+    def calc_distance(self, seq1:str, seq2:str):
         '''
         Calculates the percent dissimilarity between two sequences by dividing the number of mismatches 
         by the total number of bases.
@@ -314,12 +314,13 @@ class Phylogeny(Phylogeny_Tree):
         return distance
 
     # ----------------------------------------------------------------------------------------------------------
-    def join_neighbor(self, node):
+    def join_neighbor(self, node:int):
         '''
         Joins neighboring sequences based on evolutionary distance. Updates a cached distance matrix and creates 
         a branch between the most related taxa. Used as a helper function for neighbor_joining.
 
-        Parameter(s): None
+        Parameter(s):
+            node (int): a numberical label for marking taxa position
 
         Output(s): 
             None, manipulates the class variables nmatrix, nheader, and edges.
@@ -378,7 +379,7 @@ class Phylogeny(Phylogeny_Tree):
         node = len(self.header) + 1             # Joining node label
 
         while(self.nmatrix.shape[0] > 3):       # Iterate thru taxa until there are only two nodes left
-            self.join_neighbor(node)     # Join a neighboring taxa
+            self.join_neighbor(node)            # Join a neighboring taxa
             node += 1                           # Updating new node label
 
         d_vw = self.get_distance(0, 1)          # Distance from v to w
