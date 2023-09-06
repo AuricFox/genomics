@@ -116,7 +116,6 @@ def sequence_alingment():
         match_point = request.form.get('match_point', type=int)
         match_penalty = request.form.get('match_penalty', type=int)
         gap_penalty = request.form.get('gap_penalty', type=int)
-        ignore_gaps = True if request.form.get('ignore_gaps', type=str) is not None else False
 
         if match_point < 1:
             flash('Match Point Must Be Greater Than Zero!', 'error')
@@ -130,7 +129,16 @@ def sequence_alingment():
             flash('Gap Penalty Must Be Less Than Zero!', 'error')
             return redirect(request.referrer)
         
+        align_type = request.form.get('align_type', type=str)
         file_type = request.form.get('file_type', type=str)
+
+        if align_type == "global":
+            ignore_gaps = False
+        elif align_type == "local":
+            ignore_gaps = True
+        else:
+            flash(f'Alignment must be global or local not {align_type}', 'error')
+            return redirect(request.referrer)
 
         # Files that contain the sequences being aligned
         file1 = request.files['file1']

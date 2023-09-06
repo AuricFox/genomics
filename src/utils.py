@@ -183,7 +183,7 @@ def create_zip(files:List[str], zipname:str='./temp/output.zip'):
         return file_path
     
     except Exception as e:
-        logging.error(f"Failed to zip files: {files}: {str(e)}")
+        logging.error(f"Failed to zip {files}: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def remove_file(filename:str):
@@ -200,10 +200,10 @@ def remove_file(filename:str):
         path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file is saved
         file_path = os.path.join(path, filename)                    # Creating saved file path
         os.remove(file_path)                                        # File is no longer needed
-        logging.info(f"Successfully removed file: {file_path}")
+        logging.info(f"Successfully removed {file_path}")
 
     except OSError as e:
-        logging.error(f'Error while removing file {filename}: {str(e)}')
+        logging.error(f'Error while removing {filename}: {str(e)}')
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def remove_files(files:List[str]):
@@ -221,10 +221,10 @@ def remove_files(files:List[str]):
         try:
             file_path = os.path.join(PATH, file)                # Creating saved file path
             os.remove(file_path)                                # File is no longer needed
-            logging.info(f"Successfully removed file: {file_path}")
+            logging.info(f"Successfully removed {file_path}")
 
         except OSError as e:
-            logging.error(f'Error while removing file {file}: {str(e)}')
+            logging.error(f'Error while removing {file}: {str(e)}')
 
 # ========================================================================================================================================
 # Function(s) used for creating txt, csv, and Json file
@@ -251,11 +251,15 @@ def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
             for key,value in data.items():
                 file.write(f'{key}\t{value}\n')
 
-        logging.info(f"Successfully saved data to txt file: {file_path}")
+        logging.info(f"Successfully saved data to {file_path}")
         return file_path
     
+    except FileNotFoundError as e:
+            logger.error(f"{filename} not found when saving data!")
+    except PermissionError as e:
+        logger.error(f"Permission error when saving data to {filename}!")
     except Exception as e:
-        logging.error(f"Failed to save data to txt file: {file_path}: {str(e)}")
+        logging.error(f"Failed to save data to {file_path}: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
@@ -283,11 +287,15 @@ def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
             for key,value in data.items():
                 cfile.writerow([key, value])
 
-        logging.info(f"Successfully saved data to csv file: {file_path}")
+        logging.info(f"Successfully saved data to {file_path}")
         return file_path
     
+    except FileNotFoundError as e:
+            logger.error(f"{filename} not found when saving data!")
+    except PermissionError as e:
+        logger.error(f"Permission error when saving data to {filename}!")
     except Exception as e:
-        logging.error(f"Failed to save data to csv file: {file_path}: {str(e)}")
+        logging.error(f"Failed to save data to {file_path}: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def make_json(data:dict, filename:str='./temp/output.json'):
@@ -307,11 +315,15 @@ def make_json(data:dict, filename:str='./temp/output.json'):
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=4)
 
-        logging.info(f"Successfully saved data to JSON file: {file_path}")
+        logging.info(f"Successfully saved data to {file_path}")
         return file_path
     
+    except FileNotFoundError as e:
+            logger.error(f"{filename} not found when saving data!")
+    except PermissionError as e:
+        logger.error(f"Permission error when saving data to {filename}!")
     except Exception as e:
-        logging.error(f"Failed to save data to JSON file: {file_path}: {str(e)}")
+        logging.error(f"Failed to save data to {file_path}: {str(e)}")
 
 
 # ========================================================================================================================================
@@ -342,11 +354,15 @@ def runtime_csv(data, header:List[str]=[], filename:str='./temp/runtime.csv'):
 
             cfile.writerows(data)                           # Wrights codon or amino acid data to csv
 
-        logger.info(f"Successfully saved runtime data to csv file: {file_path}")
+        logger.info(f"Successfully saved runtime data to {file_path}")
         return file_path
     
+    except FileNotFoundError as e:
+            logger.error(f"{filename} not found when saving data!")
+    except PermissionError as e:
+        logger.error(f"Permission error when saving data to {filename}!")
     except Exception as e:
-        logging.error(f"Failed to save runtime data to csv file: {file_path}: {str(e)}")
+        logging.error(f"Failed to save runtime data to {file_path}: {str(e)}")
 
 # ========================================================================================================================================
 # Error Handling
