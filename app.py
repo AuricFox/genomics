@@ -77,8 +77,8 @@ def sequence_analysis():
             flash(f'{file.filename} is an Invalid File or FileType', 'error')
             return redirect(request.referrer)
 
-        data = bio.get_sequence_data(                   # Path of zip file
-            file=file.filename, 
+        data = bio.get_sequence_data(
+            file=file_path, 
             codon=codon, 
             amino=amino, 
             kmer=kmer, 
@@ -317,7 +317,7 @@ def sequence_assembly():
         ref_path = None
 
         # User wants an alignment check
-        if ref_file is not None:
+        if ref_file:
             ref_path = utils.create_file(ref_file)
             files.append(ref_path)
 

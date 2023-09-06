@@ -78,7 +78,7 @@ class De_bruijn:
 
         # End exceeds sequence list, change it to list length
         if(end > len(self.sequences) or end == -1):
-            logger.warning(f"The ending index exceeds the length of the sequence: {len(self.sequence)}, end: {end}")
+            logger.warning(f"The ending index exceeds the length of the sequence: {len(self.sequences)}, end: {end}")
             end = len(self.sequences)
 
         # Cannot exceed bounds of the list self.sequences
@@ -205,7 +205,6 @@ class De_bruijn:
         while len(self.contigs) != num_edges:
 
             if current_node not in copy_graph:
-                print(f"Node not found: {current_node}")
                 current_node = cycle[-1]
                 cycle.pop()
                 continue
@@ -260,8 +259,6 @@ class De_bruijn:
             logger.info(f"Writing de Bruijn edges to: {filename}")
 
             with open(filename, 'w') as f:
-                print("Creating Edge File: ", filename)
-
                 for edge in self.edges:
                     x1, x2 = edge
                     f.write(f"{x1}->{x2}\n")
@@ -292,8 +289,6 @@ class De_bruijn:
 
             # Write the directed graph data to the file
             with open(filename, "w") as f:
-                print("Creating Directed Graph File: ", filename)
-
                 for node, destinations in self.dir_graph.items():
                     f.write(node + ' -> ' + ','.join(destinations) + '\n')
 
