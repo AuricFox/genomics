@@ -64,7 +64,7 @@ class De_bruijn:
         self.de_bruijn_graph()
 
     # ----------------------------------------------------------------------------------------------------------
-    def de_bruijn_graph(self, start:int=0, end:int=-1, cycle:bool=True):
+    def de_bruijn_graph(self, start:int=0, end:int=-1, cycle:bool=False):
         '''
         Gets the k-mers and edges from a set number of sequence reads
         
@@ -94,7 +94,7 @@ class De_bruijn:
         self.get_assembled_str()
 
     # ----------------------------------------------------------------------------------------------------------
-    def get_kmers(self, sequences:List[str], cycle=True):
+    def get_kmers(self, sequences:List[str], cycle=False):
         '''
         Builds a list of all kmers (sub-strings) in the provided sequences
 
@@ -221,7 +221,9 @@ class De_bruijn:
 
             # Current node has no out going edges and is empty
             elif copy_graph[current_node] == []:
-                self.contigs.insert(0, current_node)
+                # Append the kmer to the contig list
+                self.contigs += [current_node]
+                
                 if not cycle:
                     break
                 else:
@@ -470,8 +472,16 @@ def main():
     #graph = De_bruijn(sequences=data[0], header=['Testing'], k=11)
     #print(graph.final_sequence)
 
-    word = 'pneumonoultramicroscopicsilicovolcanoconiosis'
-    word_fragments = [
+    word1 = 'pneumonoultramicroscopicsilicovolcanoconiosis'
+    '''
+    pneum
+     neumo
+      eumon
+       umono
+        ...
+         iosis
+    '''
+    word1_fragments = [
     "pneumo", "onoulu", "ultram", "micros", "scopic",
     "csilic", "covolc", "canoco", "oniosi", "pneumo",
     "onoulu", "ultram", "micros", "scopic", "csilic",
@@ -480,7 +490,9 @@ def main():
     "canoco", "oniosi", "pneumo", "onoulu", "ultram"
     ]
 
-    word_graph = De_bruijn(sequences=[word], header=['Testing Word'], k=6)
+    word2 = 'hello word'
+
+    word_graph = De_bruijn(sequences=[word1], header=['Testing Word'], k=7)
     print(word_graph.contigs)
     print(word_graph.final_sequence)
 
