@@ -32,7 +32,7 @@ File(s):
 '''
 
 class De_bruijn:
-    def __init__(self, sequences:List[str]=[], header:List[str]=[], k:int=3, cut:int=1):
+    def __init__(self, sequences:List[str]=[], header:List[str]=[], k:int=3, cut:int=1, cycle:bool=False):
         '''
         Initializes the de Bruijn graph
         
@@ -61,7 +61,7 @@ class De_bruijn:
         self.contigs = []           # Stores the ordered sequence of contigs for assembly
         self.final_sequence = ''    # The final assembled sequence
 
-        self.de_bruijn_graph()
+        self.de_bruijn_graph(cycle=cycle)
 
     # ----------------------------------------------------------------------------------------------------------
     def de_bruijn_graph(self, start:int=0, end:int=-1, cycle:bool=False):
@@ -366,17 +366,17 @@ class De_bruijn:
         files = []
 
         # Write the graph edges to a file
-        if(edge_file is not None): 
+        if(edge_file): 
             file = self.create_edges_file(filename=edge_file)
             files.append(file)
 
         # Write the directed graph edges to a file
-        if(dir_graph_file is not None): 
+        if(dir_graph_file): 
             file = self.create_directed_graph_file(filename=dir_graph_file)
             files.append(file)
 
         # Save the plotted graph figure
-        if(plot_file is not None): 
+        if(plot_file): 
             file = self.plot_graph(show_label=True, filename=plot_file)
             files.append(file)
 
@@ -408,6 +408,24 @@ class De_bruijn:
         file = a.plot_compare(filename=filename)
 
         return file
+    
+    # ----------------------------------------------------------------------------------------------------------
+    def __str__(self):
+        '''
+        Constructs a info string that emables the user to print the class attributes.
+
+        Parameter(s): None
+
+        Output(s):
+            A string with all the classes atributes (k-mers, edges, directed graph, contigs, final sequence) and their counts
+        '''
+        return (
+            f"K-mers ({len(self.kmers)}):\n{self.kmers}\n\n"
+            f"Edges ({len(self.edges)}):\n{self.edges}\n\n"
+            f"Directed Graph ({len(self.dir_graph)}):\n{self.dir_graph}\n\n"
+            f"Contigs ({len(self.contigs)}):\n{self.contigs}\n\n"
+            f"Final Sequence:\n{self.final_sequence}"
+            )
 
 # ==============================================================================================================
 def loop_kmer(data, k_i:int=3, k_f:int=3, l_i:int=0, l_f:int=2, align:str=None, record_runtime:bool=False, get_files:bool=False):
@@ -493,8 +511,7 @@ def main():
     word2 = 'hello word'
 
     word_graph = De_bruijn(sequences=[word1], header=['Testing Word'], k=7)
-    print(word_graph.contigs)
-    print(word_graph.final_sequence)
+    print(word_graph)
 
 if __name__ == "__main__":
     main()
