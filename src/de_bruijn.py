@@ -148,6 +148,8 @@ class De_bruijn:
             else:
                 kmer_suffixes[suffix] = [prefix]
 
+        print(f"Kmer Suffixes:\n{kmer_suffixes}")
+
         # Loop thru all the k-mers based on their prefix
         for kmer in self.kmers:
             prefix = kmer[:-self.cut]
@@ -193,8 +195,11 @@ class De_bruijn:
         values = [val for val_list in directed_graph.values() for val in val_list]
         num_edges = len(values) + 1
 
+        #print(f"Values ({len(values)}):\n{values}\n")
+
         # Degree key: [incoming nodes, outgoing nodes, track processed node], not currently used
         degrees = {key: [values.count(key), len(directed_graph[key]), 0] for key in directed_graph.keys()}
+        #print(f"Degrees ({len(degrees)}):\n{degrees}\n")
 
         cycle = []
 
@@ -204,13 +209,14 @@ class De_bruijn:
         # Run until all the edges have been accounted for
         while len(self.contigs) != num_edges:
 
+            # In-coming node has no connections
             if current_node not in directed_graph:
                 current_node = cycle[-1]
                 cycle.pop()
                 continue
 
             # Current node has out going edges and is not empty
-            if directed_graph[current_node] != []:
+            if directed_graph[current_node]:
                 cycle.append(current_node)
                 next_possibles = directed_graph[current_node]
 
@@ -222,7 +228,7 @@ class De_bruijn:
             # Current node has no out going edges and is empty
             elif directed_graph[current_node] == []:
                 # Append the kmer to the contig list
-                self.contigs += [current_node]
+                self.contigs.append(current_node)
                 
                 if not cycle:
                     break
@@ -508,9 +514,9 @@ def main():
     "canoco", "oniosi", "pneumo", "onoulu", "ultram"
     ]
 
-    word2 = 'hello word'
+    word2 = 'hello world'
 
-    word_graph = De_bruijn(sequences=[word1], header=['Testing Word'], k=7)
+    word_graph = De_bruijn(sequences=word1_fragments, header=['Testing Word'], k=5, cycle=False)
     print(word_graph)
 
 if __name__ == "__main__":
