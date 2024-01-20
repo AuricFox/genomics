@@ -136,7 +136,7 @@ class De_bruijn:
         Output(s): None
         '''
 
-        kmer_suffixes = {}                  # Dictionary to store kmers with the same suffix
+        kmer_suffixes = {}                          # Dictionary to store kmers with the same suffix
 
         # Group k-mers based on their suffix
         for kmer in self.kmers:
@@ -188,39 +188,39 @@ class De_bruijn:
             An ordered list of edges (str) ready to be assembled into a complete sequence
         '''
         
-        copy_graph = copy.deepcopy(self.dir_graph)
+        directed_graph = copy.deepcopy(self.dir_graph)
 
-        num_edges = 1
-        values = [val for val_list in copy_graph.values() for val in val_list]
-        num_edges += len(values)
+        values = [val for val_list in directed_graph.values() for val in val_list]
+        num_edges = len(values) + 1
 
-        degrees = {key: [values.count(key), len(copy_graph[key]), 0] for key in copy_graph.keys()}
+        # Degree key: [incoming nodes, outgoing nodes, track processed node], not currently used
+        degrees = {key: [values.count(key), len(directed_graph[key]), 0] for key in directed_graph.keys()}
 
         cycle = []
 
         # Randomly select a starting node to iterate from
-        current_node = random.choice([key for key in copy_graph.keys()])
+        current_node = random.choice([key for key in directed_graph.keys()])
 
         # Run until all the edges have been accounted for
         while len(self.contigs) != num_edges:
 
-            if current_node not in copy_graph:
+            if current_node not in directed_graph:
                 current_node = cycle[-1]
                 cycle.pop()
                 continue
 
             # Current node has out going edges and is not empty
-            if copy_graph[current_node] != []:
+            if directed_graph[current_node] != []:
                 cycle.append(current_node)
-                next_possibles = copy_graph[current_node]
+                next_possibles = directed_graph[current_node]
 
                 # Randomly select a new node to iterate from
                 new_cn = random.choice(next_possibles)
-                copy_graph[current_node].remove(new_cn)
+                directed_graph[current_node].remove(new_cn)
                 current_node = new_cn
 
             # Current node has no out going edges and is empty
-            elif copy_graph[current_node] == []:
+            elif directed_graph[current_node] == []:
                 # Append the kmer to the contig list
                 self.contigs += [current_node]
                 
