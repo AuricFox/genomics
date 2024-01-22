@@ -2,7 +2,9 @@
 
 Bioinformatics is an interdisciplinary field that combines biology, computer science, and mathematics to analyze and interpret biological data, particularly from large-scale genomic and molecular studies. It involves the use of computational tools and techniques to understand biological processes, genetic variations, and the relationships between genes, proteins, and other biomolecules.
 
-## Sequence (Codon Counter)
+## Features
+
+### Sequence (Codon Counter)
 
 Analizes the number of codons (3-mers), amino acids, or specified k-mers within a genetic sequence. Takes in a fna or fastq file containing genetic sequences and analizes the data within the file. The user can specify which type they want counted and/or the k number for k-mers (3-mer, 4-mer, etc.). Furthermore, the user can request certain file types to be returned (txt, csv, or json).
 
@@ -14,7 +16,7 @@ kmer_count.(txt or csv)
 sequenece_count.json
 ```
 
-## Sequence Alignment
+### Sequence Alignment
 
 Performs an allignment of two sequences to see how they compare. Takes in two fna or fastq files containing genetic sequences and aligns them using the Needleman-Wunsch algorithm. The user can specify whether they want global alignment (count end gaps) or loacl alignment (ignore end gaps). The user can also request certain file types to be returned (txt, csv, or json).
 
@@ -23,7 +25,7 @@ File(s) Returned:
 alignment.(txt, csv, json)
 ```
 
-## Sequence Variance
+### Sequence Variance
 
 Identifies variable regions in amplicon sequences, pieces of DNA/RNA that is the source of amplification or replication events. Takes in a fna or fastq file containing genetic sequences and plots the variance regions. The user can also request certain image file types to be returned (pdf, png, or jpg).
 
@@ -33,7 +35,7 @@ plot.(pdf, png, or jpeg)
 v_regions_plot.(pdf, png, or jpeg)
 ```
 
-## Sequence Assembly
+### Sequence Assembly
 
 Assembles sequence fragments into a complete genome. Takes in a fna or fastq file containing genetic fragments (reads) and assembles them using a de Bruijn graph and eulerian cycle algorithm. Users can specify the k-mer size and number of reads to assemble at a time.
 
@@ -58,7 +60,7 @@ alignment_plot.pdf
 sequence_alignment.txt
 ```
 
-## Phylogeny
+### Phylogeny
 
 Construct a phylogeny tree from a series of genetic sequences. Takes in a fna or fastq file containing genetic sequences and implements the Nei-Saitou neighbor-joining algorithm for phylogeny construction. The final results are then returned.
 
@@ -69,38 +71,44 @@ genetic-distances.txt
 tree.pdf
 ```
 
-# Server-side
-## Server Setup
+## Getting Started
 
-This server is run using the FLASK framework used in Python, But an envirnment must first be setup.
+To get started with Genomics, follow these steps:
 
-STEP 1: cd into working directory that contains your project  
-STEP 2: Install env module: `pip install virtualenv`  
-STEP 3: Create virtual environment: `virtualenv env`  
-STEP 4: Activate env:  
-```
-C: .\env\Scripts\activate       # Windows
-C: source env/bin/activate      # Mac
-```  
+1. **Clone the Repository:**
+    ```
+    git clone https://github.com/AuricFox/genomics.git
+    ```
 
-STEP 5: Install necessary libraries:  
-```
-(env) pip install flask
-(env) pip install numpy
-...
-```  
+2. **Navigate to the Project Directory:**
+    ```
+    cd genomics
+    ```
 
-## Running Server
+3. **Setup Environment:**
+    ```
+    pip install virtualenv  
+    virtualenv env
 
-This is a development server so everything will be running on localhost (possibly on local network).
+    .\env\Scripts\activate      # Windows
+    source env/bin/activate     # Mac OS
+    ```
 
-The env needs to be activated to run:  
-```
-C: .\env\Scripts\activate       # Windows
-C: source env/bin/activate      # Mac
-```
+4. **Install Dependencies:**
+    ```
+    (env) pip install flask
+    (env) pip install numpy
+    (env) pip install networkx
+    (env) pip install matplotlib
+    (env) pip install typing
+    (env) pip install Bio
+    (env) pip install logging
+    (env) pip install minetypes
+    ```
 
-Execute server program: `(env) python server.py`  
-Deactivate Environment: `(env) deactivate`  
+5. **Run Server:**
+    ```
+    (env) python app.py
+    ```
 
-NOTE: Restart the server if any changes are made to any of the files.
+    The server will start running, and you can access the application by navigating to `http://localhost:5000` in your web browser.
