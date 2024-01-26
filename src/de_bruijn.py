@@ -7,7 +7,7 @@ from typing import List
 import matplotlib, math, copy, random, time, utils
 matplotlib.use('agg')
 
-logger = utils.logger
+LOGGER = utils.LOGGER
 
 
 '''
@@ -47,7 +47,7 @@ class De_bruijn:
         '''
         
         if cut > k:
-            logger.error(f"The prefix/suffix size cannot exceed the size of the k-mer: Cut={cut}, K={k}")
+            LOGGER.error(f"The prefix/suffix size cannot exceed the size of the k-mer: Cut={cut}, K={k}")
             raise utils.InvalidInput(f"The prefix/suffix size cannot exceed the size of the k-mer: Cut={cut}, K={k}")
         
         self.header = header
@@ -78,12 +78,12 @@ class De_bruijn:
 
         # End exceeds sequence list, change it to list length
         if(end > len(self.sequences) or end == -1):
-            logger.warning(f"The ending index exceeds the length of the sequence: {len(self.sequences)}, end: {end}")
+            LOGGER.warning(f"The ending index exceeds the length of the sequence: {len(self.sequences)}, end: {end}")
             end = len(self.sequences)
 
         # Cannot exceed bounds of the list self.sequences
         if(start < 0 or start > end or start == end):
-            logger.error(f"Invalid Input: {start} is not less than {end} or greater than 0!")
+            LOGGER.error(f"Invalid Input: {start} is not less than {end} or greater than 0!")
             raise utils.InvalidInput(f"Invalid Input: {start} is not less than {end} or greater than 0!")
 
         # Get kmers from this list of sequences
@@ -264,7 +264,7 @@ class De_bruijn:
         '''
 
         try:
-            logger.info(f"Writing de Bruijn edges to: {filename}")
+            LOGGER.info(f"Writing de Bruijn edges to: {filename}")
 
             with open(filename, 'w') as f:
                 for edge in self.edges:
@@ -274,11 +274,11 @@ class De_bruijn:
             return filename
         
         except FileNotFoundError as e:
-            logger.error(f"File not found error when writing de Bruijn edges to {filename}: {str(e)}")
+            LOGGER.error(f"File not found error when writing de Bruijn edges to {filename}: {str(e)}")
         except PermissionError as e:
-            logger.error(f"Permission error when writing de Bruijn edges to {filename}: {str(e)}")
+            LOGGER.error(f"Permission error when writing de Bruijn edges to {filename}: {str(e)}")
         except Exception as e:
-            logger.error(f"An error occurred when writing de Bruijn edges to {filename}: {str(e)}")
+            LOGGER.error(f"An error occurred when writing de Bruijn edges to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def create_directed_graph_file(self, filename='./temp/directed_graph.txt'):
@@ -293,7 +293,7 @@ class De_bruijn:
         '''
 
         try:
-            logger.info(f"Writing de Bruijn directed edges to: {filename}")
+            LOGGER.info(f"Writing de Bruijn directed edges to: {filename}")
 
             # Write the directed graph data to the file
             with open(filename, "w") as f:
@@ -303,11 +303,11 @@ class De_bruijn:
             return filename
         
         except FileNotFoundError as e:
-            logger.error(f"File not found error when writing de Bruijn directed edges to {filename}: {str(e)}")
+            LOGGER.error(f"File not found error when writing de Bruijn directed edges to {filename}: {str(e)}")
         except PermissionError as e:
-            logger.error(f"Permission error when writing de Bruijn directed edges to {filename}: {str(e)}")
+            LOGGER.error(f"Permission error when writing de Bruijn directed edges to {filename}: {str(e)}")
         except Exception as e:
-            logger.error(f"An error occured when writing de Bruijn directed edges to {filename}: {str(e)}")
+            LOGGER.error(f"An error occured when writing de Bruijn directed edges to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def plot_graph(self, show_label:bool=False, filename:str='./temp/deBruijn.png'):
@@ -323,7 +323,7 @@ class De_bruijn:
         '''
         
         try:
-            logger.info(f"Saving de Bruijn garph figure to: {filename}")
+            LOGGER.info(f"Saving de Bruijn garph figure to: {filename}")
 
             plt.clf()
             fig = nx.DiGraph()                                  # Initialize weighted graph
@@ -348,11 +348,11 @@ class De_bruijn:
             return filename
         
         except FileNotFoundError as e:
-            logger.error(f"File not found error when saving de Bruijn graph figure to {filename}: {str(e)}")
+            LOGGER.error(f"File not found error when saving de Bruijn graph figure to {filename}: {str(e)}")
         except PermissionError as e:
-            logger.error(f"Permission error when saving de Bruijn graph figure to {filename}: {str(e)}")
+            LOGGER.error(f"Permission error when saving de Bruijn graph figure to {filename}: {str(e)}")
         except Exception as e:
-            logger.error(f"An error occurred when saving de Bruijn graph figure to {filename}: {str(e)}")
+            LOGGER.error(f"An error occurred when saving de Bruijn graph figure to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def make_docs(self, edge_file:str=None, dir_graph_file:str=None, plot_file:str=None):

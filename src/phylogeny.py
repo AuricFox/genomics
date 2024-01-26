@@ -23,7 +23,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 matplotlib.use('agg')
-logger = utils.logger
+LOGGER = utils.LOGGER
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -91,7 +91,7 @@ class Phylogeny_Tree:
         '''
 
         try:
-            logger.info(f"Writing phylogeny edges to: {filename}")
+            LOGGER.info(f"Writing phylogeny edges to: {filename}")
 
             def preorder_traversal(parent):
                 result = []
@@ -117,11 +117,11 @@ class Phylogeny_Tree:
             return filename
         
         except FileNotFoundError as e:
-            logger.error(f"File not found error when writing phylogeny edges to {filename}: {str(e)}")
+            LOGGER.error(f"File not found error when writing phylogeny edges to {filename}: {str(e)}")
         except PermissionError as e:
-            logger.error(f"Permission error when writing phylogeny edges to {filename}: {str(e)}")
+            LOGGER.error(f"Permission error when writing phylogeny edges to {filename}: {str(e)}")
         except Exception as e:
-            logger.error(f"An unexpected error occurred when writing phylogeny edges to {filename}: {str(e)}")
+            LOGGER.error(f"An unexpected error occurred when writing phylogeny edges to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def plot_ptree(self, filename:str="./temp/tree.pdf"):
@@ -136,7 +136,7 @@ class Phylogeny_Tree:
         '''
 
         try:
-            logger.info(f"Saving plotted phylogeny tree to: {filename}")
+            LOGGER.info(f"Saving plotted phylogeny tree to: {filename}")
 
             tree = Phylo.read(StringIO(self.tree), "newick")
 
@@ -149,11 +149,11 @@ class Phylogeny_Tree:
             return filename
         
         except FileNotFoundError as e:
-            logger.error(f"File not found error when saving phylogeny tree figure to {filename}: {str(e)}")
+            LOGGER.error(f"File not found error when saving phylogeny tree figure to {filename}: {str(e)}")
         except PermissionError as e:
-            logger.error(f"Permission error when saving phylogeny tree figure to {filename}: {str(e)}")
+            LOGGER.error(f"Permission error when saving phylogeny tree figure to {filename}: {str(e)}")
         except Exception as e:
-            logger.error(f"An unexpected error occurred when saving phylogeny tree figure to {filename}: {str(e)}")
+            LOGGER.error(f"An unexpected error occurred when saving phylogeny tree figure to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def __str__(self):
@@ -403,7 +403,7 @@ class Phylogeny(Phylogeny_Tree):
         '''
 
         try:
-            logger.info(f"Writing phylogeny distance matrix to: {filename}")
+            LOGGER.info(f"Writing phylogeny distance matrix to: {filename}")
 
             if not self.header:
                 raise ValueError("Header is not defined.")
@@ -421,11 +421,11 @@ class Phylogeny(Phylogeny_Tree):
             return filename
         
         except FileNotFoundError as e:
-            logger.error(f"File not found error when writing phylogeny distance matrix to {filename}: {str(e)}")
+            LOGGER.error(f"File not found error when writing phylogeny distance matrix to {filename}: {str(e)}")
         except PermissionError as e:
-            logger.error(f"Permission error when writing phylogeny distance matrix to {filename}: {str(e)}")
+            LOGGER.error(f"Permission error when writing phylogeny distance matrix to {filename}: {str(e)}")
         except Exception as e:
-            logger.error(f"An unexpected error occurred when writing phylogeny distance matrix to {filename}: {str(e)}")
+            LOGGER.error(f"An unexpected error occurred when writing phylogeny distance matrix to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
     def get_files(self, 

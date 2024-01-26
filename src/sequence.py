@@ -1,4 +1,7 @@
+import utils
 from typing import List
+
+LOGGER = utils.LOGGER
 
 # ==========================================================================================================================
 # Lookup Table for codon to amino acids and amino acids to letters
@@ -61,11 +64,11 @@ class Codon:
         '''
 
         if (len(codon) != 3):               # String can only have 3 bases
-            print("ERROR: CODON HAS INCORRECT LENGTH!")
+            LOGGER.error(f"ERROR: {codon} HAS INCORRECT LENGTH!")
             return
         
         if codon not in self.codon:         # Bases can only be A C G or T
-            print("ERROR: NOT A CODON!")
+            LOGGER.error(f"ERROR: {codon} IS NOT A CODON!")
             return
 
         self.codon[codon] += 1              # Incriments the codon count
@@ -194,11 +197,11 @@ class Amino_Acid:
         '''
 
         if (len(codon) != 3):                       # String can only have 3 bases
-            print("ERROR: CODON HAS INCORRECT LENGTH!")
+            LOGGER.error(f"ERROR: {codon} HAS INCORRECT LENGTH!")
             return
         
         if codon not in c_to_a:                     # Bases can only be A C G or T
-            print("ERROR: NOT A CODON")
+            LOGGER.error(f"ERROR: {codon} is NOT A CODON")
             return
 
         amino_acid = c_to_a[codon]
@@ -357,12 +360,12 @@ class Kmer:
         '''
 
         if(len(kmer) != self.k):                        # K-mer must have the same length k
-            print("ERROR: K-mer has incorrect length!")
+            LOGGER.error(f"ERROR: {kmer} has incorrect length!")
             return
         
         bases = ['A', 'C', 'G', 'T']
         if not all(base in bases for base in kmer):    # Perform sanitation check
-            print("ERROR: BASES CAN ONLY BE A, C, G, or T!", kmer)
+            LOGGER.error(f"ERROR: {kmer} HAS BASES THAT ARE NOT A, C, G, or T!")
             return
 
         if kmer in self.kmers:                          # K-mer has already been added

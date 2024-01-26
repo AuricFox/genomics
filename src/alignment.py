@@ -3,7 +3,7 @@ import matplotlib, utils
 import matplotlib.pyplot as plt
 
 matplotlib.use('agg')
-logger = utils.logger
+LOGGER = utils.LOGGER
 
 '''
    REFERENCE SEQUENCE
@@ -315,7 +315,7 @@ class Alignment:
 
         try:
             with open(filename, 'w') as f:
-                logger.info(f"Writting alignment data to: {filename}")
+                LOGGER.info(f"Writting alignment data to: {filename}")
 
                 f.write(f"{self.results['score']}\n"
                         f"{self.results['reference']}\n"
@@ -325,11 +325,11 @@ class Alignment:
             return filename
         
         except FileNotFoundError as e:
-            logger.error(f"File not found error when writing alignment data to {filename}: {str(e)}")
+            LOGGER.error(f"File not found error when writing alignment data to {filename}: {str(e)}")
         except PermissionError as e:
-            logger.error(f"Permission error when writing alignment data to {filename}: {str(e)}")
+            LOGGER.error(f"Permission error when writing alignment data to {filename}: {str(e)}")
         except Exception as e:
-            logger.error(f"An unexpected error occurred when writing alignment data to {filename}: {str(e)}")
+            LOGGER.error(f"An unexpected error occurred when writing alignment data to {filename}: {str(e)}")
            
     # ----------------------------------------------------------------------------------------------------------------------
     def plot_compare(self, filename:str='./temp/alignment_plot.jpg'):
@@ -345,7 +345,7 @@ class Alignment:
         '''
         
         try:
-            logger.info(f"Saving alignment figure to: {filename}")
+            LOGGER.info(f"Saving alignment figure to: {filename}")
 
             plt.clf()                                                           # Clear figure
             count = 0
@@ -364,11 +364,11 @@ class Alignment:
             return filename
         
         except FileNotFoundError as e:
-            logger.error(f"File not found error when saving the alignment plot to {filename}: {str(e)}")
+            LOGGER.error(f"File not found error when saving the alignment plot to {filename}: {str(e)}")
         except PermissionError as e:
-            logger.error(f"Permission error when saving the alignment plot to {filename}: {str(e)}")
+            LOGGER.error(f"Permission error when saving the alignment plot to {filename}: {str(e)}")
         except Exception as e:
-            logger.error(f"An unexpected error occurred when saving the alignment plot to {filename}: {str(e)}")
+            LOGGER.error(f"An unexpected error occurred when saving the alignment plot to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------------------
     def __str__(self):

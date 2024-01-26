@@ -4,7 +4,7 @@ from typing import List
 import matplotlib.pyplot as plt
 
 matplotlib.use('agg')
-logger = utils.logger
+LOGGER = utils.LOGGER
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -90,7 +90,7 @@ class Variance:
         '''
 
         try:
-            logger.info(f"Saving plotted variance figure to: {filename}")
+            LOGGER.info(f"Saving plotted variance figure to: {filename}")
 
             figure = plt.figure()
 
@@ -113,11 +113,11 @@ class Variance:
             return filename
         
         except FileNotFoundError as e:
-            logger.error(f"File not found error when saving variance figure to {filename}: {str(e)}")
+            LOGGER.error(f"File not found error when saving variance figure to {filename}: {str(e)}")
         except PermissionError as e:
-            logger.error(f"Permission error when saving variance figure to {filename}: {str(e)}")
+            LOGGER.error(f"Permission error when saving variance figure to {filename}: {str(e)}")
         except Exception as e:
-            logger.error(f"An unexpected error occurred when saving variance figure to {filename}: {str(e)}")
+            LOGGER.error(f"An unexpected error occurred when saving variance figure to {filename}: {str(e)}")
 
     # ==============================================================================================================
     def moving_avg(self, size:int=60):
@@ -161,7 +161,7 @@ class Variance:
         '''
 
         try:
-            logger.info(f"Saving plotted variance figure with v regions to: {filename}")
+            LOGGER.info(f"Saving plotted variance figure with v regions to: {filename}")
 
             figure = plt.figure()
 
@@ -205,11 +205,11 @@ class Variance:
             return filename
         
         except FileNotFoundError as e:
-            logger.error(f"File not found error when saving variance figure with v regions to {filename}: {str(e)}")
+            LOGGER.error(f"File not found error when saving variance figure with v regions to {filename}: {str(e)}")
         except PermissionError as e:
-            logger.error(f"Permission error when saving variance figure with v regions to {filename}: {str(e)}")
+            LOGGER.error(f"Permission error when saving variance figure with v regions to {filename}: {str(e)}")
         except Exception as e:
-            logger.error(f"An unexpected error occurred when saving variance figure with v regions to {filename}: {str(e)}")
+            LOGGER.error(f"An unexpected error occurred when saving variance figure with v regions to {filename}: {str(e)}")
 
     # ==============================================================================================================
     def save_plot(self, smooth:bool, spacing:int=30, numV:int=6, plotFile:str=None, regionFile:str=None):

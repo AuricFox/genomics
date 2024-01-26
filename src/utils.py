@@ -9,7 +9,7 @@ logging.basicConfig(
     format='%(asctime)s [%(levelname)s]: %(message)s'
 )
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 # ========================================================================================================================================
 # Functions used for processing files
@@ -83,7 +83,7 @@ def get_data(filename:str):
 
     # Handle fna files (data every two lines)
     if(mime == 'fna'):
-        logger.info(f"Reading FNA file: {filename}")
+        LOGGER.info(f"Reading FNA file: {filename}")
 
         with open(filename) as f:
             for head, seq in zip(f,f):                      # Get header and sequence info
@@ -93,7 +93,7 @@ def get_data(filename:str):
 
     # Handle fastq files (data every four lines)
     elif(mime == 'fastq'):
-        logger.info(f"Reading FASTQ file: {filename}")
+        LOGGER.info(f"Reading FASTQ file: {filename}")
 
         with open(filename) as f:
             for head, seq, p, score in zip(f,f,f,f):        # Get four line at a time (Header, sequence, plus thingy, score)
@@ -103,7 +103,7 @@ def get_data(filename:str):
 
     # Handle text files
     elif(mime == 'txt'):
-        logger.info(f"Reading text file {filename}")
+        LOGGER.info(f"Reading text file {filename}")
 
         with open(filename) as f:
             for seq in f:                                   # Read each line
@@ -112,7 +112,7 @@ def get_data(filename:str):
 
             headers.append('Assembled data')            # No headers should be in the file so add this one
     else:
-        logger.error(f"ERROR: Invalid File Type! Only fna, fastq, or txt types! The entered file type is {mime}")
+        LOGGER.error(f"ERROR: Invalid File Type! Only fna, fastq, or txt types! The entered file type is {mime}")
         return
 
     return (sequences, headers)
@@ -132,7 +132,7 @@ def merge_files(file1:str, file2:str, file3:str):
     '''
 
     try:
-        logger.info(f"Merging files: {file1}, {file2}\nMerge Destination:{file3}")
+        LOGGER.info(f"Merging files: {file1}, {file2}\nMerge Destination:{file3}")
 
         with open(file1, 'r') as f1, open(file2, 'r') as f2:
             reader1 = csv.reader(f1)
@@ -153,9 +153,9 @@ def merge_files(file1:str, file2:str, file3:str):
                 writer.writerows(data)
         
     except FileNotFoundError:
-        logger.error("File not found. Please check the input filenames.")
+        LOGGER.error("File not found. Please check the input filenames.")
     except Exception as e:
-        logger.error(f"An error occurred: {str(e)}")
+        LOGGER.error(f"An error occurred: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def create_zip(files:List[str], zipname:str='./temp/output.zip'):
@@ -179,11 +179,11 @@ def create_zip(files:List[str], zipname:str='./temp/output.zip'):
             for file in files:
                 zipf.write(file, os.path.basename(file))
 
-        logger.info(f"Zipped Files: {files}\nZipped Destination: {file_path}")
+        LOGGER.info(f"Zipped Files: {files}\nZipped Destination: {file_path}")
         return file_path
     
     except Exception as e:
-        logger.error(f"Failed to zip {files}: {str(e)}")
+        LOGGER.error(f"Failed to zip {files}: {str(e)}")
 
 # ========================================================================================================================================
 # Functions used for removing files
@@ -202,10 +202,10 @@ def remove_file(filename:str):
         path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file is saved
         file_path = os.path.join(path, filename)                    # Creating saved file path
         os.remove(file_path)                                        # File is no longer needed
-        logger.info(f"Successfully removed {file_path}")
+        LOGGER.info(f"Successfully removed {file_path}")
 
     except OSError as e:
-        logger.error(f'Error while removing {filename}: {str(e)}')
+        LOGGER.error(f'Error while removing {filename}: {str(e)}')
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def remove_files(files:List[str]):
@@ -223,10 +223,10 @@ def remove_files(files:List[str]):
         try:
             file_path = os.path.join(PATH, file)                # Creating saved file path
             os.remove(file_path)                                # File is no longer needed
-            logger.info(f"Successfully removed {file_path}")
+            LOGGER.info(f"Successfully removed {file_path}")
 
         except OSError as e:
-            logger.error(f'Error while removing {file}: {str(e)}')
+            LOGGER.error(f'Error while removing {file}: {str(e)}')
 # ----------------------------------------------------------------------------------------------------------------------------
 def clean_temp():
     '''
@@ -244,11 +244,11 @@ def clean_temp():
             os.remove(os.path.join(PATH, file))
     
     except PermissionError as e:
-        logger.error(f"Permission error when removing files: {str(e)}")
+        LOGGER.error(f"Permission error when removing files: {str(e)}")
     except OSError as e:
-        logger.error(f"An error occurred while removing files from temp folder: {str(e)}")
+        LOGGER.error(f"An error occurred while removing files from temp folder: {str(e)}")
     except Exception as e:
-        logger.error(f"An error occurred while removing files from temp folder: {str(e)}")
+        LOGGER.error(f"An error occurred while removing files from temp folder: {str(e)}")
 
 # ========================================================================================================================================
 # Function(s) used for creating txt, csv, and Json file
@@ -275,15 +275,15 @@ def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
             for key,value in data.items():
                 file.write(f'{key}\t{value}\n')
 
-        logger.info(f"Successfully saved data to {file_path}")
+        LOGGER.info(f"Successfully saved data to {file_path}")
         return file_path
     
     except FileNotFoundError as e:
-        logger.error(f"{filename} not found when saving data!")
+        LOGGER.error(f"{filename} not found when saving data!")
     except PermissionError as e:
-        logger.error(f"Permission error when saving data to {filename}!")
+        LOGGER.error(f"Permission error when saving data to {filename}!")
     except Exception as e:
-        logger.error(f"Failed to save data to {file_path}: {str(e)}")
+        LOGGER.error(f"Failed to save data to {file_path}: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
@@ -311,15 +311,15 @@ def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
             for key,value in data.items():
                 cfile.writerow([key, value])
 
-        logger.info(f"Successfully saved data to {file_path}")
+        LOGGER.info(f"Successfully saved data to {file_path}")
         return file_path
     
     except FileNotFoundError as e:
-        logger.error(f"{filename} not found when saving data!")
+        LOGGER.error(f"{filename} not found when saving data!")
     except PermissionError as e:
-        logger.error(f"Permission error when saving data to {filename}!")
+        LOGGER.error(f"Permission error when saving data to {filename}!")
     except Exception as e:
-        logger.error(f"Failed to save data to {file_path}: {str(e)}")
+        LOGGER.error(f"Failed to save data to {file_path}: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
 def make_json(data:dict, filename:str='./temp/output.json'):
@@ -339,15 +339,15 @@ def make_json(data:dict, filename:str='./temp/output.json'):
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=4)
 
-        logger.info(f"Successfully saved data to {file_path}")
+        LOGGER.info(f"Successfully saved data to {file_path}")
         return file_path
     
     except FileNotFoundError as e:
-        logger.error(f"{filename} not found when saving data!")
+        LOGGER.error(f"{filename} not found when saving data!")
     except PermissionError as e:
-        logger.error(f"Permission error when saving data to {filename}!")
+        LOGGER.error(f"Permission error when saving data to {filename}!")
     except Exception as e:
-        logger.error(f"Failed to save data to {file_path}: {str(e)}")
+        LOGGER.error(f"Failed to save data to {file_path}: {str(e)}")
 
 
 # ========================================================================================================================================
@@ -378,15 +378,15 @@ def runtime_csv(data, header:List[str]=[], filename:str='./temp/runtime.csv'):
 
             cfile.writerows(data)                           # Wrights codon or amino acid data to csv
 
-        logger.info(f"Successfully saved runtime data to {file_path}")
+        LOGGER.info(f"Successfully saved runtime data to {file_path}")
         return file_path
     
     except FileNotFoundError as e:
-        logger.error(f"{filename} not found when saving data!")
+        LOGGER.error(f"{filename} not found when saving data!")
     except PermissionError as e:
-        logger.error(f"Permission error when saving data to {filename}!")
+        LOGGER.error(f"Permission error when saving data to {filename}!")
     except Exception as e:
-        logger.error(f"Failed to save runtime data to {file_path}: {str(e)}")
+        LOGGER.error(f"Failed to save runtime data to {file_path}: {str(e)}")
 
 # ========================================================================================================================================
 # Error Handling
