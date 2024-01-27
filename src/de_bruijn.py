@@ -9,7 +9,6 @@ matplotlib.use('agg')
 
 LOGGER = utils.LOGGER
 
-
 '''
 This python script assembles genetic sequences from read fragments. The de Bruijn graph breaks up the reads into
 individual codons and edges to form a graph. Then a eulerian cycle is found.
@@ -506,12 +505,15 @@ def main():
          iosis
     '''
     word1_fragments = [
-    "pneumo", "onoulu", "ultram", "micros", "scopic",
-    "csilic", "covolc", "canoco", "oniosi", "pneumo",
-    "onoulu", "ultram", "micros", "scopic", "csilic",
-    "covolc", "canoco", "oniosi", "pneumo", "onoulu",
-    "ultram", "micros", "scopic", "csilic", "covolc",
-    "canoco", "oniosi", "pneumo", "onoulu", "ultram"
+        'pneum', 'neumo', 'eumon', 'umono', 'monou', 
+        'onoul', 'noult', 'oultr', 'ultra', 'ltram', 
+        'trami', 'ramic', 'amicr', 'micro', 'icros', 
+        'crosc', 'rosco', 'oscop', 'scopi', 'copic', 
+        'opics', 'picsi', 'icsil', 'csili', 'silic', 
+        'ilico', 'licov', 'icovo', 'covol', 'ovolc', 
+        'volca', 'olcan', 'lcano', 'canoc', 'anoco', 
+        'nocon', 'oconi', 'conio', 'onios', 'niosi', 
+        'iosis'
     ]
 
     word2 = 'hello world'
