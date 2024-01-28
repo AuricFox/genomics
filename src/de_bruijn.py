@@ -57,7 +57,6 @@ class De_bruijn:
         self.kmers = {}             # Stores all the possible k-mer combinations from the input sequences
         self.edges = set()          # Stores all the possible edges connecting the k-mers
         self.dir_graph = {}         # Stores all the directed edges from the k-mers
-        self.unassem_contigs = []   # Stores the ordered sequence of unassembled contigs
         self.assem_contigs = []     # Stores a list of assembled contigs
         self.final_sequence = ''    # The final assembled sequence
 
@@ -91,7 +90,6 @@ class De_bruijn:
         self.get_edges()
         self.get_directed_graph()
         self.get_eulerian_cycle()
-        self.assemble_contigs()
 
     # ----------------------------------------------------------------------------------------------------------
     def get_kmers(self, sequences:List[str], cycle=False):
@@ -191,13 +189,12 @@ class De_bruijn:
         '''
         
         directed_graph = copy.deepcopy(self.dir_graph)
+        num_edges = sum(len(val_list) for val_list in directed_graph.values()) + 1
 
-        values = [val for val_list in directed_graph.values() for val in val_list]
-        num_edges = len(values) + 1
-
-        # Degree key: [incoming nodes, outgoing nodes, track processed node], not currently used
-        degrees = {key: [values.count(key), len(directed_graph[key]), 0] for key in directed_graph.keys()}
-        #print(f"Degrees ({len(degrees)}):\n{degrees}\n")
+        # Degree key: [incoming nodes, outgoing nodes]
+        degrees = {key: 
+                   [sum(val == key for val_list in directed_graph.values() for val in val_list),
+                    len(directed_graph[key])] for key in directed_graph.keys()}
 
         # Create a list of nodes with no incoming edges
         starting_nodes = [key for key in degrees if degrees[key][0] == 0]
@@ -238,10 +235,10 @@ class De_bruijn:
                         cycle.pop()
             
             # Add the unassembled contigs to the list
-            self.unassem_contigs.append(contigs)
+            self.assemble_contigs(contigs)
 
     # ----------------------------------------------------------------------------------------------------------
-    def assemble_contigs(self):
+    def assemble_contigs(self, contigs):
         '''
         Joins the unassembled contigs together into a main contig string and adds it to a contig list
 
@@ -249,17 +246,14 @@ class De_bruijn:
 
         Output(s): None
         '''
+        
+        assembled_contig = contigs[0]                   # Start with first unassembled contig in the list
+        num_chars = len(assembled_contig) - self.cut
 
-        # Iterate thru each list of unassembled contigs
-        for contigs in self.unassem_contigs:
-            assembled_contig = contigs[0]                   # Start with first unassembled contig in the list
-            num_chars = len(assembled_contig) - self.cut
+        for contig in contigs[1:]:                      # Loop thru the remaining contigs
+            assembled_contig += contig[num_chars:]      # Append the last few letter(s) to the final sequence
 
-            for contig in contigs[1:]:                      # Loop thru the remaining contigs
-                
-                assembled_contig += contig[num_chars:]      # Append the last few letter(s) to the final sequence
-
-            self.assem_contigs.append(assembled_contig)
+        self.assem_contigs.append(assembled_contig)
 
     # ----------------------------------------------------------------------------------------------------------
     def create_edges_file(self, filename:str='./temp/edges.txt'):
@@ -439,7 +433,6 @@ class De_bruijn:
             f"K-mers ({len(self.kmers)}):\n{self.kmers}\n\n"
             f"Edges ({len(self.edges)}):\n{self.edges}\n\n"
             f"Directed Graph ({len(self.dir_graph)}):\n{self.dir_graph}\n\n"
-            f"Unassebled Contigs ({len(self.unassem_contigs)}):\n{self.unassem_contigs}\n\n"
             f"Assembled Contigs ({len(self.assem_contigs)}):\n{self.assem_contigs}\n\n"
             f"Final Sequence:\n{self.final_sequence}"
             )
