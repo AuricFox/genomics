@@ -243,7 +243,7 @@ class De_bruijn:
     # ----------------------------------------------------------------------------------------------------------
     def assemble_contigs(self):
         '''
-        Joins the unassembled contigs together into a main contig string
+        Joins the unassembled contigs together into a main contig string and adds it to a contig list
 
         Parameter(s): None
 
@@ -252,14 +252,14 @@ class De_bruijn:
 
         # Iterate thru each list of unassembled contigs
         for contigs in self.unassem_contigs:
-            contig_sequence = contigs[0]                    # Start with first contig in the list
-            num_chars = len(contig_sequence) - self.cut
+            assembled_contig = contigs[0]                   # Start with first unassembled contig in the list
+            num_chars = len(assembled_contig) - self.cut
 
             for contig in contigs[1:]:                      # Loop thru the remaining contigs
                 
-                contig_sequence += contig[num_chars:]   # Append the last few letter(s) to the final sequence
+                assembled_contig += contig[num_chars:]      # Append the last few letter(s) to the final sequence
 
-            self.assem_contigs.append(contig_sequence)
+            self.assem_contigs.append(assembled_contig)
 
     # ----------------------------------------------------------------------------------------------------------
     def create_edges_file(self, filename:str='./temp/edges.txt'):
