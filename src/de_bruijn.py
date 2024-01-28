@@ -57,7 +57,8 @@ class De_bruijn:
         self.kmers = {}             # Stores all the possible k-mer combinations from the input sequences
         self.edges = set()          # Stores all the possible edges connecting the k-mers
         self.dir_graph = {}         # Stores all the directed edges from the k-mers
-        self.contigs = []           # Stores the ordered sequence of contigs for assembly
+        self.unassem_contigs = []   # Stores the ordered sequence of unassembled contigs
+        self.assem_contigs = []     # Stores a list of assembled contigs
         self.final_sequence = ''    # The final assembled sequence
 
         self.de_bruijn_graph(cycle=cycle)
@@ -90,7 +91,7 @@ class De_bruijn:
         self.get_edges()
         self.get_directed_graph()
         self.get_eulerian_cycle()
-        self.get_assembled_str()
+        self.assemble_contigs()
 
     # ----------------------------------------------------------------------------------------------------------
     def get_kmers(self, sequences:List[str], cycle=False):
@@ -142,12 +143,12 @@ class De_bruijn:
             prefix = kmer[:-self.cut]              # excluding the last character
             suffix = kmer[self.cut:]               # excluding the first character
 
-            if suffix in kmer_suffixes:
-                kmer_suffixes[suffix].append(prefix)
+            if prefix in kmer_suffixes:
+                kmer_suffixes[prefix].append(suffix)
             else:
-                kmer_suffixes[suffix] = [prefix]
+                kmer_suffixes[prefix] = [suffix]
 
-        print(f"Kmer Suffixes:\n{kmer_suffixes}")
+        #print(f"Kmer Suffixes:\n{kmer_suffixes}")
 
         # Loop thru all the k-mers based on their prefix
         for kmer in self.kmers:
@@ -194,61 +195,71 @@ class De_bruijn:
         values = [val for val_list in directed_graph.values() for val in val_list]
         num_edges = len(values) + 1
 
-        #print(f"Values ({len(values)}):\n{values}\n")
-
         # Degree key: [incoming nodes, outgoing nodes, track processed node], not currently used
         degrees = {key: [values.count(key), len(directed_graph[key]), 0] for key in directed_graph.keys()}
         #print(f"Degrees ({len(degrees)}):\n{degrees}\n")
 
-        cycle = []
+        # Create a list of nodes with no incoming edges
+        starting_nodes = [key for key in degrees if degrees[key][0] == 0]
 
-        # Randomly select a starting node to iterate from
-        current_node = random.choice([key for key in directed_graph.keys()])
+        # Iterate thru all the elements with no incoming nodes
+        for current_node in starting_nodes:
+            cycle = []
+            contigs = []
 
-        # Run until all the edges have been accounted for
-        while len(self.contigs) != num_edges:
+            # Run until all the edges have been accounted for
+            while len(contigs) != num_edges:
 
-            # In-coming node has no connections
-            if current_node not in directed_graph:
-                current_node = cycle[-1]
-                cycle.pop()
-                continue
-
-            # Current node has out going edges and is not empty
-            if directed_graph[current_node]:
-                cycle.append(current_node)
-                next_possibles = directed_graph[current_node]
-
-                # Randomly select a new node to iterate from
-                new_cn = random.choice(next_possibles)
-                directed_graph[current_node].remove(new_cn)
-                current_node = new_cn
-
-            # Current node has no out going edges and is empty
-            elif directed_graph[current_node] == []:
-                # Append the kmer to the contig list
-                self.contigs.append(current_node)
-                
-                if not cycle:
-                    break
-                else:
+                # In-coming node has no connections
+                if current_node not in directed_graph:
                     current_node = cycle[-1]
                     cycle.pop()
+                    continue
+
+                # Current node has out going edges and is not empty
+                if directed_graph[current_node]:
+                    cycle.append(current_node)
+                    next_possibles = directed_graph[current_node]
+
+                    # Randomly select a new node to iterate from
+                    new_cn = random.choice(next_possibles)
+                    directed_graph[current_node].remove(new_cn)
+                    current_node = new_cn
+
+                # Current node has no out going edges and is empty
+                elif directed_graph[current_node] == []:
+                    # Append the kmer to the contig list
+                    contigs.insert(0, current_node)
+
+                    if not cycle:
+                        break
+                    else:
+                        current_node = cycle[-1]
+                        cycle.pop()
+            
+            # Add the unassembled contigs to the list
+            self.unassem_contigs.append(contigs)
 
     # ----------------------------------------------------------------------------------------------------------
-    def get_assembled_str(self):
+    def assemble_contigs(self):
         '''
-        Appends the contigs together into a final sequence string
+        Joins the unassembled contigs together into a main contig string
 
         Parameter(s): None
 
         Output(s): None
         '''
 
-        self.final_sequence = self.contigs[0]           # Start with first contig
-        for contig in self.contigs[1:]:                 # Loop thru the remaining contigs
-            num_chars = len(contig) - self.cut
-            self.final_sequence += contig[num_chars:]   # Append the last few letter(s) to the final sequence
+        # Iterate thru each list of unassembled contigs
+        for contigs in self.unassem_contigs:
+            contig_sequence = contigs[0]                    # Start with first contig in the list
+            num_chars = len(contig_sequence) - self.cut
+
+            for contig in contigs[1:]:                      # Loop thru the remaining contigs
+                
+                contig_sequence += contig[num_chars:]   # Append the last few letter(s) to the final sequence
+
+            self.assem_contigs.append(contig_sequence)
 
     # ----------------------------------------------------------------------------------------------------------
     def create_edges_file(self, filename:str='./temp/edges.txt'):
@@ -428,7 +439,8 @@ class De_bruijn:
             f"K-mers ({len(self.kmers)}):\n{self.kmers}\n\n"
             f"Edges ({len(self.edges)}):\n{self.edges}\n\n"
             f"Directed Graph ({len(self.dir_graph)}):\n{self.dir_graph}\n\n"
-            f"Contigs ({len(self.contigs)}):\n{self.contigs}\n\n"
+            f"Unassebled Contigs ({len(self.unassem_contigs)}):\n{self.unassem_contigs}\n\n"
+            f"Assembled Contigs ({len(self.assem_contigs)}):\n{self.assem_contigs}\n\n"
             f"Final Sequence:\n{self.final_sequence}"
             )
 
@@ -518,7 +530,7 @@ def main():
 
     word2 = 'hello world'
 
-    word_graph = De_bruijn(sequences=word1_fragments, header=['Testing Word'], k=5, cycle=False)
+    word_graph = De_bruijn(sequences=[word1], header=['Testing Word'], k=5, cycle=False)
     print(word_graph)
 
 if __name__ == "__main__":
