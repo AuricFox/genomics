@@ -206,9 +206,11 @@ class De_bruijn:
 
             # Run until all the edges have been accounted for
             while len(contigs) != num_edges:
-
+                print(cycle)
+                
                 # In-coming node has no connections
                 if current_node not in directed_graph:
+                    contigs.insert(0, current_node)
                     current_node = cycle[-1]
                     cycle.pop()
                     continue
@@ -523,7 +525,7 @@ def main():
 
     word2 = 'hello world'
 
-    word_graph = De_bruijn(sequences=[word1], header=['Testing Word'], k=5, cycle=False)
+    word_graph = De_bruijn(sequences=[word2], header=['Testing Word'], k=5, cycle=False)
     print(word_graph)
 
 if __name__ == "__main__":
