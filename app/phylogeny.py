@@ -12,11 +12,12 @@ Output:
 3) tree.txt: NEWICK format with all edge distances and with only tips named. For example, (A:0.1,B:0.2,(C:0.3,D:0.4):0.5)
 
 '''
-import sys, os, utils
+import sys, os
 import numpy as np
 from Bio import Phylo
 from typing import List
 from io import StringIO
+from . import utils
 np.set_printoptions(threshold=sys.maxsize, precision=10, linewidth=np.inf)
 
 import matplotlib
@@ -24,8 +25,7 @@ import matplotlib.pyplot as plt
 
 matplotlib.use('agg')
 LOGGER = utils.LOGGER
-
-PATH = os.path.dirname(os.path.abspath(__file__))
+TEMP_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../temp")
 
 # ==============================================================================================================
 # Building The Phylogeny Tree
@@ -79,12 +79,12 @@ class Phylogeny_Tree:
         self.tree = build_newick(self.edges["root"])
 
     # ----------------------------------------------------------------------------------------------------------
-    def write_edges(self, filename:str="./temp/edges.txt"):
+    def write_edges(self, filename:str='edges.txt'):
         '''
         Writes the edges of the phylogeny tree to an output file.
 
         Parameter(s):
-            filename (str): name of the file that the edges are to be written to
+            filename (str, default='edges.txt'): name of the file that the edges are to be written to
 
         Output(s):
             A file containing the edges of the phylogeny tree.
@@ -110,9 +110,10 @@ class Phylogeny_Tree:
             # Get preorder list of the edges so they can be printed
             data = preorder_traversal(self.edges["root"])
 
-            with open(filename, 'w', newline='') as file:
+            file = os.path.join(TEMP_FOLDER, filename)
+            with open(file, 'w', newline='') as f:
                 for line in data:
-                    file.write(line)
+                    f.write(line)
 
             return filename
         
@@ -124,12 +125,12 @@ class Phylogeny_Tree:
             LOGGER.error(f"An unexpected error occurred when writing phylogeny edges to {filename}: {str(e)}")
 
     # ----------------------------------------------------------------------------------------------------------
-    def plot_ptree(self, filename:str="./temp/tree.pdf"):
+    def plot_ptree(self, filename:str='tree.pdf'):
         '''
         Creates a figure of a phylogenetic tree and saves it to a file.
 
         Parameter(s):
-            filename (str): name of the file that the phylogeny tree is to be saved to
+            filename (str, default='tree.pdf'): name of the file that the phylogeny tree is to be saved to
 
         Output(s):
             A file containing a figure of the phylogeny tree.
@@ -137,12 +138,12 @@ class Phylogeny_Tree:
 
         try:
             LOGGER.info(f"Saving plotted phylogeny tree to: {filename}")
-
+            file = os.path.join(TEMP_FOLDER, filename)
             tree = Phylo.read(StringIO(self.tree), "newick")
 
             plt.figure(figsize=(10,8), dpi=100)
             Phylo.draw(tree, do_show=False)
-            plt.savefig(filename)
+            plt.savefig(file)
 
             plt.close()
 
@@ -240,7 +241,7 @@ class Phylogeny(Phylogeny_Tree):
         '''
 
         size = len(self.sequences)                                      # Size of n x n distance matrix
-        self.dmatrix = np.array([[0.0]*size for i in range(size)])      # Initialize distance matrix
+        self.dmatrix = np.array([[0.0]*size for _ in range(size)])      # Initialize distance matrix
 
         for i in range(size):                                           # Sequence 1
             for j in range(i, size):                                    # Sequence 2 (Compare)
@@ -391,15 +392,15 @@ class Phylogeny(Phylogeny_Tree):
         self.edges['root'] = node               # Track root node
 
     # ----------------------------------------------------------------------------------------------------------
-    def write_distance_matrix(self, filename:str="./temp/genetic-distances.txt"):
+    def write_distance_matrix(self, filename:str='genetic-distances.txt'):
         '''
         Writes the distance matrix to a file.
         
         Parameter(s):
-            filename (str, default=./temp/genetic-distances.txt): the file that the distance matrix will be written to
+            filename (str, default='genetic-distances.txt'): the file that the distance matrix will be written to
 
         Output(s):
-            A path to the file containing the distance matrix data.            
+            A file containing the distance matrix data.            
         '''
 
         try:
@@ -411,12 +412,13 @@ class Phylogeny(Phylogeny_Tree):
             if self.dmatrix is None:
                 raise ValueError("Distance matrix is not defined.")
 
-            with open(filename, 'w') as file:
-                file.write('\t'.join(self.header) + '\n')               # Write column names from header
+            file = os.path.join(TEMP_FOLDER, filename)
+            with open(file, 'w') as f:
+                f.write('\t'.join(self.header) + '\n')                  # Write column names from header
 
                 for x in range(len(self.header)):                       # Iterate thru rows in the distance matrix
                     s = '\t'.join([str(i) for i in self.dmatrix[x]])    # Join the row data together
-                    file.write(f"{self.header[x]}\t{s}\n")              # Write the header + data for each corresponding row
+                    f.write(f"{self.header[x]}\t{s}\n")                 # Write the header + data for each corresponding row
 
             return filename
         
@@ -429,17 +431,17 @@ class Phylogeny(Phylogeny_Tree):
 
     # ----------------------------------------------------------------------------------------------------------
     def get_files(self, 
-            matrix_file:str="./temp/genetic-distances.txt",
-            edge_file:str="./temp/edges.txt",
-            tree_file:str="./temp/tree.pdf"
+            matrix_file:str='genetic-distances.txt',
+            edge_file:str='edges.txt',
+            tree_file:str='tree.pdf'
         ):
         '''
         Get all the phylogeny files used for constructing the tree.
 
         Parameter(s):
-            matrix_file (str, default=./temp/genetic-distances.txt): file name where the distance matrix data is stored
-            edge_file (str, default=./temp/edges.txt): file name where the edge data is stored
-            tree_file (str, default=./temp/tree.pdf): file name where the plotted tree figure is stored
+            matrix_file (str, default='genetic-distances.txt'): file name where the distance matrix data is stored
+            edge_file (str, default='edges.txt'): file name where the edge data is stored
+            tree_file (str, default='tree.pdf'): file name where the plotted tree figure is stored
 
         Output(s):
             A list of files containing the distance matrix, tree edges, and plotted phylogeny tree.

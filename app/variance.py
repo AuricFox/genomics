@@ -1,12 +1,12 @@
-import os, matplotlib, utils
+import os, matplotlib
 import numpy as np
 from typing import List
+from . import utils
 import matplotlib.pyplot as plt
 
 matplotlib.use('agg')
 LOGGER = utils.LOGGER
-
-PATH = os.path.dirname(os.path.abspath(__file__))
+TEMP_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../temp")
 
 class Variance:
     def __init__(self, sequences:List[str], header:List[str]):
@@ -77,16 +77,16 @@ class Variance:
         return data
 
     # ==============================================================================================================
-    def plot_data(self, smooth:bool=True, filename:str='./temp/variance_plot.jpg'):
+    def plot_data(self, smooth:bool=True, filename:str='variance_plot.jpg'):
         '''
         Plots raw or smoothed data
 
         Parameter(s):
             smooth (bool, default=True): toggels between raw (false) and smooth (true) data for plotting
-            filename (str, default=./temp/variance_plot.jpg): path where the plotted figure is saved
+            filename (str, default='variance_plot.jpg'): file where the plotted figure is saved
         
         Output(s):
-            A plot figure of the variance data is saved to a file. Returns the file path.
+            A plot figure of the variance data is saved to a file
         '''
 
         try:
@@ -108,8 +108,9 @@ class Variance:
             plt.plot(x, y)
             plt.xlabel('Position in the 16S rRNA gene')
             plt.ylabel('Pct Conserved')
-    
-            figure.savefig(filename)
+
+            file = os.path.join(TEMP_FOLDER, filename)
+            figure.savefig(file)
             return filename
         
         except FileNotFoundError as e:
@@ -147,17 +148,17 @@ class Variance:
         return mavg
 
     # ==============================================================================================================
-    def plot_v_regions(self, spacing:int=30, numV:int=6, filename:str='./temp/variance_v_plot.jpg'):
+    def plot_v_regions(self, spacing:int=30, numV:int=6, filename:str='variance_v_plot.jpg'):
         '''
         Plots smoothed data with variance regions
         
         Parameter(s):
             spacing (int, default=30): specifies the minimum number of bases needed for a v region (peak)
             numV (int, default=6): specifies the minimum number of desired v regions (peaks)
-            filename (str, default=./temp/variance_v_plot.jpg): path where the plotted figure is saved
+            filename (str, default='variance_v_plot.jpg'): file where the plotted figure is saved
         
         Output(s):
-            A plot figure of the variance data with v regions/peaks is saved to a file. Returns the file path.
+            A plot figure of the variance data with v regions/peaks is saved to a file
         '''
 
         try:
@@ -201,7 +202,8 @@ class Variance:
             plt.ylabel('Pct Conserved')
             plt.title('Smoothed Data w/Intersection line')
 
-            figure.savefig(filename)
+            file = os.path.join(TEMP_FOLDER, filename)
+            figure.savefig(file)
             return filename
         
         except FileNotFoundError as e:
@@ -220,20 +222,20 @@ class Variance:
             smooth (bool): smooth the data if true, else plot the raw data
             spacing (int, default=30): specifies the minimum number of bases needed for a v region (peak)
             numV (int, default=6): specifies the number of desired v regions (peaks)
-            plotFile (str, default=None): path where the plotted data is saved if not None
-            regionFile (str, default=None): path where the variance region data is saved if not None
+            plotFile (str, default=None): file where the plotted data is saved if not None
+            regionFile (str, default=None): file where the variance region data is saved if not None
 
         Output(s):
             A file with the saved plot(s) if plotFile or regionFile are not None, else outputs nothing
         '''
 
-        if plotFile != None:
+        if plotFile:
             self.plot_data(
                 smooth=smooth,
                 filename=plotFile
             )
         
-        if regionFile != None:
+        if regionFile:
             self.plot_v_regions(
                 spacing=spacing, 
                 numV=numV,

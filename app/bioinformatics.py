@@ -1,16 +1,17 @@
 # GUI terminal
 # Runs main program that calls other scripts
 
-import os, utils
-import sequence as sq
-import alignment as al
-import de_bruijn as db
-import variance as vr
-import phylogeny as phy
+import os
+from . import utils
+from . import sequence as sq
+from . import alignment as al
+from . import de_bruijn as db
+from . import variance as vr
+from . import phylogeny as phy
 
 LOGGER = utils.LOGGER
-
-PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp")
+PATH = os.path.dirname(os.path.abspath(__file__))
+TEMP_FOLDER = os.path.join(PATH, "../temp")
 
 # ==============================================================================================================
 def get_sequence_data(
@@ -31,7 +32,7 @@ def get_sequence_data(
         amino (bool, default=False): count the number of amino acids in a sequence if true else don't count them
         kmer (bool, default=False): count the number of k-mers in a sequence if true else don't count them
         k (int, default=3): size of the k-mer, number of bases/characters
-        file_type (str, defualt=txt): type of file(s) to be returned in the zip file
+        file_type (str, defualt='txt'): type of file(s) to be returned in the zip file
     
     Output(s):
         Creates a zip file containing a series of files depending on file_type which contain the counts of codons, 
@@ -43,7 +44,7 @@ def get_sequence_data(
 
     try:
         LOGGER.info(f"Analyzing sequence data from: {file}")
-        sequences = utils.get_data(os.path.join(PATH, file))
+        sequences = utils.get_data(os.path.join(TEMP_FOLDER, file))
         data = {}
 
         if k < 1:
@@ -71,18 +72,18 @@ def get_sequence_data(
         # Create a text file for each sequence type
         if file_type == 'txt':
             for key,value in data.items():
-                filename = f'./temp/{key}_count.txt'
+                filename = f'{key}_count.txt'
                 files.append(utils.make_txt(data=value, header=[key, 'Count'], filename=filename))
 
         # Create a csv file for each sequence type
         elif file_type == 'csv':
             for key,value in data.items():
-                filename = f'./temp/{key}_count.csv'
+                filename = f'{key}_count.csv'
                 files.append(utils.make_csv(data=value, header=[key, 'Count'], filename=filename))
 
         # Create a json file for the sequence data
         elif file_type == 'json':
-            filename = f'./temp/sequenece_count.json'
+            filename = f'sequenece_count.json'
             files.append(utils.make_json(data=data, filename=filename))
 
         # File type is not supported and can not be written to
@@ -91,7 +92,7 @@ def get_sequence_data(
             raise utils.InvalidFile(f"Invalid File Type {file_type}")
 
         # Zipping the collection of files
-        response['zip_file'] = utils.create_zip(files=files, zipname='./temp/sequence.zip')
+        response['zip_file'] = utils.create_zip(files=files, zipname='sequence.zip')
 
     except Exception as e:
         LOGGER.error(f"An error occured in sequence analysis: {str(e)}")
@@ -123,7 +124,7 @@ def get_alignment_data(
         match_point (int, default=1): point(s) added to the score for matches in the alignment
         match_pen (int, default=-1): penalty for mismatches in the alignment
         ignore (bool, default=False): condition to ignore start and end gap penalties for local alignment
-        file_type (str, default=txt): type of file(s) to be returned in the zip file
+        file_type (str, default='txt'): type of file(s) to be returned in the zip file
     
     Output(s):
         Creates a zip file composed of a file depending on file_type which contains the alignment results of a
@@ -146,8 +147,8 @@ def get_alignment_data(
             LOGGER.error(f"The Mis-Match Penalty Must Be Less Than 0: Penalty = {match_pen}")
             raise utils.InvalidInput(f"The Mis-Match Penalty Must Be Less Than 0: Penalty = {match_pen}")
         
-        seq1 = utils.get_data(os.path.join(PATH, file1))
-        seq2 = utils.get_data(os.path.join(PATH, file2))
+        seq1 = utils.get_data(os.path.join(TEMP_FOLDER, file1))
+        seq2 = utils.get_data(os.path.join(TEMP_FOLDER, file2))
 
         data = al.Alignment(
             seq=seq1[0][0], 
@@ -160,18 +161,15 @@ def get_alignment_data(
 
         # Create a text file for each alignment type
         if file_type == 'txt':
-            filename = f'./temp/alignment.txt'
-            files.append(utils.make_txt(data=data.results, filename=filename))
+            files.append(utils.make_txt(data=data.results, filename='alignment.txt'))
 
         # Create a csv file for each alignment type
         elif file_type == 'csv':
-            filename = f'./temp/alignment.csv'
-            files.append(utils.make_csv(data=data.results, filename=filename))
+            files.append(utils.make_csv(data=data.results, filename='alignment.csv'))
 
         # Create a json file for the alignment data
         elif file_type == 'json':
-            filename = f'./temp/alignment.json'
-            files.append(utils.make_json(data=data.results, filename=filename))
+            files.append(utils.make_json(data=data.results, filename='alignment.json'))
         
         # File type is not supported and can not be written to
         else:
@@ -179,7 +177,7 @@ def get_alignment_data(
             raise utils.InvalidFile(f"{file_type} file type is not supported for sequence alignment!")
 
         # Zipping the collection of files
-        response['zip_file'] = utils.create_zip(files=files, zipname='./temp/alignment.zip')
+        response['zip_file'] = utils.create_zip(files=files, zipname='alignment.zip')
 
     except Exception as e:
         LOGGER.error(f"An error occurred in sequence alignment: {str(e)}")
@@ -209,10 +207,10 @@ def get_variance_data(
         vRegion (bool): save the plot with variance regions to a file if true
         spacing (int, default=30): specifies the minimum number of bases needed for a variance region (peak)
         numV (int, default=6): specifies the minimum number of desired variance regions (peaks)
-        file_type (str, default=txt): type of file(s) to be returned in the zip file
+        file_type (str, default='txt'): type of file(s) to be returned in the zip file
     
     Output(s):
-        zipPth (str): a path to a zip file containing the ploted data.
+        zipPth (str): a zip file containing the ploted data.
     '''
 
     response = {}
@@ -223,14 +221,14 @@ def get_variance_data(
         LOGGER.info(f"Getter variance data from: {file}")
 
         if file_type in file_types:
-            file1 = os.path.join(PATH, f'plot.{file_type}')
-            file2 = os.path.join(PATH,f'v_regions_plot.{file_type}')
+            file1 = os.path.join(TEMP_FOLDER, f'plot.{file_type}')
+            file2 = os.path.join(TEMP_FOLDER,f'v_regions_plot.{file_type}')
         # File type is not supported and can not be written to
         else:
             LOGGER.error(f"{file_type} file type is not supported for sequence variance!")
             raise utils.InvalidFile(f"{file_type} file type is not supported for sequence variance!")
 
-        seq = utils.get_data(os.path.join(PATH, file))
+        seq = utils.get_data(os.path.join(TEMP_FOLDER, file))
         data = vr.Variance(sequences=seq[0], header=seq[1])
 
         # No plot tyes have been selected so no files will be created
@@ -249,7 +247,7 @@ def get_variance_data(
             files.append(file2)
 
         # Create zip file for export
-        response['zip_file'] = utils.create_zip(files=files, zipname='./temp/variance.zip')
+        response['zip_file'] = utils.create_zip(files=files, zipname='variance.zip')
 
     except Exception as e:
         LOGGER.error(f"An error occurred in sequence variance: {str(e)}")
@@ -268,10 +266,10 @@ def get_phylogeny_data(file:str):
     Joins neighboring sequences (taxa) together to form a phylogeny tree.
     
     Parameter(s):
-        file (str): path to the file containing the sequence data.
+        file (str): file containing the sequence data.
     
     Output(s):
-        zipPth (str): a path to a zip file containing the phylogeny tree figure, edge data, and distance matrix.
+        zipPth (str): a zip file containing the phylogeny tree figure, edge data, and distance matrix.
     '''
 
     response = {}
@@ -280,18 +278,18 @@ def get_phylogeny_data(file:str):
     try:
         LOGGER.info(f"Getting sequence phylogeny from: {file}")
 
-        seq = utils.get_data(os.path.join(PATH, file))
+        seq = utils.get_data(os.path.join(TEMP_FOLDER, file))
         data = phy.Phylogeny(sequences=seq[0], header=seq[1])
         
         # Append the working file path to each file returned
         files = data.get_files(
-            matrix_file=os.path.join(PATH, "genetic-distances.txt"),
-            edge_file=os.path.join(PATH, "edges.txt"),
-            tree_file=os.path.join(PATH, "tree.pdf")
+            matrix_file=os.path.join(TEMP_FOLDER, "genetic-distances.txt"),
+            edge_file=os.path.join(TEMP_FOLDER, "edges.txt"),
+            tree_file=os.path.join(TEMP_FOLDER, "tree.pdf")
         )
 
         # Create zip file for export
-        response['zip_file'] = utils.create_zip(files=files, zipname='./temp/phylogeny.zip')
+        response['zip_file'] = utils.create_zip(files=files, zipname='phylogeny.zip')
 
     except Exception as e:
         LOGGER.error(f"An error occurred in sequence phylogeny: {str(e)}")
@@ -318,7 +316,7 @@ def get_assembled_data(seq_file:str, ref_file:str=None, k:int=3, cut:int=1):
         cut (int, default=1): size of the prefix/suffix of the k-mer
     
     Output(s):
-        A path to a zip file containing the assembled sequence files edges.txt, directed_edges.txt, de_bruijn_graph.pdf, 
+        A zip file containing the assembled sequence files edges.txt, directed_edges.txt, de_bruijn_graph.pdf, 
         sequence_alignment.txt, and/or alignment_plot.pdf.
     '''
 
@@ -328,20 +326,20 @@ def get_assembled_data(seq_file:str, ref_file:str=None, k:int=3, cut:int=1):
     try:
         LOGGER.info(f"Assembling sequence data from: {seq_file}\nAligning assembled data with: {ref_file}")
 
-        seq = utils.get_data(os.path.join(PATH, seq_file))
+        seq = utils.get_data(os.path.join(TEMP_FOLDER, seq_file))
         data = db.De_bruijn(sequences=seq[0], header=seq[1], k=k, cut=cut)
         
         # Append the working file path to each file returned
         files = data.make_docs(
-            edge_file=os.path.join(PATH, "edges.txt"),
-            dir_graph_file=os.path.join(PATH, "directed_edges.txt"),
-            plot_file=os.path.join(PATH, "de_bruijn_graph.pdf")
+            edge_file=os.path.join(TEMP_FOLDER, "edges.txt"),
+            dir_graph_file=os.path.join(TEMP_FOLDER, "directed_edges.txt"),
+            plot_file=os.path.join(TEMP_FOLDER, "de_bruijn_graph.pdf")
         )
 
         # See how the assembled sequence aligns with the known genome
         if ref_file is not None:
             
-            ref = utils.get_data(os.path.join(PATH, ref_file))
+            ref = utils.get_data(os.path.join(TEMP_FOLDER, ref_file))
 
             alignment = al.Alignment(               # Initialize alignment
                 ref=ref[0][0], 
@@ -352,11 +350,11 @@ def get_assembled_data(seq_file:str, ref_file:str=None, k:int=3, cut:int=1):
                 ignore=True
             )
             
-            files.append(alignment.alignment_file(filename=os.path.join(PATH, "sequence_alignment.txt")))
-            files.append(alignment.plot_compare(filename=os.path.join(PATH, "alignment_plot.pdf")))
+            files.append(alignment.alignment_file(filename=os.path.join(TEMP_FOLDER, "sequence_alignment.txt")))
+            files.append(alignment.plot_compare(filename=os.path.join(TEMP_FOLDER, "alignment_plot.pdf")))
         
         # Create zip file for export
-        response['zip_file'] = utils.create_zip(files=files, zipname='./temp/assembled_sequence.zip')
+        response['zip_file'] = utils.create_zip(files=files, zipname='assembled_sequence.zip')
 
     except Exception as e:
         LOGGER.error(f"An error occurred in sequence assembly: {str(e)}")
@@ -372,9 +370,9 @@ def get_assembled_data(seq_file:str, ref_file:str=None, k:int=3, cut:int=1):
 # ==============================================================================================================
 def main():
     #sequence_data = get_sequence_data(file='testing.fna', codon='codon', amino='amino')
-    alignment_data = get_alignment_data(file1='../input/moderna_mrna.fna', file2='../input/sars_spike_protein.fna')
-    #variance_data = get_variance_data(file='../input/sequences.fna', plot=True, smooth=True, vRegion=True)
-    #phylogeny_deta = get_phylogeny_data(file='../input/phylogeny_test.fna')
+    alignment_data = get_alignment_data(file1='../data/input/moderna_mrna.fna', file2='../data/input/sars_spike_protein.fna')
+    #variance_data = get_variance_data(file='../data/input/sequences.fna', plot=True, smooth=True, vRegion=True)
+    #phylogeny_deta = get_phylogeny_data(file='../data/input/phylogeny_test.fna')
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,10 @@
 import numpy as np
-import matplotlib, utils
+import matplotlib, os
 import matplotlib.pyplot as plt
+from . import utils
+
+PATH = os.path.dirname(os.path.abspath(__file__))
+TEMP_FOLDER = os.path.join(PATH, '../temp')
 
 matplotlib.use('agg')
 LOGGER = utils.LOGGER
@@ -304,17 +308,19 @@ class Alignment:
 
     # ----------------------------------------------------------------------------------------------------------------------
     # Writes alignment data to a text file
-    def alignment_file(self, filename:str='./output/alignment.txt'):
+    def alignment_file(self, filename:str='alignment.txt'):
         '''
         Parameter(s):
-            filename (str, default=./output/alignment.txt): the name of a file where the alignment data will be saved
+            filename (str, default='alignment.txt'): the name of a file where the alignment data will be saved
         
         Output(s):
-            A path to a saved file containing the alignment data.
+            The name of the saved file containing the alignment data.
         '''
 
         try:
-            with open(filename, 'w') as f:
+            file = os.path.join(TEMP_FOLDER, filename)
+
+            with open(file, 'w') as f:
                 LOGGER.info(f"Writting alignment data to: {filename}")
 
                 f.write(f"{self.results['score']}\n"
@@ -332,12 +338,12 @@ class Alignment:
             LOGGER.error(f"An unexpected error occurred when writing alignment data to {filename}: {str(e)}")
            
     # ----------------------------------------------------------------------------------------------------------------------
-    def plot_compare(self, filename:str='./temp/alignment_plot.jpg'):
+    def plot_compare(self, filename:str='alignment_plot.jpg'):
         '''
         Creates a figure displaying the similarities between the two sequences
 
         Parameter(s):
-            filename (str, default=./temp/alignment_plot.jpg): name of the file where the plot is saved if not None, else saves nothing
+            filename (str, default='alignment_plot.jpg'): name of the file where the plot is saved if not None, else saves nothing
         
         Output(s):
             returns a plotted figure as a window display if display is true, and ouputs a saved
@@ -359,7 +365,8 @@ class Alignment:
             plt.xlabel('Assembled SARS Spike Protein ')
             plt.ylabel('Our Assembled Contig(s)')
 
-            plt.savefig(filename, dpi=500)
+            file = os.path.join(TEMP_FOLDER, filename)
+            plt.savefig(file, dpi=500)
 
             return filename
         

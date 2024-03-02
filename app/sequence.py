@@ -1,4 +1,4 @@
-import utils
+from . import utils
 from typing import List
 
 LOGGER = utils.LOGGER

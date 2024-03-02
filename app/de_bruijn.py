@@ -1,10 +1,10 @@
 import numpy as np
 import networkx as nx
-import alignment as al
 import matplotlib.pyplot as plt
 from typing import List
+from . import utils, alignment as al
 
-import matplotlib, math, copy, random, time, utils
+import matplotlib, math, copy, random, time
 matplotlib.use('agg')
 
 LOGGER = utils.LOGGER

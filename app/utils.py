@@ -2,9 +2,10 @@ import os, re, mimetypes, json, csv, zipfile, logging
 from typing import List
 
 PATH = os.path.dirname(os.path.abspath(__file__))
+TEMP_FOLDER = os.path.join(PATH, '../temp')
 
 logging.basicConfig(
-    filename=os.path.join(PATH, './output/app.log'),
+    filename=os.path.join(PATH, '../logs/app.log'),
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s]: %(message)s'
 )
@@ -48,16 +49,15 @@ def create_file(file):
         logging.error(f'{file.filename} extension is not supported! Extension: {file_extension}')
         return None
     
-    path = os.path.join(PATH, "temp")                           # Path where file will be saved
-    os.makedirs(path, exist_ok=True)                            # Create path if it doesn't exist
+    os.makedirs(TEMP_FOLDER, exist_ok=True)                            # Create path if it doesn't exist
     
-    original_file_path = os.path.join(path, f'{sanitized_name}{file_extension}')
+    original_file_path = os.path.join(TEMP_FOLDER, f'{sanitized_name}{file_extension}')
     new_file_path = original_file_path
     
     counter = 1
     # loop thru the files to ensure the saved file does not have the same name as another
     while os.path.exists(new_file_path):
-        new_file_path = os.path.join(path, f'{sanitized_name}_{counter}{file_extension}')
+        new_file_path = os.path.join(TEMP_FOLDER, f'{sanitized_name}_{counter}{file_extension}')
         counter += 1
     
     logging.info(f"Creating file: {new_file_path}")
@@ -152,31 +152,34 @@ def merge_files(file1:str, file2:str, file3:str):
                 writer = csv.writer(output_file)
                 writer.writerows(data)
         
+        return file3
+        
     except FileNotFoundError:
         LOGGER.error("File not found. Please check the input filenames.")
     except Exception as e:
         LOGGER.error(f"An error occurred: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
-def create_zip(files:List[str], zipname:str='./temp/output.zip'):
+def create_zip(files:List[str], zipname:str='output.zip'):
     '''
     Takes in a list of files and zips them up into one zipfile
 
     Parameter(s):
         files (List[str]): list of file names being zipped
-        zipname (str, default=./temp/output.zip): path of the zip file being saved (path from src)
+        zipname (str, default='output.zip'): name of the zip file being saved
 
     Output(s):
-        file_path (str): the path to the saved zip file or None if no files to process
+        zipname (str): the name of the saved zip file or None if no files to process
     '''
     try:
-        file_path = os.path.join(PATH, zipname)             # Creating saved file path
+        file_path = os.path.join(TEMP_FOLDER, zipname)      # Creating saved file path
     
         if len(files) == 0:                                 # No files to process
             return None
     
         with zipfile.ZipFile(file_path, "w") as zipf:
-            for file in files:
+            for filename in files:
+                file = os.path.join(TEMP_FOLDER, filename)
                 zipf.write(file, os.path.basename(file))
 
         LOGGER.info(f"Zipped Files: {files}\nZipped Destination: {file_path}")
@@ -199,10 +202,9 @@ def remove_file(filename:str):
     '''
 
     try:
-        path = os.path.join(os.path.dirname(__file__), "src/temp")  # Path where file is saved
-        file_path = os.path.join(path, filename)                    # Creating saved file path
+        file_path = os.path.join(TEMP_FOLDER, filename)             # Creating saved file path
         os.remove(file_path)                                        # File is no longer needed
-        LOGGER.info(f"Successfully removed {file_path}")
+        LOGGER.info(f"Successfully removed {filename}")
 
     except OSError as e:
         LOGGER.error(f'Error while removing {filename}: {str(e)}')
@@ -221,12 +223,13 @@ def remove_files(files:List[str]):
     for file in files:
 
         try:
-            file_path = os.path.join(PATH, file)                # Creating saved file path
+            file_path = os.path.join(TEMP_FOLDER, file)         # Creating saved file path
             os.remove(file_path)                                # File is no longer needed
-            LOGGER.info(f"Successfully removed {file_path}")
+            LOGGER.info(f"Successfully removed {file}")
 
         except OSError as e:
             LOGGER.error(f'Error while removing {file}: {str(e)}')
+            
 # ----------------------------------------------------------------------------------------------------------------------------
 def clean_temp():
     '''
@@ -238,9 +241,7 @@ def clean_temp():
         None, removes all files from the temp folder.
     '''
     try:
-        folder = os.path.join(PATH, './temp/')
-
-        for file in os.listdir(folder):
+        for file in os.listdir(TEMP_FOLDER):
             os.remove(os.path.join(PATH, file))
     
     except PermissionError as e:
@@ -253,20 +254,20 @@ def clean_temp():
 # ========================================================================================================================================
 # Function(s) used for creating txt, csv, and Json file
 # ========================================================================================================================================
-def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
+def make_txt(data:dict, header:List[str]=[], filename:str='output.txt'):
     '''
     Takes in a dictionary and writes the data to a txt file
     
     Parameter(s):
         data (dict): dictionary containing the data being written to a file
         header (List[str], default=[]): list of header info for the corresponding data
-        filename (str, default=./temp/output.txt): file path where the data will be saved
+        filename (str, default='output.txt'): file name where the data will be saved
         
     Output(s):
         A file with the user input filename containing the dictionary data
     '''
     try:
-        file_path = os.path.join(PATH, filename)             # Creating saved file path
+        file_path = os.path.join(TEMP_FOLDER, filename)             # Creating saved file path
     
         with open(file_path, 'w', newline='') as file:
             if header != []:
@@ -276,7 +277,7 @@ def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
                 file.write(f'{key}\t{value}\n')
 
         LOGGER.info(f"Successfully saved data to {file_path}")
-        return file_path
+        return filename
     
     except FileNotFoundError as e:
         LOGGER.error(f"{filename} not found when saving data!")
@@ -286,21 +287,21 @@ def make_txt(data:dict, header:List[str]=[], filename:str='./temp/output.txt'):
         LOGGER.error(f"Failed to save data to {file_path}: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
-def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
+def make_csv(data:dict, header:List[str]=[], filename:str='output.csv'):
     '''
     Takes in a dictionary and writes the data to a csv file
     
     Parameter(s):
         data (dict): dictionary containing the data being written to a file
         header (List[str], default=[]): list of header info for the corresponding data
-        filename (str, default=./temp/output.csv): file path where the data will be saved
+        filename (str, default='output.csv'): file name where the data will be saved
         
     Output(s):
-        A file with the user input filename containing the dictionary data
+        A filename with the saved data
     '''
 
     try:
-        file_path = os.path.join(PATH, filename)
+        file_path = os.path.join(TEMP_FOLDER, filename)
 
         with open(file_path, 'w', newline='') as file:
             cfile = csv.writer(file)
@@ -312,7 +313,7 @@ def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
                 cfile.writerow([key, value])
 
         LOGGER.info(f"Successfully saved data to {file_path}")
-        return file_path
+        return filename
     
     except FileNotFoundError as e:
         LOGGER.error(f"{filename} not found when saving data!")
@@ -322,25 +323,25 @@ def make_csv(data:dict, header:List[str]=[], filename:str='./temp/output.csv'):
         LOGGER.error(f"Failed to save data to {file_path}: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------------
-def make_json(data:dict, filename:str='./temp/output.json'):
+def make_json(data:dict, filename:str='output.json'):
     '''
     Takes in a dictionary and writes the data to a json file
     
     Parameter(s):
         data (dict): dictionary containing the data being written to a file
-        filename (str, default=./temp/output.json): file path where the data will be saved
+        filename (str, default='output.json'): file name where the data will be saved
         
     Output(s):
-        A file with the user input filename containing the dictionary data
+        A file containing the save json data
     '''
     try:
-        file_path = os.path.join(PATH, filename)
+        file_path = os.path.join(TEMP_FOLDER, filename)
 
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=4)
 
         LOGGER.info(f"Successfully saved data to {file_path}")
-        return file_path
+        return filename
     
     except FileNotFoundError as e:
         LOGGER.error(f"{filename} not found when saving data!")
@@ -353,21 +354,21 @@ def make_json(data:dict, filename:str='./temp/output.json'):
 # ========================================================================================================================================
 # Function(s) used for testing
 # ========================================================================================================================================
-def runtime_csv(data, header:List[str]=[], filename:str='./temp/runtime.csv'):
+def runtime_csv(data, header:List[str]=[], filename:str='runtime.csv'):
     '''
     Create csv file with compiled runtimes
     
     Parameter(s):
         data: runtime data being written to the csv file
         header (List[str], default=[]): list of header info on the data
-        filename (str, default=./temp/runtime.csv): file path where the data will be saved
+        filename (str, default='runtime.csv'): filename where the data will be saved
     
     Output(s):
-        A path to the file with the runtime data
+        A filename where the runtime data is saved
     '''
 
     try:
-        file_path = os.path.join(PATH, filename)            # Creating saved file path
+        file_path = os.path.join(TEMP_FOLDER, filename)            # Creating saved file path
 
         with open(file_path, 'w', newline='') as file:
             cfile = csv.writer(file)
@@ -379,7 +380,7 @@ def runtime_csv(data, header:List[str]=[], filename:str='./temp/runtime.csv'):
             cfile.writerows(data)                           # Wrights codon or amino acid data to csv
 
         LOGGER.info(f"Successfully saved runtime data to {file_path}")
-        return file_path
+        return filename
     
     except FileNotFoundError as e:
         LOGGER.error(f"{filename} not found when saving data!")

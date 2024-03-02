@@ -1,15 +1,12 @@
-from flask import Flask, request, redirect, render_template, url_for, send_file, flash
+from flask import request, redirect, render_template, send_file, flash
 
+# Run Flask server using current application
+from flask import current_app as app
+from . import utils
+from . import bioinformatics as bio
 import os
-import sys
 
-sys.path.append('./src/')
-import utils
-import bioinformatics as bio
-
-logger = utils.logger
-app = Flask(__name__, static_folder='static')
-app.secret_key = 'my_super_secret_totaly_unbreakable_key'
+LOGGER = utils.LOGGER
 
 # ====================================================================
 # Main Pages
@@ -101,7 +98,7 @@ def sequence_analysis():
         try:
             os.remove(file_path)
         except Exception as e:
-            logger.error(f'Error removing file: {str(e)}')
+            LOGGER.error(f'Error removing file: {str(e)}')
     
     return response
 
@@ -180,7 +177,7 @@ def sequence_alingment():
         try:
             utils.remove_files([file_path1, file_path2])
         except Exception as e:
-            logger.error(f'Error Removing File(s): {str(e)}')
+            LOGGER.error(f'Error Removing File(s): {str(e)}')
 
     return response
 
@@ -242,7 +239,7 @@ def sequence_variance():
         try:
             utils.remove_files([file_path])
         except Exception as e:
-            logger.error(f'Error Removing File(s): {str(e)}')
+            LOGGER.error(f'Error Removing File(s): {str(e)}')
 
     return response
 
@@ -279,7 +276,7 @@ def sequence_phylogeny():
         try:
             utils.remove_files([file_path])
         except Exception as e:
-            logger.error(f'Error Removing File(s): {str(e)}')
+            LOGGER.error(f'Error Removing File(s): {str(e)}')
 
     return response
 
@@ -344,12 +341,6 @@ def sequence_assembly():
         try:
             utils.remove_files(files=files)
         except Exception as e:
-            logger.error(f'Error Removing File(s): {str(e)}')
+            LOGGER.error(f'Error Removing File(s): {str(e)}')
 
     return response
-
-# ====================================================================
-# Run Main
-# ====================================================================
-if __name__ == "__main__":
-    app.run()
