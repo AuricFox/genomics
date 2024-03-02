@@ -1,6 +1,4 @@
 # Ignore node_modules folder
-node_modules
-
-# Ignore temp files
-src/temp
-src/output
+logs
+__pycache__
+temp
