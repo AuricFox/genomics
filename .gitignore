@@ -1,4 +1,4 @@
-# Ignore node_modules folder
+# Ignore this files/folders
 logs
 __pycache__
 temp
